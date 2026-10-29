@@ -8,7 +8,6 @@ export interface ProductOption {
   isVisible: boolean
   isAvailable: boolean
 }
-
 export interface OptionGroup {
   id: string
   shopId: string
@@ -16,6 +15,10 @@ export interface OptionGroup {
   name: string
   minSelect: number
   maxSelect: number
+  selectionMode: OptionSelectionMode
+  isRequired: boolean
+  pricingMode: OptionPricingMode
+  additionalSelectionPriceSatang: number
   sortOrder: number
   isVisible: boolean
   options: ProductOption[]
@@ -65,33 +68,5 @@ export interface SaveProductInput {
   isVisible: boolean
   isAvailable: boolean
 }
+import type { OptionPricingMode, OptionSelectionMode } from '../../../shared/domain/option-pricing'
 
-export interface SaveOptionGroupInput {
-  shopId: string
-  id?: string
-  productId: string
-  name: string
-  minSelect: number
-  maxSelect: number
-  sortOrder: number
-  isVisible: boolean
-}
-
-export interface SaveProductOptionInput {
-  shopId: string
-  id?: string
-  optionGroupId: string
-  name: string
-  priceDeltaSatang: number
-  sortOrder: number
-  isVisible: boolean
-  isAvailable: boolean
-}
-
-export interface ApplyOptionGroupResult {
-  targetProductCount: number
-  createdGroupCount: number
-  updatedGroupCount: number
-  insertedOptionCount: number
-  updatedOptionCount: number
-}

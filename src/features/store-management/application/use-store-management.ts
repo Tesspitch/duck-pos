@@ -18,9 +18,15 @@ export function useStoreManagement(shopId: string | undefined) {
 
   useEffect(() => {
     if (!shopId) return
-    return realtime.subscribe(shopId, () => {
+    const refresh = () => {
       void queryClient.invalidateQueries({ queryKey: storeManagementQueryKey(shopId) })
-    })
+    }
+    const unsubscribe = realtime.subscribe(shopId, refresh)
+    window.addEventListener('online', refresh)
+    return () => {
+      window.removeEventListener('online', refresh)
+      unsubscribe()
+    }
   }, [queryClient, realtime, shopId])
 
   return query

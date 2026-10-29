@@ -4,11 +4,11 @@ import { useActiveShop } from '../../../shop-context/application/active-shop-con
 import { useCatalogActions } from '../../application/use-catalog-actions'
 import { useCatalog } from '../../application/use-catalog'
 import type { Category, Product } from '../../domain/catalog'
+import { nextSortOrder } from '../../../../shared/domain/sort-order'
 import { AppShell } from '../../../../shared/presentation/AppShell'
 import { CatalogList } from '../components/CatalogList'
 import { CategoryForm } from '../components/CategoryForm'
 import { ProductForm, type SaveProductFormInput } from '../components/ProductForm'
-import { ProductOptionsEditor } from '../components/ProductOptionsEditor'
 
 export function CatalogPage() {
   const { activeMembership: membership } = useActiveShop()
@@ -19,16 +19,7 @@ export function CatalogPage() {
   const [search, setSearch] = useState('')
   const [editingCategory, setEditingCategory] = useState<Category | null>(null)
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
-  const [optionsProductId, setOptionsProductId] = useState<string | null>(null)
   const categories = useMemo(() => catalog.data ?? [], [catalog.data])
-  const optionsProduct = useMemo(
-    () => categories.flatMap((category) => category.products).find((product) => product.id === optionsProductId) ?? null,
-    [categories, optionsProductId],
-  )
-  const optionsCategoryProductCount = useMemo(
-    () => categories.find((category) => category.id === optionsProduct?.categoryId)?.products.length ?? 0,
-    [categories, optionsProduct?.categoryId],
-  )
   const busy = Object.values(actions).some((action) => action.isPending)
 
   if (!shopId) return null
@@ -53,24 +44,9 @@ export function CatalogPage() {
 
         {isOwner ? (
           <section className="grid gap-4 lg:grid-cols-2">
-            <CategoryForm key={editingCategory?.id ?? 'new-category'} shopId={shopId} category={editingCategory} busy={actions.saveCategory.isPending} onCancel={() => setEditingCategory(null)} onSave={async (input) => { await actions.saveCategory.mutateAsync(input); setEditingCategory(null) }} />
+            <CategoryForm key={editingCategory?.id ?? 'new-category'} shopId={shopId} category={editingCategory} nextSortOrder={nextSortOrder(categories)} busy={actions.saveCategory.isPending} onCancel={() => setEditingCategory(null)} onSave={async (input) => { await actions.saveCategory.mutateAsync(input); setEditingCategory(null) }} />
             <ProductForm key={editingProduct?.id ?? 'new-product'} shopId={shopId} categories={categories} product={editingProduct} busy={actions.saveProduct.isPending} onCancel={() => setEditingProduct(null)} onSave={async (input: SaveProductFormInput) => { await actions.saveProduct.mutateAsync(input); setEditingProduct(null) }} />
           </section>
-        ) : null}
-
-        {optionsProduct && isOwner ? (
-          <ProductOptionsEditor
-            shopId={shopId}
-            product={optionsProduct}
-            categoryProductCount={optionsCategoryProductCount}
-            busy={busy}
-            onClose={() => setOptionsProductId(null)}
-            onSaveGroup={(input) => actions.saveOptionGroup.mutateAsync(input).then(() => undefined)}
-            onDeleteGroup={(id) => actions.deleteOptionGroup.mutateAsync(id)}
-            onSaveOption={(input) => actions.saveProductOption.mutateAsync(input).then(() => undefined)}
-            onDeleteOption={(id) => actions.deleteProductOption.mutateAsync(id)}
-            onApplyGroup={(id) => actions.applyOptionGroupToCategory.mutateAsync(id)}
-          />
         ) : null}
 
         {catalog.isLoading ? <p className="rounded-xl bg-brand-soft p-5">กำลังโหลดเมนู…</p> : null}
@@ -85,9 +61,7 @@ export function CatalogPage() {
             onDeleteCategory={(category) => void deleteCategory(category)}
             onEditProduct={setEditingProduct}
             onDeleteProduct={(product) => void deleteProduct(product)}
-            onEditOptions={(product) => setOptionsProductId(product.id)}
             onToggleProduct={(product) => void actions.setProductAvailability.mutateAsync({ productId: product.id, available: !product.isAvailable })}
-            onToggleOption={(option) => void actions.setProductOptionAvailability.mutateAsync({ optionId: option.id, available: !option.isAvailable })}
           />
         ) : null}
       </main>

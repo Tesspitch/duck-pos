@@ -1,4 +1,4 @@
-import type { Category, Product, ProductOption } from '../../domain/catalog'
+import type { Category, Product } from '../../domain/catalog'
 import { formatThaiBaht } from '../../domain/money'
 
 interface CatalogListProps {
@@ -10,9 +10,7 @@ interface CatalogListProps {
   onDeleteCategory: (category: Category) => void
   onEditProduct: (product: Product) => void
   onDeleteProduct: (product: Product) => void
-  onEditOptions: (product: Product) => void
   onToggleProduct: (product: Product) => void
-  onToggleOption: (option: ProductOption) => void
 }
 
 export function CatalogList({
@@ -24,9 +22,7 @@ export function CatalogList({
   onDeleteCategory,
   onEditProduct,
   onDeleteProduct,
-  onEditOptions,
   onToggleProduct,
-  onToggleOption,
 }: CatalogListProps) {
   const query = search.trim().toLocaleLowerCase('th')
   const visibleCategories = categories
@@ -51,7 +47,7 @@ export function CatalogList({
           <header className="flex flex-wrap items-center justify-between gap-3 bg-brand-soft px-4 py-3">
             <div>
               <h2 className="text-lg font-bold">{category.name}</h2>
-              <p className="text-xs text-muted">ลำดับ {category.sortOrder} · {category.isVisible ? 'แสดงอยู่' : 'ซ่อนอยู่'}</p>
+              <p className="text-xs text-muted">{category.isVisible ? 'แสดงอยู่' : 'ซ่อนอยู่'}</p>
             </div>
             {isOwner ? (
               <div className="flex gap-2">
@@ -84,25 +80,9 @@ export function CatalogList({
                 <button type="button" disabled={busy} onClick={() => onToggleProduct(product)} className="rounded-lg border border-line px-3 text-sm font-semibold disabled:opacity-50">
                   {product.isAvailable ? 'ปิดขายชั่วคราว' : 'เปิดขาย'}
                 </button>
-                {product.optionGroups.map((group) => (
-                  <div key={group.id} className="rounded-lg bg-neutral-50 p-3 text-sm">
-                    <p className="font-semibold">{group.name} <span className="font-normal text-muted">เลือก {group.minSelect}–{group.maxSelect}</span></p>
-                    <div className="mt-2 grid gap-2">
-                      {group.options.map((option) => (
-                        <div key={option.id} className="flex items-center justify-between gap-2">
-                          <span className={!option.isAvailable ? 'text-muted line-through' : ''}>{option.name} {option.priceDeltaSatang > 0 ? `+${formatThaiBaht(option.priceDeltaSatang)}` : ''}</span>
-                          <button type="button" disabled={busy} onClick={() => onToggleOption(option)} className="min-h-9 rounded-md border border-line bg-white px-2 text-xs disabled:opacity-50">
-                            {option.isAvailable ? 'ปิดขาย' : 'เปิดขาย'}
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
                 {isOwner ? (
                   <div className="flex flex-wrap gap-2">
                     <button type="button" onClick={() => onEditProduct(product)} className="rounded-lg border border-line px-3 text-sm">แก้ไขสินค้า</button>
-                    <button type="button" onClick={() => onEditOptions(product)} className="rounded-lg border border-line px-3 text-sm">ตัวเลือก/ท็อปปิง</button>
                     <button type="button" onClick={() => onDeleteProduct(product)} className="rounded-lg border border-red-200 px-3 text-sm text-red-700">ลบ</button>
                   </div>
                 ) : null}

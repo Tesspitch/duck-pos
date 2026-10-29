@@ -66,6 +66,7 @@ src/
 │       ├── infrastructure/               # Supabase onboarding adapter
 │       └── presentation/                 # Create Shop page
 │   ├── catalog/                         # Product Catalog module
+│   ├── topping-management/              # Reusable topping library and category assignment
 │   │   ├── domain/                       # Category/Product/Option และกฎราคา
 │   │   ├── application/                  # Repository/Image ports, validation, query/mutations
 │   │   ├── infrastructure/               # Supabase RPC/query/storage และ image optimizer
@@ -134,6 +135,7 @@ supabase/migrations/
 ├── 202610280015_phase_5_store_management.sql # Store sessions, history และ atomic close
 ├── 202610290016_phase_6_sales_analytics.sql # Aggregate dashboard และ paginated sales history
 ├── 202610290017_apply_toppings_to_category.sql # Atomic option-group merge ภายในหมวดหมู่
+├── 202610290025_reusable_topping_library.sql # Shop-level topping templates, category mapping and product sync
 ├── 202610290018_phase_7_line_notifications.sql # LINE subscriptions, report jobs, retry และ logs
 ├── 202610290019_phase_7_enum_cast_fix.sql # Explicit enum casts discovered by hosted flow test
 ├── 202610290020_phase_7_event_driven_dispatch.sql # Event outbox และ conditional retry wake-up

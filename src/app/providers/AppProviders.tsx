@@ -37,11 +37,16 @@ import { supabaseStaffOrdersRepository } from '../../features/staff-orders/infra
 import { StoreManagementProvider } from '../../features/store-management/application/StoreManagementProvider'
 import { supabaseStoreManagementRealtime } from '../../features/store-management/infrastructure/supabase-store-management-realtime'
 import { supabaseStoreManagementRepository } from '../../features/store-management/infrastructure/supabase-store-management-repository'
+import { ToppingLibraryProvider } from '../../features/topping-management/application/ToppingLibraryProvider'
+import { supabaseToppingLibraryRepository } from '../../features/topping-management/infrastructure/supabase-topping-library-repository'
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
+      staleTime: 30_000,
+      gcTime: 10 * 60_000,
       refetchOnWindowFocus: true,
+      refetchOnReconnect: true,
       retry: 1,
     },
   },
@@ -59,6 +64,7 @@ export function AppProviders({ children }: PropsWithChildren) {
                   repository={supabaseCatalogRepository}
                   imageService={supabaseCatalogImageService}
                 >
+                  <ToppingLibraryProvider repository={supabaseToppingLibraryRepository}>
                   <ProfileRepositoryProvider repository={supabaseProfileRepository}>
                     <ShopSettingsProvider
                       repository={supabaseShopSettingsRepository}
@@ -82,6 +88,7 @@ export function AppProviders({ children }: PropsWithChildren) {
                       </CustomerOrderingRepositoryProvider>
                     </ShopSettingsProvider>
                   </ProfileRepositoryProvider>
+                  </ToppingLibraryProvider>
                 </CatalogServicesProvider>
               </ActiveShopProvider>
             </MembershipRepositoryProvider>

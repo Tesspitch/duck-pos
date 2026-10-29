@@ -1,9 +1,7 @@
 import type {
   Category,
   SaveCategoryInput,
-  SaveOptionGroupInput,
   SaveProductInput,
-  SaveProductOptionInput,
 } from '../domain/catalog'
 
 export interface CatalogRepository {
@@ -14,14 +12,4 @@ export interface CatalogRepository {
   setProductImage(shopId: string, productId: string, imagePath: string | null): Promise<void>
   deleteProduct(shopId: string, productId: string): Promise<void>
   setProductAvailability(shopId: string, productId: string, available: boolean): Promise<void>
-  saveOptionGroup(input: SaveOptionGroupInput): Promise<string>
-  deleteOptionGroup(shopId: string, optionGroupId: string): Promise<void>
-  saveProductOption(input: SaveProductOptionInput): Promise<string>
-  deleteProductOption(shopId: string, productOptionId: string): Promise<void>
-  applyOptionGroupToCategory(shopId: string, optionGroupId: string): Promise<import('../domain/catalog').ApplyOptionGroupResult>
-  setProductOptionAvailability(
-    shopId: string,
-    productOptionId: string,
-    available: boolean,
-  ): Promise<void>
 }

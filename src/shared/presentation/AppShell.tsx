@@ -20,11 +20,11 @@ export function AppShell({ children }: PropsWithChildren) {
   return (
     <div className="min-h-screen bg-white">
       <header className="border-b border-line bg-white">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-4 py-3">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-start justify-between gap-3 px-4 py-3">
           <Link to="/" className="flex min-h-11 items-center gap-2 text-xl font-bold text-brand-action">
             <span aria-hidden="true">🦆</span> DuckPOS
           </Link>
-          <nav className="flex flex-wrap items-center justify-end gap-2" aria-label="เมนูหลัก">
+          <nav className="flex w-full min-w-0 flex-wrap items-center justify-start gap-2 sm:w-auto sm:flex-1 sm:justify-end" aria-label="เมนูหลัก">
             {memberships.length > 0 ? (
               <label className="sr-only" htmlFor="active-shop">ร้านที่กำลังใช้งาน</label>
             ) : null}
@@ -46,7 +46,7 @@ export function AppShell({ children }: PropsWithChildren) {
             {memberships.length > 0 ? (
               <Link
                 to="/pos"
-                className="inline-flex items-center rounded-lg px-3 text-sm font-medium text-ink hover:bg-brand-soft"
+                className="inline-flex min-w-11 items-center justify-center rounded-lg px-3 text-sm font-medium text-ink hover:bg-brand-soft"
               >
                 POS
               </Link>
@@ -54,7 +54,7 @@ export function AppShell({ children }: PropsWithChildren) {
             {memberships.length > 0 ? (
               <Link
                 to="/queue"
-                className="inline-flex items-center rounded-lg px-3 text-sm font-medium text-ink hover:bg-brand-soft"
+                className="inline-flex min-w-11 items-center justify-center rounded-lg px-3 text-sm font-medium text-ink hover:bg-brand-soft"
               >
                 คิว
               </Link>
@@ -62,15 +62,23 @@ export function AppShell({ children }: PropsWithChildren) {
             {memberships.length > 0 ? (
               <Link
                 to="/catalog"
-                className="inline-flex items-center rounded-lg px-3 text-sm font-medium text-ink hover:bg-brand-soft"
+                className="inline-flex min-w-11 items-center justify-center rounded-lg px-3 text-sm font-medium text-ink hover:bg-brand-soft"
               >
                 เมนูสินค้า
+              </Link>
+            ) : null}
+            {memberships.length > 0 ? (
+              <Link
+                to="/toppings"
+                className="inline-flex min-w-11 items-center justify-center rounded-lg px-3 text-sm font-medium text-ink hover:bg-brand-soft"
+              >
+                ท็อปปิง
               </Link>
             ) : null}
             {isPlatformAdmin ? (
               <Link
                 to="/admin"
-                className="inline-flex items-center rounded-lg px-3 text-sm font-medium text-ink hover:bg-brand-soft"
+                className="inline-flex min-w-11 items-center justify-center rounded-lg px-3 text-sm font-medium text-ink hover:bg-brand-soft"
               >
                 Platform Admin
               </Link>
@@ -78,7 +86,7 @@ export function AppShell({ children }: PropsWithChildren) {
             {isOwner ? (
               <Link
                 to="/store"
-                className="inline-flex items-center rounded-lg px-3 text-sm font-medium text-ink hover:bg-brand-soft"
+                className="inline-flex min-w-11 items-center justify-center rounded-lg px-3 text-sm font-medium text-ink hover:bg-brand-soft"
               >
                 เปิด–ปิดร้าน
               </Link>
@@ -86,7 +94,7 @@ export function AppShell({ children }: PropsWithChildren) {
             {isOwner ? (
               <Link
                 to="/reports"
-                className="inline-flex items-center rounded-lg px-3 text-sm font-medium text-ink hover:bg-brand-soft"
+                className="inline-flex min-w-11 items-center justify-center rounded-lg px-3 text-sm font-medium text-ink hover:bg-brand-soft"
               >
                 รายงาน
               </Link>
@@ -94,7 +102,7 @@ export function AppShell({ children }: PropsWithChildren) {
             {isOwner ? (
               <Link
                 to="/settings/qr"
-                className="inline-flex items-center rounded-lg px-3 text-sm font-medium text-ink hover:bg-brand-soft"
+                className="inline-flex min-w-11 items-center justify-center rounded-lg px-3 text-sm font-medium text-ink hover:bg-brand-soft"
               >
                 QR ร้าน
               </Link>
@@ -102,7 +110,7 @@ export function AppShell({ children }: PropsWithChildren) {
             {isOwner ? (
               <Link
                 to="/settings/line"
-                className="inline-flex items-center rounded-lg px-3 text-sm font-medium text-ink hover:bg-brand-soft"
+                className="inline-flex min-w-11 items-center justify-center rounded-lg px-3 text-sm font-medium text-ink hover:bg-brand-soft"
               >
                 LINE
               </Link>
@@ -110,7 +118,7 @@ export function AppShell({ children }: PropsWithChildren) {
             {isOwner ? (
               <Link
                 to="/create-shop"
-                className="inline-flex items-center rounded-lg px-3 text-sm font-medium text-ink hover:bg-brand-soft"
+                className="inline-flex min-w-11 items-center justify-center rounded-lg px-3 text-sm font-medium text-ink hover:bg-brand-soft"
               >
                 เพิ่มสาขา
               </Link>
@@ -118,7 +126,7 @@ export function AppShell({ children }: PropsWithChildren) {
             {isOwner ? (
               <Link
                 to="/settings/shop"
-                className="inline-flex items-center rounded-lg px-3 text-sm font-medium text-ink hover:bg-brand-soft"
+                className="inline-flex min-w-11 items-center justify-center rounded-lg px-3 text-sm font-medium text-ink hover:bg-brand-soft"
               >
                 ตั้งค่าร้าน
               </Link>
@@ -126,7 +134,7 @@ export function AppShell({ children }: PropsWithChildren) {
             {isOwner ? (
               <Link
                 to="/access"
-                className="inline-flex items-center rounded-lg px-3 text-sm font-medium text-ink hover:bg-brand-soft"
+                className="inline-flex min-w-11 items-center justify-center rounded-lg px-3 text-sm font-medium text-ink hover:bg-brand-soft"
               >
                 จัดการสิทธิ์
               </Link>
@@ -134,7 +142,7 @@ export function AppShell({ children }: PropsWithChildren) {
             <Link
               to="/profile"
               title={user?.email ?? 'โปรไฟล์'}
-              className="inline-flex items-center gap-2 rounded-lg px-3 text-sm font-medium text-ink hover:bg-brand-soft"
+              className="inline-flex min-w-11 items-center justify-center gap-2 rounded-lg px-3 text-sm font-medium text-ink hover:bg-brand-soft"
             >
               {user?.user_metadata.avatar_url ? <img src={user.user_metadata.avatar_url as string} alt="" referrerPolicy="no-referrer" className="h-7 w-7 rounded-full object-cover" /> : null}
               <span className="hidden max-w-44 truncate sm:inline">{user?.email ?? 'โปรไฟล์'}</span>

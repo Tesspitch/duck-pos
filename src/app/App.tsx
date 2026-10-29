@@ -41,6 +41,11 @@ const CatalogPage = lazy(() =>
     default: module.CatalogPage,
   })),
 )
+const ToppingLibraryPage = lazy(() =>
+  import('../features/topping-management/presentation/pages/ToppingLibraryPage').then((module) => ({
+    default: module.ToppingLibraryPage,
+  })),
+)
 const ProfilePage = lazy(() =>
   import('../features/profile/presentation/pages/ProfilePage').then((module) => ({
     default: module.ProfilePage,
@@ -189,6 +194,14 @@ export function App() {
           element={
             <AuthGate>
               <CatalogPage />
+            </AuthGate>
+          }
+        />
+        <Route
+          path="/toppings"
+          element={
+            <AuthGate>
+              <ToppingLibraryPage />
             </AuthGate>
           }
         />

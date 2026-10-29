@@ -32,6 +32,10 @@ interface OptionGroupRow {
   name: string
   min_select: number
   max_select: number
+  selection_mode: 'SINGLE' | 'MULTIPLE'
+  is_required: boolean
+  pricing_mode: 'PER_TOPPING' | 'FIRST_FREE_THEN_FIXED'
+  additional_selection_price_satang: number
   sort_order: number
   is_visible: boolean
   product_options: ProductOptionRow[] | null
@@ -77,6 +81,10 @@ function mapOptionGroup(row: OptionGroupRow): OptionGroup {
     name: row.name,
     minSelect: row.min_select,
     maxSelect: row.max_select,
+    selectionMode: row.selection_mode,
+    isRequired: row.is_required,
+    pricingMode: row.pricing_mode,
+    additionalSelectionPriceSatang: row.additional_selection_price_satang,
     sortOrder: row.sort_order,
     isVisible: row.is_visible,
     options: (row.product_options ?? []).map(mapOption).sort(bySortOrderAndName),
@@ -122,6 +130,7 @@ export const supabaseCatalogRepository: CatalogRepository = {
           image_path, sort_order, is_visible, is_available,
           option_groups (
             id, shop_id, product_id, name, min_select, max_select,
+            selection_mode, is_required, pricing_mode, additional_selection_price_satang,
             sort_order, is_visible,
             product_options (
               id, shop_id, option_group_id, name, price_delta_satang,
@@ -200,67 +209,4 @@ export const supabaseCatalogRepository: CatalogRepository = {
     if (error) throw error
   },
 
-  async saveOptionGroup(input) {
-    const { data, error } = await supabase.rpc('save_option_group', {
-      target_shop_id: input.shopId,
-      target_option_group_id: input.id ?? null,
-      target_product_id: input.productId,
-      option_group_name: input.name,
-      option_group_min_select: input.minSelect,
-      option_group_max_select: input.maxSelect,
-      option_group_sort_order: input.sortOrder,
-      option_group_is_visible: input.isVisible,
-    })
-    if (error) throw error
-    return data as string
-  },
-
-  async deleteOptionGroup(shopId, optionGroupId) {
-    const { error } = await supabase.rpc('delete_option_group', {
-      target_shop_id: shopId,
-      target_option_group_id: optionGroupId,
-    })
-    if (error) throw error
-  },
-
-  async saveProductOption(input) {
-    const { data, error } = await supabase.rpc('save_product_option', {
-      target_shop_id: input.shopId,
-      target_product_option_id: input.id ?? null,
-      target_option_group_id: input.optionGroupId,
-      option_name: input.name,
-      option_price_delta_satang: input.priceDeltaSatang,
-      option_sort_order: input.sortOrder,
-      option_is_visible: input.isVisible,
-      option_is_available: input.isAvailable,
-    })
-    if (error) throw error
-    return data as string
-  },
-
-  async deleteProductOption(shopId, productOptionId) {
-    const { error } = await supabase.rpc('delete_product_option', {
-      target_shop_id: shopId,
-      target_product_option_id: productOptionId,
-    })
-    if (error) throw error
-  },
-
-  async applyOptionGroupToCategory(shopId, optionGroupId) {
-    const { data, error } = await supabase.rpc('apply_option_group_to_category', {
-      target_shop_id: shopId,
-      source_option_group_id: optionGroupId,
-    })
-    if (error) throw error
-    return data
-  },
-
-  async setProductOptionAvailability(shopId, productOptionId, available) {
-    const { error } = await supabase.rpc('set_product_option_availability', {
-      target_shop_id: shopId,
-      target_product_option_id: productOptionId,
-      option_is_available: available,
-    })
-    if (error) throw error
-  },
 }

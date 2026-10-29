@@ -2,9 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import type {
   SaveCategoryInput,
-  SaveOptionGroupInput,
   SaveProductInput,
-  SaveProductOptionInput,
 } from '../domain/catalog'
 import { useCatalogServices } from './catalog-services-context'
 import { catalogQueryKey } from './use-catalog'
@@ -63,50 +61,11 @@ export function useCatalogActions(shopId: string) {
     onSuccess: refresh,
   })
 
-  const saveOptionGroup = useMutation({
-    mutationFn: (input: SaveOptionGroupInput) => repository.saveOptionGroup(input),
-    onSuccess: refresh,
-  })
-
-  const deleteOptionGroup = useMutation({
-    mutationFn: (optionGroupId: string) => repository.deleteOptionGroup(shopId, optionGroupId),
-    onSuccess: refresh,
-  })
-
-  const saveProductOption = useMutation({
-    mutationFn: (input: SaveProductOptionInput) => repository.saveProductOption(input),
-    onSuccess: refresh,
-  })
-
-  const deleteProductOption = useMutation({
-    mutationFn: (productOptionId: string) =>
-      repository.deleteProductOption(shopId, productOptionId),
-    onSuccess: refresh,
-  })
-
-  const applyOptionGroupToCategory = useMutation({
-    mutationFn: (optionGroupId: string) =>
-      repository.applyOptionGroupToCategory(shopId, optionGroupId),
-    onSuccess: refresh,
-  })
-
-  const setProductOptionAvailability = useMutation({
-    mutationFn: ({ optionId, available }: { optionId: string; available: boolean }) =>
-      repository.setProductOptionAvailability(shopId, optionId, available),
-    onSuccess: refresh,
-  })
-
   return {
     saveCategory,
     deleteCategory,
     saveProduct,
     deleteProduct,
     setProductAvailability,
-    saveOptionGroup,
-    deleteOptionGroup,
-    saveProductOption,
-    deleteProductOption,
-    applyOptionGroupToCategory,
-    setProductOptionAvailability,
   }
 }

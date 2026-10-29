@@ -3,6 +3,7 @@ import { useState, type FormEvent } from 'react'
 import { productFormSchema } from '../../application/catalog-form-schemas'
 import type { Category, Product, SaveProductInput } from '../../domain/catalog'
 import { satangToBahtText } from '../../domain/money'
+import { nextSortOrder } from '../../../../shared/domain/sort-order'
 
 export interface SaveProductFormInput extends SaveProductInput {
   imageFile?: File | null
@@ -31,7 +32,6 @@ export function ProductForm({
   const [name, setName] = useState(product?.name ?? '')
   const [description, setDescription] = useState(product?.description ?? '')
   const [priceBaht, setPriceBaht] = useState(product ? satangToBahtText(product.basePriceSatang) : '0.00')
-  const [sortOrder, setSortOrder] = useState(String(product?.sortOrder ?? 0))
   const [isVisible, setIsVisible] = useState(product?.isVisible ?? true)
   const [isAvailable, setIsAvailable] = useState(product?.isAvailable ?? true)
   const [imageFile, setImageFile] = useState<File | null>(null)
@@ -46,7 +46,6 @@ export function ProductForm({
       name,
       description,
       priceBaht,
-      sortOrder,
       isVisible,
       isAvailable,
     })
@@ -65,7 +64,9 @@ export function ProductForm({
         description: parsed.data.description,
         basePriceSatang: parsed.data.priceBaht,
         imagePath: product?.imagePath ?? null,
-        sortOrder: parsed.data.sortOrder,
+        sortOrder: product && product.categoryId === parsed.data.categoryId
+          ? product.sortOrder
+          : nextSortOrder(categories.find((category) => category.id === parsed.data.categoryId)?.products ?? []),
         isVisible: parsed.data.isVisible,
         isAvailable: parsed.data.isAvailable,
         imageFile,
@@ -105,16 +106,10 @@ export function ProductForm({
         รายละเอียด
         <textarea value={description} onChange={(event) => setDescription(event.target.value)} className="min-h-24 rounded-lg border border-line p-3" maxLength={1000} />
       </label>
-      <div className="grid gap-3 sm:grid-cols-2">
-        <label className="grid gap-1 text-sm font-medium">
-          ราคาพื้นฐาน (บาท)
-          <input inputMode="decimal" value={priceBaht} onChange={(event) => setPriceBaht(event.target.value)} className="rounded-lg border border-line px-3" />
-        </label>
-        <label className="grid gap-1 text-sm font-medium">
-          ลำดับ
-          <input type="number" min="0" value={sortOrder} onChange={(event) => setSortOrder(event.target.value)} className="rounded-lg border border-line px-3" />
-        </label>
-      </div>
+      <label className="grid gap-1 text-sm font-medium">
+        ราคาพื้นฐาน (บาท)
+        <input inputMode="decimal" value={priceBaht} onChange={(event) => setPriceBaht(event.target.value)} className="rounded-lg border border-line px-3" />
+      </label>
       <label className="grid gap-1 text-sm font-medium">
         รูปสินค้า (สูงสุด 5 MB ระบบจะแปลงเป็น WebP)
         <input type="file" accept="image/jpeg,image/png,image/webp,image/avif" onChange={(event) => setImageFile(event.target.files?.[0] ?? null)} className="rounded-lg border border-line p-2" />

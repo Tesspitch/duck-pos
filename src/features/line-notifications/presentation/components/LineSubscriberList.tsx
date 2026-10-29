@@ -9,7 +9,7 @@ interface Props {
 const statusLabel = { PENDING: 'รออนุมัติ', APPROVED: 'อนุมัติแล้ว', REVOKED: 'ยกเลิกสิทธิ์' }
 
 export function LineSubscriberList({ subscriptions, pending, onChange }: Props) {
-  return <section className="rounded-2xl border border-line p-4">
+  return <section className="min-w-0 rounded-2xl border border-line p-4">
     <h2 className="text-lg font-bold">ผู้รับรายงาน</h2>
     {!subscriptions.length ? <p className="mt-3 text-sm text-muted">ยังไม่มีคำขอ ให้ผู้รับเพิ่ม LINE OA และส่ง Shop ID ทางแชท</p> : <div className="mt-3 space-y-3">
       {subscriptions.map((subscription) => <article key={subscription.id} className="rounded-xl bg-brand-soft p-3">

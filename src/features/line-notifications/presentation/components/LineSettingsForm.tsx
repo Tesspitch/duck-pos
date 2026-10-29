@@ -14,7 +14,7 @@ export function LineSettingsForm({ settings, pending, onSave }: Props) {
 
   function addTime() { if (times.length < 6) setTimes([...times, '12:00']) }
 
-  return <section className="rounded-2xl border border-line p-4">
+  return <section className="min-w-0 rounded-2xl border border-line p-4">
     <h2 className="text-lg font-bold">ตั้งเวลารายงาน</h2>
     <p className="mt-3 rounded-xl bg-brand-soft p-3 text-sm">ระบบจะแจ้งเมื่อเปิดร้าน และส่งรายงานปิดร้านทุกครั้ง แม้ไม่มีออเดอร์หรือยอดขาย</p>
     <label className="flex min-h-11 items-center gap-3"><input type="checkbox" checked={periodic} onChange={(event) => setPeriodic(event.target.checked)} /> ส่งรายงานสะสมตามเวลา</label>

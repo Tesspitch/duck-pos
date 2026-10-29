@@ -10,6 +10,10 @@ export interface PublicMenuOptionGroup {
   name: string
   minSelect: number
   maxSelect: number
+  selectionMode: OptionSelectionMode
+  isRequired: boolean
+  pricingMode: OptionPricingMode
+  additionalSelectionPriceSatang: number
   options: PublicMenuOption[]
 }
 
@@ -39,3 +43,5 @@ export interface PublicMenu {
   isOpen: boolean
   categories: PublicMenuCategory[]
 }
+import type { OptionPricingMode, OptionSelectionMode } from '../../../shared/domain/option-pricing'
+
