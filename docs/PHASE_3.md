@@ -10,6 +10,7 @@
 - Edge Function rate limiting ก่อนเรียก server-authoritative atomic checkout
 - Idempotent order creation, daily queue counter และ secure token-scoped tracking
 - Tracking polling ทุก 7 วินาที เฉพาะเมื่อหน้าเปิด และหยุดเมื่อ terminal status
+- Owner QR page `/settings/qr` สำหรับคัดลอกลิงก์ เปิดหน้าลูกค้า ดาวน์โหลด SVG/PNG และพิมพ์ป้าย QR
 
 ## Architecture
 
@@ -33,6 +34,7 @@
 - Cart เก็บใน `sessionStorage` เฉพาะ browser session
 - Tracking ใช้ adaptive polling 7 วินาที, pause เมื่อ hidden และ refetch เมื่อ focus
 - Public routes lazy-loaded
+- QR สร้างใน Browser จาก `/order/:shopId` โดยไม่ใช้ Supabase compute หรือ Storage
 
 ## Current test results
 

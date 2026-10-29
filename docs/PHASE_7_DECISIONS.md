@@ -20,6 +20,9 @@
 - LINE Developers webhook URL ต้องชี้ไปที่ `line-webhook` Edge Function
 - Database Webhook บน `notification_dispatch_signals` event `INSERT` เรียก worker เฉพาะเมื่อมีงาน
 - Cron ทุกนาทีเรียกเฉพาะ database functions สำหรับ due periodic/retry และไม่เรียก Edge Function เมื่อคิวว่าง
+- การเปิดร้านส่งข้อความสถานะ `OPENING` ให้ผู้รับที่ Owner อนุมัติ และการปิดร้านส่งรายงานทุกครั้ง แม้ไม่มีออเดอร์หรือยอดรับ
+- Database Webhook ใช้ service-role JWT ที่ตรวจโดย Supabase Gateway; worker ยอมรับเฉพาะ role `service_role`
+- Cron recovery ครอบคลุมงาน `PENDING`, `RETRY` และ `PROCESSING` ที่ค้าง เพื่อไม่ให้งานสูญหายเมื่อ webhook เรียกไม่สำเร็จ
 
 ## Deferred
 

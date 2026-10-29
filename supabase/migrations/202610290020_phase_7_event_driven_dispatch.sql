@@ -46,7 +46,7 @@ declare
 begin
   if not exists (
     select 1 from public.notification_jobs as job
-    where (job.status = 'RETRY' and job.next_attempt_at <= requested_at)
+    where (job.status in ('PENDING', 'RETRY') and job.next_attempt_at <= requested_at)
       or (job.status = 'PROCESSING' and job.updated_at < requested_at - interval '10 minutes')
     limit 1
   ) then

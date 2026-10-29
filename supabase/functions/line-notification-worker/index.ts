@@ -4,8 +4,21 @@ import { formatLineReport, pushLineMessage, type LineReportPayload } from '../_s
 interface ClaimedJob {
   job_id: string
   line_user_id: string
-  report_type: 'CLOSING' | 'PERIODIC'
+  report_type: 'OPENING' | 'CLOSING' | 'PERIODIC'
   payload: LineReportPayload
+}
+
+function readJwtRole(token: string | null) {
+  if (!token) return null
+  try {
+    const encoded = token.split('.')[1]
+    if (!encoded) return null
+    const base64 = encoded.replace(/-/g, '+').replace(/_/g, '/').padEnd(Math.ceil(encoded.length / 4) * 4, '=')
+    const payload = JSON.parse(atob(base64)) as { role?: unknown }
+    return typeof payload.role === 'string' ? payload.role : null
+  } catch {
+    return null
+  }
 }
 
 Deno.serve(async (request) => {
@@ -15,8 +28,10 @@ Deno.serve(async (request) => {
   const projectSecretKeys = JSON.parse(Deno.env.get('SUPABASE_SECRET_KEYS') ?? '{}') as Record<string, string>
   const suppliedApiKey = request.headers.get('apikey')
   const suppliedBearer = request.headers.get('authorization')
-  const validServiceKey = Boolean(suppliedApiKey) && [projectSecretKeys.default, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')]
-    .filter(Boolean).includes(suppliedApiKey!)
+  const suppliedBearerToken = suppliedBearer?.startsWith('Bearer ') ? suppliedBearer.slice(7) : null
+  const serviceKeys = [projectSecretKeys.default, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')].filter(Boolean)
+  const validServiceKey = serviceKeys.includes(suppliedApiKey ?? '') || serviceKeys.includes(suppliedBearerToken ?? '')
+    || readJwtRole(suppliedBearerToken) === 'service_role'
   const validWorkerSecret = Boolean(workerSecret) && suppliedBearer === `Bearer ${workerSecret}`
   if (!channelAccessToken) return new Response('LINE_CHANNEL_ACCESS_TOKEN is not configured.', { status: 500 })
   if (!validServiceKey && !validWorkerSecret) {

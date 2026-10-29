@@ -1,6 +1,6 @@
 export interface LineReportPayload {
   shopName: string
-  reportType: 'CLOSING' | 'PERIODIC'
+  reportType: 'OPENING' | 'CLOSING' | 'PERIODIC'
   businessDate: string
   openedAt: string | null
   closedAt: string | null
@@ -27,6 +27,14 @@ const money = (satang: number) => new Intl.NumberFormat('th-TH', {
 }).format(satang / 100)
 
 export function formatLineReport(payload: LineReportPayload) {
+  if (payload.reportType === 'OPENING') {
+    return [
+      '🟢 DuckPOS · เปิดร้านแล้ว',
+      payload.shopName,
+      `วันทำการ ${payload.businessDate}`,
+      'ระบบพร้อมรับออเดอร์',
+    ].join('\n')
+  }
   const title = payload.reportType === 'CLOSING' ? 'สรุปปิดร้าน' : 'สรุปยอดตามเวลา'
   const lines = [
     `🦆 DuckPOS · ${title}`,

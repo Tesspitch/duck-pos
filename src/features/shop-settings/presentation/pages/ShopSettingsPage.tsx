@@ -2,17 +2,21 @@ import { useState, type FormEvent } from 'react'
 
 import { useActiveShop } from '../../../shop-context/application/active-shop-context'
 import { shopBrandingSchema } from '../../application/shop-branding-schema'
+import { useShopSettingsServices } from '../../application/shop-settings-context'
 import { useShopSettings } from '../../application/use-shop-settings'
 import { AppShell } from '../../../../shared/presentation/AppShell'
 
 export function ShopSettingsPage() {
   const { activeMembership: membership } = useActiveShop()
+  const { locationCaptureService } = useShopSettingsServices()
   const { settings, location, save, saveLocation } = useShopSettings(membership?.shop_id)
   const [name, setName] = useState<string | null>(null)
   const [logoFile, setLogoFile] = useState<File | null>(null)
   const [message, setMessage] = useState<string | null>(null)
   const [latitude, setLatitude] = useState<string | null>(null)
   const [longitude, setLongitude] = useState<string | null>(null)
+  const [isLocating, setIsLocating] = useState(false)
+  const [locationMessage, setLocationMessage] = useState<string | null>(null)
 
   async function submit(event: FormEvent) {
     event.preventDefault()
@@ -36,16 +40,31 @@ export function ShopSettingsPage() {
     const lat = Number(latitude ?? location.data?.latitude)
     const lng = Number(longitude ?? location.data?.longitude)
     if (!Number.isFinite(lat) || lat < -90 || lat > 90 || !Number.isFinite(lng) || lng < -180 || lng > 180) {
-      setMessage('พิกัดร้านไม่ถูกต้อง')
+      setLocationMessage('พิกัดร้านไม่ถูกต้อง')
       return
     }
     try {
       const saved = await saveLocation.mutateAsync({ latitude: lat, longitude: lng })
       setLatitude(String(saved.latitude))
       setLongitude(String(saved.longitude))
-      setMessage('บันทึกพิกัดร้านแล้ว')
+      setLocationMessage('บันทึกพิกัดร้านแล้ว')
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : 'บันทึกพิกัดไม่สำเร็จ')
+      setLocationMessage(error instanceof Error ? error.message : 'บันทึกพิกัดไม่สำเร็จ')
+    }
+  }
+
+  async function captureCurrentLocation() {
+    setIsLocating(true)
+    setLocationMessage(null)
+    try {
+      const current = await locationCaptureService.capture()
+      setLatitude(current.latitude.toFixed(6))
+      setLongitude(current.longitude.toFixed(6))
+      setLocationMessage(`กรอกตำแหน่งปัจจุบันแล้ว ความแม่นยำประมาณ ${Math.round(current.accuracyM)} เมตร กรุณาตรวจสอบแล้วกดบันทึก`)
+    } catch (error) {
+      setLocationMessage(error instanceof Error ? error.message : 'ไม่สามารถอ่านตำแหน่งปัจจุบันได้')
+    } finally {
+      setIsLocating(false)
     }
   }
 
@@ -82,11 +101,13 @@ export function ShopSettingsPage() {
             <div><h2 className="text-lg font-bold">พิกัดสำหรับ QR Ordering</h2><p className="text-sm text-muted">ลูกค้าต้องอยู่ภายในรัศมี 100 เมตรจากพิกัดนี้</p></div>
             {location.isLoading ? <p>กำลังโหลดพิกัด…</p> : null}
             {location.isError ? <p role="alert" className="text-sm text-red-700">โหลดพิกัดไม่สำเร็จ: {location.error.message}</p> : null}
+            <button type="button" disabled={isLocating} onClick={() => void captureCurrentLocation()} className="min-h-11 rounded-lg bg-brand-soft px-4 font-semibold text-brand-action disabled:opacity-50">{isLocating ? 'กำลังค้นหาตำแหน่ง…' : '📍 ใช้ตำแหน่งปัจจุบัน'}</button>
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="grid gap-1 text-sm font-medium">Latitude<input type="number" step="0.000001" value={latitude ?? location.data?.latitude ?? ''} onChange={(event) => setLatitude(event.target.value)} className="rounded-lg border border-line px-3" /></label>
               <label className="grid gap-1 text-sm font-medium">Longitude<input type="number" step="0.000001" value={longitude ?? location.data?.longitude ?? ''} onChange={(event) => setLongitude(event.target.value)} className="rounded-lg border border-line px-3" /></label>
             </div>
             <button disabled={saveLocation.isPending} className="rounded-lg border border-brand-action px-4 font-semibold text-brand-action disabled:opacity-50">{saveLocation.isPending ? 'กำลังบันทึก…' : 'บันทึกพิกัดร้าน'}</button>
+            {locationMessage ? <p role="status" className="text-sm text-muted">{locationMessage}</p> : null}
           </form>
         </section>
       </main>

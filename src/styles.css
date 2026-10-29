@@ -1,5 +1,12 @@
 @import "tailwindcss";
 
+@media print {
+  body * { visibility: hidden; }
+  .qr-print-card, .qr-print-card * { visibility: visible; }
+  .qr-print-card { position: absolute; inset: 0; width: 100%; border: 0; }
+  .qr-hide-on-print { display: none !important; }
+}
+
 @theme {
   --color-brand: #f97316;
   --color-brand-action: #c2410c;

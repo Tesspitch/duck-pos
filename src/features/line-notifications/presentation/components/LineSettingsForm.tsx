@@ -9,7 +9,6 @@ interface Props {
 }
 
 export function LineSettingsForm({ settings, pending, onSave }: Props) {
-  const [closing, setClosing] = useState(settings.closingReportEnabled)
   const [periodic, setPeriodic] = useState(settings.periodicReportEnabled)
   const [times, setTimes] = useState(settings.reportTimes)
 
@@ -17,7 +16,7 @@ export function LineSettingsForm({ settings, pending, onSave }: Props) {
 
   return <section className="rounded-2xl border border-line p-4">
     <h2 className="text-lg font-bold">ตั้งเวลารายงาน</h2>
-    <label className="mt-3 flex min-h-11 items-center gap-3"><input type="checkbox" checked={closing} onChange={(event) => setClosing(event.target.checked)} /> ส่งรายงานเมื่อปิดร้าน</label>
+    <p className="mt-3 rounded-xl bg-brand-soft p-3 text-sm">ระบบจะแจ้งเมื่อเปิดร้าน และส่งรายงานปิดร้านทุกครั้ง แม้ไม่มีออเดอร์หรือยอดขาย</p>
     <label className="flex min-h-11 items-center gap-3"><input type="checkbox" checked={periodic} onChange={(event) => setPeriodic(event.target.checked)} /> ส่งรายงานสะสมตามเวลา</label>
     {periodic ? <div className="mt-3 space-y-2">
       <p className="text-sm text-muted">เวลาตาม timezone ของร้าน สูงสุด 6 รอบต่อวัน</p>
@@ -27,7 +26,7 @@ export function LineSettingsForm({ settings, pending, onSave }: Props) {
       </div>)}
       <button type="button" disabled={times.length >= 6} onClick={addTime} className="rounded-lg border border-line px-3 disabled:opacity-50">เพิ่มเวลา</button>
     </div> : null}
-    <button type="button" disabled={pending || (periodic && normalizeReportTimes(times).length === 0)} onClick={() => onSave({ closingReportEnabled: closing, periodicReportEnabled: periodic, reportTimes: normalizeReportTimes(times) })} className="mt-4 w-full rounded-xl bg-brand-action px-4 font-bold text-white disabled:opacity-50">{pending ? 'กำลังบันทึก…' : 'บันทึกการแจ้งเตือน'}</button>
+    <button type="button" disabled={pending || (periodic && normalizeReportTimes(times).length === 0)} onClick={() => onSave({ closingReportEnabled: true, periodicReportEnabled: periodic, reportTimes: normalizeReportTimes(times) })} className="mt-4 w-full rounded-xl bg-brand-action px-4 font-bold text-white disabled:opacity-50">{pending ? 'กำลังบันทึก…' : 'บันทึกการแจ้งเตือน'}</button>
   </section>
 }
 

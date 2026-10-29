@@ -1,11 +1,13 @@
 import { createContext, useContext } from 'react'
 
 import type { ShopLogoService } from './shop-logo-service'
+import type { ShopLocationCaptureService } from './shop-location-capture-service'
 import type { ShopSettingsRepository } from './shop-settings-repository'
 
 interface ShopSettingsServices {
   repository: ShopSettingsRepository
   logoService: ShopLogoService
+  locationCaptureService: ShopLocationCaptureService
 }
 
 export const ShopSettingsContext = createContext<ShopSettingsServices | null>(null)

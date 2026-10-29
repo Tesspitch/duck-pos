@@ -31,5 +31,5 @@ skip_nonce_check = false
 verify_jwt = false
 
 [functions.line-notification-worker]
-verify_jwt = false
+verify_jwt = true
 

@@ -93,6 +93,14 @@ export function AppShell({ children }: PropsWithChildren) {
             ) : null}
             {isOwner ? (
               <Link
+                to="/settings/qr"
+                className="inline-flex items-center rounded-lg px-3 text-sm font-medium text-ink hover:bg-brand-soft"
+              >
+                QR ร้าน
+              </Link>
+            ) : null}
+            {isOwner ? (
+              <Link
                 to="/settings/line"
                 className="inline-flex items-center rounded-lg px-3 text-sm font-medium text-ink hover:bg-brand-soft"
               >

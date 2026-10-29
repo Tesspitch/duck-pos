@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 create temporary table phase7_tap_results (result text) on commit drop;
-insert into phase7_tap_results select plan(26);
+insert into phase7_tap_results select plan(29);
 
 insert into phase7_tap_results select has_table('public', 'line_subscriptions', 'line subscriptions table exists');
 insert into phase7_tap_results select has_table('public', 'notification_settings', 'notification settings table exists');
@@ -63,19 +63,32 @@ insert into phase7_tap_results select is((select status::text from public.line_s
 
 insert into public.store_sessions (id, shop_id, business_date, opened_at, opened_by)
 select 'eeeeeeee-0000-0000-0000-000000000002', 'eeeeeeee-0000-0000-0000-000000000001', '2026-10-29', '2026-10-29 08:00+07', user_id from line_test_context;
+insert into phase7_tap_results select is((select count(*)::integer from public.sales_report_runs where report_type = 'OPENING' and shop_id = 'eeeeeeee-0000-0000-0000-000000000001'), 1, 'opening creates one notification run');
+insert into phase7_tap_results select is((select (payload->'cumulative'->>'collectedSatang')::bigint from public.sales_report_runs where report_type = 'OPENING' and shop_id = 'eeeeeeee-0000-0000-0000-000000000001'), 0::bigint, 'opening payload starts with zero sales');
 update public.store_sessions set status = 'CLOSED', closed_at = '2026-10-29 20:00+07', closed_by = (select user_id from line_test_context)
 where id = 'eeeeeeee-0000-0000-0000-000000000002';
 
 insert into phase7_tap_results select is((select count(*)::integer from public.sales_report_runs where report_type = 'CLOSING' and shop_id = 'eeeeeeee-0000-0000-0000-000000000001'), 1, 'closing creates one report run');
+insert into phase7_tap_results select is((select (payload->'cumulative'->>'collectedSatang')::bigint from public.sales_report_runs where report_type = 'CLOSING' and shop_id = 'eeeeeeee-0000-0000-0000-000000000001'), 0::bigint, 'closing report keeps zero-sales sessions');
 insert into phase7_tap_results select is((select count(*)::integer from public.notification_jobs where report_run_id in (
   select id from public.sales_report_runs where shop_id = 'eeeeeeee-0000-0000-0000-000000000001'
-)), 1, 'closing creates one job for the approved subscriber');
+)), 2, 'opening and closing create jobs for the approved subscriber');
 
 create temporary table claimed_line_job on commit drop as
 select * from public.claim_line_notification_jobs(10);
-insert into phase7_tap_results select is((select count(*)::integer from claimed_line_job), 1, 'worker atomically claims the due job');
+insert into phase7_tap_results select is((
+  select count(*)::integer from claimed_line_job as claimed
+  join public.notification_jobs as job on job.id = claimed.job_id
+  join public.sales_report_runs as run on run.id = job.report_run_id
+  where run.shop_id = 'eeeeeeee-0000-0000-0000-000000000001'
+), 2, 'worker atomically claims the due jobs');
 insert into phase7_tap_results select lives_ok(
-  $$select public.complete_line_notification_job((select job_id from claimed_line_job), true, null)$$,
+  $$select public.complete_line_notification_job((
+    select claimed.job_id from claimed_line_job as claimed
+    join public.notification_jobs as job on job.id = claimed.job_id
+    join public.sales_report_runs as run on run.id = job.report_run_id
+    where run.shop_id = 'eeeeeeee-0000-0000-0000-000000000001' and claimed.report_type = 'CLOSING'
+  ), true, null)$$,
   'worker records successful delivery'
 );
 insert into phase7_tap_results select is((select status::text from public.sales_report_runs where report_type = 'CLOSING' and shop_id = 'eeeeeeee-0000-0000-0000-000000000001'), 'SENT', 'report run is marked sent');

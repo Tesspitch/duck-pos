@@ -32,26 +32,26 @@ insert into public.notification_jobs (id, report_run_id, subscription_id)
 values ('ffffffff-0000-0000-0000-000000000004', 'ffffffff-0000-0000-0000-000000000003', 'ffffffff-0000-0000-0000-000000000002');
 
 insert into phase7_dispatch_results select is(
-  (select count(*)::integer from public.notification_dispatch_signals where reason = 'NEW_REPORT'),
+  (select count(*)::integer from public.notification_dispatch_signals where dedupe_key = 'report:ffffffff-0000-0000-0000-000000000003'),
   1, 'new report creates one dispatch signal'
 );
 insert into public.notification_jobs (id, report_run_id, subscription_id)
 values ('ffffffff-0000-0000-0000-000000000005', 'ffffffff-0000-0000-0000-000000000003', 'ffffffff-0000-0000-0000-000000000002')
 on conflict (report_run_id, subscription_id) do nothing;
 insert into phase7_dispatch_results select is(
-  (select count(*)::integer from public.notification_dispatch_signals where reason = 'NEW_REPORT'),
+  (select count(*)::integer from public.notification_dispatch_signals where dedupe_key = 'report:ffffffff-0000-0000-0000-000000000003'),
   1, 'report signal is deduplicated'
 );
 insert into phase7_dispatch_results select is(
-  public.enqueue_due_line_retry_signal(now()), false, 'empty retry queue does not create a signal'
+  public.enqueue_due_line_retry_signal('2000-01-01 00:00+00'), false, 'empty retry queue does not create a signal'
 );
-update public.notification_jobs set status = 'RETRY', attempts = 1, next_attempt_at = now() - interval '1 minute'
+update public.notification_jobs set status = 'RETRY', attempts = 1, next_attempt_at = '2999-12-31 23:59+00'
 where id = 'ffffffff-0000-0000-0000-000000000004';
 insert into phase7_dispatch_results select is(
-  public.enqueue_due_line_retry_signal('2026-10-29 12:00+07'), true, 'due retry creates a signal'
+  public.enqueue_due_line_retry_signal('3000-01-01 00:00+00'), true, 'due retry creates a signal'
 );
 insert into phase7_dispatch_results select is(
-  public.enqueue_due_line_retry_signal('2026-10-29 12:00+07'), false, 'retry signal is deduplicated per minute'
+  public.enqueue_due_line_retry_signal('3000-01-01 00:00+00'), false, 'retry signal is deduplicated per minute'
 );
 
 insert into phase7_dispatch_results select * from finish();

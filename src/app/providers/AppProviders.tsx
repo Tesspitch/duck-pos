@@ -22,8 +22,11 @@ import { supabaseProfileRepository } from '../../features/profile/infrastructure
 import { SalesAnalyticsProvider } from '../../features/sales-analytics/application/SalesAnalyticsProvider'
 import { browserSalesCsvExporter } from '../../features/sales-analytics/infrastructure/browser-sales-csv-exporter'
 import { supabaseSalesAnalyticsRepository } from '../../features/sales-analytics/infrastructure/supabase-sales-analytics-repository'
+import { QrCodeServiceProvider } from '../../features/shop-qr/application/QrCodeServiceProvider'
+import { browserQrCodeService } from '../../features/shop-qr/infrastructure/browser-qr-code-service'
 import { ShopSettingsProvider } from '../../features/shop-settings/application/ShopSettingsProvider'
 import { supabaseShopLogoService } from '../../features/shop-settings/infrastructure/supabase-shop-logo-service'
+import { browserShopLocationCaptureService } from '../../features/shop-settings/infrastructure/browser-shop-location-capture-service'
 import { supabaseShopSettingsRepository } from '../../features/shop-settings/infrastructure/supabase-shop-settings-repository'
 import { ActiveShopProvider } from '../../features/shop-context/application/ActiveShopProvider'
 import { ShopOnboardingRepositoryProvider } from '../../features/shop-onboarding/application/ShopOnboardingRepositoryProvider'
@@ -60,6 +63,7 @@ export function AppProviders({ children }: PropsWithChildren) {
                     <ShopSettingsProvider
                       repository={supabaseShopSettingsRepository}
                       logoService={supabaseShopLogoService}
+                      locationCaptureService={browserShopLocationCaptureService}
                     >
                       <CustomerOrderingRepositoryProvider repository={supabaseCustomerOrderingRepository}>
                         <CustomerLocationServiceProvider service={browserCustomerLocationService}>
@@ -67,7 +71,9 @@ export function AppProviders({ children }: PropsWithChildren) {
                             <StoreManagementProvider repository={supabaseStoreManagementRepository} realtime={supabaseStoreManagementRealtime}>
                               <SalesAnalyticsProvider repository={supabaseSalesAnalyticsRepository} csvExporter={browserSalesCsvExporter}>
                                 <LineNotificationProvider repository={supabaseLineNotificationRepository}>
-                                  <BrowserRouter>{children}</BrowserRouter>
+                                  <QrCodeServiceProvider service={browserQrCodeService}>
+                                    <BrowserRouter>{children}</BrowserRouter>
+                                  </QrCodeServiceProvider>
                                 </LineNotificationProvider>
                               </SalesAnalyticsProvider>
                             </StoreManagementProvider>

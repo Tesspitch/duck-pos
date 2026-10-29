@@ -76,6 +76,9 @@ const SalesAnalyticsPage = lazy(() =>
 const LineNotificationPage = lazy(() =>
   import('../features/line-notifications/presentation/pages/LineNotificationPage').then((module) => ({ default: module.LineNotificationPage })),
 )
+const ShopQrPage = lazy(() =>
+  import('../features/shop-qr/presentation/pages/ShopQrPage').then((module) => ({ default: module.ShopQrPage })),
+)
 
 export function App() {
   return (
@@ -146,6 +149,14 @@ export function App() {
           element={
             <AuthGate requireOwner>
               <SalesAnalyticsPage />
+            </AuthGate>
+          }
+        />
+        <Route
+          path="/settings/qr"
+          element={
+            <AuthGate requireOwner>
+              <ShopQrPage />
             </AuthGate>
           }
         />

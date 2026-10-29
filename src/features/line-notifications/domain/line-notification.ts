@@ -1,5 +1,5 @@
 export type LineSubscriptionStatus = 'PENDING' | 'APPROVED' | 'REVOKED'
-export type LineReportType = 'CLOSING' | 'PERIODIC'
+export type LineReportType = 'OPENING' | 'CLOSING' | 'PERIODIC'
 export type ReportRunStatus = 'QUEUED' | 'SENDING' | 'SENT' | 'PARTIAL' | 'FAILED' | 'NO_RECIPIENT'
 
 export interface LineNotificationSettings {

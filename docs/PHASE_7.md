@@ -7,6 +7,7 @@
 - Signed LINE webhook receives Shop ID and creates a pending subscription request
 - Owner page manages closing/periodic settings, approvals, revocations and delivery history
 - Store close atomically creates a closing report run without calling LINE synchronously
+- Store open creates a status notification, and store close always creates a sales report including zero-sales sessions
 - Worker enqueues due periodic reports, claims jobs safely and sends LINE push messages
 - Retry, stale-job recovery, idempotency and notification logs are persisted in PostgreSQL
 
@@ -39,7 +40,8 @@
 - Local build passes
 - Unit tests pass 16/16 across 7 test files
 - Production migrations `018` and enum-cast repair `019` applied successfully
-- Hosted pgTAP schema, RBAC, webhook flow, closing job, worker completion and periodic deduplication passed 26/26
+- Hosted pgTAP schema, RBAC, webhook flow, opening/closing jobs, zero-sales report, worker completion and periodic deduplication passed 29/29
+- Event dispatch and pending/retry recovery pgTAP passed 8/8
 - Browser smoke remains pending until the Edge Functions and secrets are configured
 
 ## Remaining operational steps
