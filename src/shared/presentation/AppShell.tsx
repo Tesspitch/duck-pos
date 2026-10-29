@@ -45,6 +45,22 @@ export function AppShell({ children }: PropsWithChildren) {
             ) : null}
             {memberships.length > 0 ? (
               <Link
+                to="/pos"
+                className="inline-flex items-center rounded-lg px-3 text-sm font-medium text-ink hover:bg-brand-soft"
+              >
+                POS
+              </Link>
+            ) : null}
+            {memberships.length > 0 ? (
+              <Link
+                to="/queue"
+                className="inline-flex items-center rounded-lg px-3 text-sm font-medium text-ink hover:bg-brand-soft"
+              >
+                คิว
+              </Link>
+            ) : null}
+            {memberships.length > 0 ? (
+              <Link
                 to="/catalog"
                 className="inline-flex items-center rounded-lg px-3 text-sm font-medium text-ink hover:bg-brand-soft"
               >
@@ -57,6 +73,30 @@ export function AppShell({ children }: PropsWithChildren) {
                 className="inline-flex items-center rounded-lg px-3 text-sm font-medium text-ink hover:bg-brand-soft"
               >
                 Platform Admin
+              </Link>
+            ) : null}
+            {isOwner ? (
+              <Link
+                to="/store"
+                className="inline-flex items-center rounded-lg px-3 text-sm font-medium text-ink hover:bg-brand-soft"
+              >
+                เปิด–ปิดร้าน
+              </Link>
+            ) : null}
+            {isOwner ? (
+              <Link
+                to="/reports"
+                className="inline-flex items-center rounded-lg px-3 text-sm font-medium text-ink hover:bg-brand-soft"
+              >
+                รายงาน
+              </Link>
+            ) : null}
+            {isOwner ? (
+              <Link
+                to="/settings/line"
+                className="inline-flex items-center rounded-lg px-3 text-sm font-medium text-ink hover:bg-brand-soft"
+              >
+                LINE
               </Link>
             ) : null}
             {isOwner ? (

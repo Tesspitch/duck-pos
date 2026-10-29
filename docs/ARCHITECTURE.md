@@ -80,8 +80,33 @@ src/
 │   │   ├── application/                  # Settings/image ports และ orchestration
 │   │   ├── infrastructure/               # Supabase RPC/storage และ logo optimizer
 │   │   └── presentation/                 # Shop Settings page
-│   └── shop-context/                     # Active shop selection สำหรับหลายสาขา
-│       └── application/                  # Context/provider และ local preference
+│   ├── shop-context/                     # Active shop selection สำหรับหลายสาขา
+│   │   └── application/                  # Context/provider และ local preference
+│   ├── customer-ordering/                # Public QR menu, cart, checkout และ tracking
+│   │   ├── domain/                       # Public menu/order/cart models
+│   │   ├── application/                  # Repository/location ports, Zustand และ queries
+│   │   ├── infrastructure/               # Supabase Edge/RPC และ Geolocation adapters
+│   │   └── presentation/                 # Public menu, cart และ tracking pages
+│   ├── staff-orders/                     # Staff POS, queue, payment และ realtime
+│   │   ├── domain/                       # Order/payment/cart business models
+│   │   ├── application/                  # Ports, use cases, cache และ cart state
+│   │   ├── infrastructure/               # Supabase RPC และ Realtime adapters
+│   │   └── presentation/                 # POS/Queue pages และ touch components
+│   ├── store-management/                 # Owner store sessions และ history
+│   │   ├── domain/                       # Session/history models และ close rules
+│   │   ├── application/                  # Repository/realtime ports และ use cases
+│   │   ├── infrastructure/               # Supabase RPC และ Realtime adapters
+│   │   └── presentation/                 # Store control และ history UI
+│   ├── sales-analytics/                  # Owner dashboard, sales history และ CSV
+│       ├── domain/                       # Report models, range rules และ CSV serialization
+│       ├── application/                  # Repository/export ports และ cached queries
+│       ├── infrastructure/               # Aggregate RPC adapter และ browser CSV export
+│       └── presentation/                 # Metrics, filters, breakdown และ paginated history
+│   └── line-notifications/               # LINE subscription และ sales reports
+│       ├── domain/                       # Subscription/settings/run models และ schedule rules
+│       ├── application/                  # Owner management port และ cached mutations
+│       ├── infrastructure/               # Supabase LINE management RPC adapter
+│       └── presentation/                 # Settings, approval และ delivery history UI
 ├── lib/
 │   ├── env.ts                           # ตรวจ environment variables
 │   └── supabase.ts                      # สร้าง Supabase client เพียงจุดเดียว
@@ -101,7 +126,18 @@ supabase/migrations/
 ├── 202610280007_phase_2_catalog_commands.sql    # Catalog RPC และ audit commands
 ├── 202610280008_phase_2_catalog_security_and_storage.sql # RLS, grants, Storage bucket/policies
 ├── 202610280009_profile_and_shop_branding.sql    # Profile RPC, shop logo, Storage policies
-└── 202610280010_multi_shop_and_self_membership_protection.sql # Multi-shop และ membership guard
+├── 202610280010_multi_shop_and_self_membership_protection.sql # Multi-shop และ membership guard
+├── 202610280011_phase_3_ordering_schema.sql # Sessions, orders, queue และ tracking schema
+├── 202610280012_phase_3_public_ordering_api.sql # Public menu, checkout, geofence, rate limit
+├── 202610280013_phase_3_shop_location_command.sql # Owner location RPC
+├── 202610280014_phase_4_staff_pos_queue.sql # POS, queue, payment และ realtime
+├── 202610280015_phase_5_store_management.sql # Store sessions, history และ atomic close
+├── 202610290016_phase_6_sales_analytics.sql # Aggregate dashboard และ paginated sales history
+├── 202610290017_apply_toppings_to_category.sql # Atomic option-group merge ภายในหมวดหมู่
+├── 202610290018_phase_7_line_notifications.sql # LINE subscriptions, report jobs, retry และ logs
+├── 202610290019_phase_7_enum_cast_fix.sql # Explicit enum casts discovered by hosted flow test
+├── 202610290020_phase_7_event_driven_dispatch.sql # Event outbox และ conditional retry wake-up
+└── 202610290021_phase_7_conditional_cron.sql # Lightweight due-work database cron
 ```
 
 Migration แยกตาม concern แต่ละไฟล์ยังเป็น transaction ของตัวเองและเรียงลำดับ dependency ด้วย timestamp

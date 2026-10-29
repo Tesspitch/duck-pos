@@ -18,6 +18,7 @@ export interface CatalogRepository {
   deleteOptionGroup(shopId: string, optionGroupId: string): Promise<void>
   saveProductOption(input: SaveProductOptionInput): Promise<string>
   deleteProductOption(shopId: string, productOptionId: string): Promise<void>
+  applyOptionGroupToCategory(shopId: string, optionGroupId: string): Promise<import('../domain/catalog').ApplyOptionGroupResult>
   setProductOptionAvailability(
     shopId: string,
     productOptionId: string,

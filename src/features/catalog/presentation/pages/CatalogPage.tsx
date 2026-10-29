@@ -25,6 +25,10 @@ export function CatalogPage() {
     () => categories.flatMap((category) => category.products).find((product) => product.id === optionsProductId) ?? null,
     [categories, optionsProductId],
   )
+  const optionsCategoryProductCount = useMemo(
+    () => categories.find((category) => category.id === optionsProduct?.categoryId)?.products.length ?? 0,
+    [categories, optionsProduct?.categoryId],
+  )
   const busy = Object.values(actions).some((action) => action.isPending)
 
   if (!shopId) return null
@@ -58,12 +62,14 @@ export function CatalogPage() {
           <ProductOptionsEditor
             shopId={shopId}
             product={optionsProduct}
+            categoryProductCount={optionsCategoryProductCount}
             busy={busy}
             onClose={() => setOptionsProductId(null)}
             onSaveGroup={(input) => actions.saveOptionGroup.mutateAsync(input).then(() => undefined)}
             onDeleteGroup={(id) => actions.deleteOptionGroup.mutateAsync(id)}
             onSaveOption={(input) => actions.saveProductOption.mutateAsync(input).then(() => undefined)}
             onDeleteOption={(id) => actions.deleteProductOption.mutateAsync(id)}
+            onApplyGroup={(id) => actions.applyOptionGroupToCategory.mutateAsync(id)}
           />
         ) : null}
 

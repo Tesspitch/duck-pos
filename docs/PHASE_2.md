@@ -1,5 +1,7 @@
 # Phase 2 — Product Catalog
 
+**Status:** Completed — 28 ตุลาคม 2026
+
 ## สรุป
 
 Phase 2 เพิ่มระบบจัดการหมวดหมู่ สินค้า กลุ่มตัวเลือก ท็อปปิง รูปสินค้า และสถานะพร้อมขาย โดยไม่รวม public customer menu หรือ checkout ซึ่งเป็น Phase 3
@@ -39,6 +41,15 @@ Phase 2 เพิ่มระบบจัดการหมวดหมู่ �
 - Unit test การแปลงเงินบาทเป็นสตางค์
 - pgTAP ตรวจ schema, RLS, table grants, RPC grants และ Storage bucket
 - Hosted Supabase smoke test หลัง apply migrations
+
+## ผล Quality Gate
+
+- Production build ผ่าน
+- ESLint ผ่าน
+- Unit tests ผ่าน 7/7
+- Hosted Supabase pgTAP ผ่าน 33/33 assertions
+- Smoke test ผ่าน: Profile, Active Shop, Multi-shop switching, Catalog, Shop Settings และ Self-revocation UI guard
+- ยืนยัน migration `006–010` บน Hosted Supabase แล้ว
 
 ## ข้อสมมติ
 

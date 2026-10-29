@@ -27,3 +27,9 @@ client_id = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID)"
 secret = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_SECRET)"
 skip_nonce_check = false
 
+[functions.line-webhook]
+verify_jwt = false
+
+[functions.line-notification-worker]
+verify_jwt = false
+

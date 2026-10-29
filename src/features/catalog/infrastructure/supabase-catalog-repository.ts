@@ -246,6 +246,15 @@ export const supabaseCatalogRepository: CatalogRepository = {
     if (error) throw error
   },
 
+  async applyOptionGroupToCategory(shopId, optionGroupId) {
+    const { data, error } = await supabase.rpc('apply_option_group_to_category', {
+      target_shop_id: shopId,
+      source_option_group_id: optionGroupId,
+    })
+    if (error) throw error
+    return data
+  },
+
   async setProductOptionAvailability(shopId, productOptionId, available) {
     const { error } = await supabase.rpc('set_product_option_availability', {
       target_shop_id: shopId,

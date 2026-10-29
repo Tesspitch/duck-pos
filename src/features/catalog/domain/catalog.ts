@@ -87,3 +87,11 @@ export interface SaveProductOptionInput {
   isVisible: boolean
   isAvailable: boolean
 }
+
+export interface ApplyOptionGroupResult {
+  targetProductCount: number
+  createdGroupCount: number
+  updatedGroupCount: number
+  insertedOptionCount: number
+  updatedOptionCount: number
+}

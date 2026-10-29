@@ -19,6 +19,13 @@ export function useShopSettings(shopId: string | undefined) {
     queryFn: () => repository.get(shopId!),
   })
 
+  const location = useQuery({
+    queryKey: [...queryKey, 'location'],
+    enabled: Boolean(shopId),
+    staleTime: 5 * 60_000,
+    queryFn: () => repository.getLocation(shopId!),
+  })
+
   const save = useMutation({
     mutationFn: async ({ name, logoFile }: { name: string; logoFile: File | null }) => {
       if (!shopId) throw new Error('ไม่พบร้าน')
@@ -45,5 +52,13 @@ export function useShopSettings(shopId: string | undefined) {
     },
   })
 
-  return { settings, save }
+  const saveLocation = useMutation({
+    mutationFn: ({ latitude, longitude }: { latitude: number; longitude: number }) => {
+      if (!shopId) throw new Error('ไม่พบร้าน')
+      return repository.saveLocation(shopId, latitude, longitude)
+    },
+    onSuccess: (saved) => queryClient.setQueryData([...queryKey, 'location'], saved),
+  })
+
+  return { settings, location, save, saveLocation }
 }

@@ -12,3 +12,9 @@ export interface SaveShopBrandingInput {
   name: string
   logoPath: string | null
 }
+
+export interface ShopLocation {
+  latitude: number
+  longitude: number
+  radiusM: 100
+}

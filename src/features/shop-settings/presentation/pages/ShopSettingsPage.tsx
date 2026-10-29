@@ -7,10 +7,12 @@ import { AppShell } from '../../../../shared/presentation/AppShell'
 
 export function ShopSettingsPage() {
   const { activeMembership: membership } = useActiveShop()
-  const { settings, save } = useShopSettings(membership?.shop_id)
+  const { settings, location, save, saveLocation } = useShopSettings(membership?.shop_id)
   const [name, setName] = useState<string | null>(null)
   const [logoFile, setLogoFile] = useState<File | null>(null)
   const [message, setMessage] = useState<string | null>(null)
+  const [latitude, setLatitude] = useState<string | null>(null)
+  const [longitude, setLongitude] = useState<string | null>(null)
 
   async function submit(event: FormEvent) {
     event.preventDefault()
@@ -26,6 +28,24 @@ export function ShopSettingsPage() {
       setMessage('บันทึกการตั้งค่าร้านแล้ว')
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'บันทึกไม่สำเร็จ')
+    }
+  }
+
+  async function submitLocation(event: FormEvent) {
+    event.preventDefault()
+    const lat = Number(latitude ?? location.data?.latitude)
+    const lng = Number(longitude ?? location.data?.longitude)
+    if (!Number.isFinite(lat) || lat < -90 || lat > 90 || !Number.isFinite(lng) || lng < -180 || lng > 180) {
+      setMessage('พิกัดร้านไม่ถูกต้อง')
+      return
+    }
+    try {
+      const saved = await saveLocation.mutateAsync({ latitude: lat, longitude: lng })
+      setLatitude(String(saved.latitude))
+      setLongitude(String(saved.longitude))
+      setMessage('บันทึกพิกัดร้านแล้ว')
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'บันทึกพิกัดไม่สำเร็จ')
     }
   }
 
@@ -57,6 +77,17 @@ export function ShopSettingsPage() {
               {message ? <p role="status" className="text-sm text-muted">{message}</p> : null}
             </form>
           ) : null}
+
+          <form onSubmit={(event) => void submitLocation(event)} className="mt-8 grid gap-4 border-t border-line pt-6">
+            <div><h2 className="text-lg font-bold">พิกัดสำหรับ QR Ordering</h2><p className="text-sm text-muted">ลูกค้าต้องอยู่ภายในรัศมี 100 เมตรจากพิกัดนี้</p></div>
+            {location.isLoading ? <p>กำลังโหลดพิกัด…</p> : null}
+            {location.isError ? <p role="alert" className="text-sm text-red-700">โหลดพิกัดไม่สำเร็จ: {location.error.message}</p> : null}
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="grid gap-1 text-sm font-medium">Latitude<input type="number" step="0.000001" value={latitude ?? location.data?.latitude ?? ''} onChange={(event) => setLatitude(event.target.value)} className="rounded-lg border border-line px-3" /></label>
+              <label className="grid gap-1 text-sm font-medium">Longitude<input type="number" step="0.000001" value={longitude ?? location.data?.longitude ?? ''} onChange={(event) => setLongitude(event.target.value)} className="rounded-lg border border-line px-3" /></label>
+            </div>
+            <button disabled={saveLocation.isPending} className="rounded-lg border border-brand-action px-4 font-semibold text-brand-action disabled:opacity-50">{saveLocation.isPending ? 'กำลังบันทึก…' : 'บันทึกพิกัดร้าน'}</button>
+          </form>
         </section>
       </main>
     </AppShell>

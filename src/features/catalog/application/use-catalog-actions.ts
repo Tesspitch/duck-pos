@@ -84,6 +84,12 @@ export function useCatalogActions(shopId: string) {
     onSuccess: refresh,
   })
 
+  const applyOptionGroupToCategory = useMutation({
+    mutationFn: (optionGroupId: string) =>
+      repository.applyOptionGroupToCategory(shopId, optionGroupId),
+    onSuccess: refresh,
+  })
+
   const setProductOptionAvailability = useMutation({
     mutationFn: ({ optionId, available }: { optionId: string; available: boolean }) =>
       repository.setProductOptionAvailability(shopId, optionId, available),
@@ -100,6 +106,7 @@ export function useCatalogActions(shopId: string) {
     deleteOptionGroup,
     saveProductOption,
     deleteProductOption,
+    applyOptionGroupToCategory,
     setProductOptionAvailability,
   }
 }

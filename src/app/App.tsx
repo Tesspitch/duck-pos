@@ -51,6 +51,31 @@ const ShopSettingsPage = lazy(() =>
     default: module.ShopSettingsPage,
   })),
 )
+const PublicMenuPage = lazy(() =>
+  import('../features/customer-ordering/presentation/pages/PublicMenuPage').then((module) => ({
+    default: module.PublicMenuPage,
+  })),
+)
+const OrderTrackingPage = lazy(() =>
+  import('../features/customer-ordering/presentation/pages/OrderTrackingPage').then((module) => ({
+    default: module.OrderTrackingPage,
+  })),
+)
+const PosPage = lazy(() =>
+  import('../features/staff-orders/presentation/pages/PosPage').then((module) => ({ default: module.PosPage })),
+)
+const QueuePage = lazy(() =>
+  import('../features/staff-orders/presentation/pages/QueuePage').then((module) => ({ default: module.QueuePage })),
+)
+const StoreManagementPage = lazy(() =>
+  import('../features/store-management/presentation/pages/StoreManagementPage').then((module) => ({ default: module.StoreManagementPage })),
+)
+const SalesAnalyticsPage = lazy(() =>
+  import('../features/sales-analytics/presentation/pages/SalesAnalyticsPage').then((module) => ({ default: module.SalesAnalyticsPage })),
+)
+const LineNotificationPage = lazy(() =>
+  import('../features/line-notifications/presentation/pages/LineNotificationPage').then((module) => ({ default: module.LineNotificationPage })),
+)
 
 export function App() {
   return (
@@ -58,6 +83,8 @@ export function App() {
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/auth/callback" element={<AuthCallbackPage />} />
+        <Route path="/order/:shopId" element={<PublicMenuPage />} />
+        <Route path="/track/:token" element={<OrderTrackingPage />} />
         <Route
           path="/pending"
           element={
@@ -103,6 +130,46 @@ export function App() {
           element={
             <AuthGate requireOwner>
               <ShopSettingsPage />
+            </AuthGate>
+          }
+        />
+        <Route
+          path="/store"
+          element={
+            <AuthGate requireOwner>
+              <StoreManagementPage />
+            </AuthGate>
+          }
+        />
+        <Route
+          path="/reports"
+          element={
+            <AuthGate requireOwner>
+              <SalesAnalyticsPage />
+            </AuthGate>
+          }
+        />
+        <Route
+          path="/settings/line"
+          element={
+            <AuthGate requireOwner>
+              <LineNotificationPage />
+            </AuthGate>
+          }
+        />
+        <Route
+          path="/pos"
+          element={
+            <AuthGate>
+              <PosPage />
+            </AuthGate>
+          }
+        />
+        <Route
+          path="/queue"
+          element={
+            <AuthGate>
+              <QueuePage />
             </AuthGate>
           }
         />

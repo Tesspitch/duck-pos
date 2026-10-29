@@ -6,6 +6,7 @@ import type {
   ProductOption,
   SaveOptionGroupInput,
   SaveProductOptionInput,
+  ApplyOptionGroupResult,
 } from '../../domain/catalog'
 import { formatThaiBaht } from '../../domain/money'
 import { OptionGroupForm } from './OptionGroupForm'
@@ -14,26 +15,39 @@ import { ProductOptionForm } from './ProductOptionForm'
 interface ProductOptionsEditorProps {
   shopId: string
   product: Product
+  categoryProductCount: number
   busy: boolean
   onClose: () => void
   onSaveGroup: (input: SaveOptionGroupInput) => Promise<void>
   onDeleteGroup: (groupId: string) => Promise<void>
   onSaveOption: (input: SaveProductOptionInput) => Promise<void>
   onDeleteOption: (optionId: string) => Promise<void>
+  onApplyGroup: (groupId: string) => Promise<ApplyOptionGroupResult>
 }
 
 export function ProductOptionsEditor({
   shopId,
   product,
+  categoryProductCount,
   busy,
   onClose,
   onSaveGroup,
   onDeleteGroup,
   onSaveOption,
   onDeleteOption,
+  onApplyGroup,
 }: ProductOptionsEditorProps) {
   const [editingGroup, setEditingGroup] = useState<OptionGroup | null>(null)
   const [editingOption, setEditingOption] = useState<ProductOption | null>(null)
+  const [applyMessage, setApplyMessage] = useState<string | null>(null)
+
+  async function applyGroup(group: OptionGroup) {
+    const targetCount = Math.max(0, categoryProductCount - 1)
+    if (!window.confirm(`นำกลุ่ม “${group.name}” และท็อปปิงทั้งหมดไปใช้กับอีก ${targetCount} เมนูในหมวดหมู่เดียวกัน? รายการชื่อเดียวกันจะถูกอัปเดต`)) return
+    setApplyMessage(null)
+    const result = await onApplyGroup(group.id)
+    setApplyMessage(`นำไปใช้แล้ว ${result.targetProductCount} เมนู · เพิ่มกลุ่ม ${result.createdGroupCount} · เพิ่มท็อปปิง ${result.insertedOptionCount} · อัปเดตท็อปปิง ${result.updatedOptionCount}`)
+  }
 
   return (
     <section className="grid gap-4 rounded-2xl border border-brand bg-brand-soft p-4">
@@ -42,11 +56,12 @@ export function ProductOptionsEditor({
         <button type="button" onClick={onClose} className="rounded-lg border border-line bg-white px-3">ปิด</button>
       </div>
       <OptionGroupForm key={editingGroup?.id ?? 'new-group'} shopId={shopId} productId={product.id} group={editingGroup} busy={busy} onCancel={() => setEditingGroup(null)} onSave={async (input) => { await onSaveGroup(input); setEditingGroup(null) }} />
+      {applyMessage ? <p role="status" className="rounded-lg bg-green-50 p-3 text-sm font-semibold text-green-800">{applyMessage}</p> : null}
       {product.optionGroups.map((group) => (
         <article key={group.id} className="rounded-xl border border-line bg-white p-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div><h3 className="font-bold">{group.name}</h3><p className="text-sm text-muted">เลือก {group.minSelect}–{group.maxSelect} · {group.isVisible ? 'แสดงอยู่' : 'ซ่อนอยู่'}</p></div>
-            <div className="flex gap-2"><button type="button" onClick={() => setEditingGroup(group)} className="rounded-lg border border-line px-3 text-sm">แก้ไข</button><button type="button" onClick={() => { if (window.confirm('ลบกลุ่มและตัวเลือกทั้งหมดในกลุ่มนี้?')) void onDeleteGroup(group.id) }} className="rounded-lg border border-red-200 px-3 text-sm text-red-700">ลบ</button></div>
+            <div className="flex flex-wrap gap-2"><button type="button" disabled={busy || categoryProductCount <= 1} onClick={() => void applyGroup(group)} className="rounded-lg border border-brand-action px-3 text-sm font-semibold text-brand-action disabled:opacity-40">นำไปใช้กับทุกเมนูในหมวดหมู่นี้</button><button type="button" onClick={() => setEditingGroup(group)} className="rounded-lg border border-line px-3 text-sm">แก้ไข</button><button type="button" onClick={() => { if (window.confirm('ลบกลุ่มและตัวเลือกทั้งหมดในกลุ่มนี้?')) void onDeleteGroup(group.id) }} className="rounded-lg border border-red-200 px-3 text-sm text-red-700">ลบ</button></div>
           </div>
           <div className="mt-3 grid gap-2">
             {group.options.map((option) => (

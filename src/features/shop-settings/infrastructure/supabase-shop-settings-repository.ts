@@ -43,4 +43,28 @@ export const supabaseShopSettingsRepository: ShopSettingsRepository = {
     if (error) throw error
     return mapShop(data as ShopRow)
   },
+
+  async getLocation(shopId) {
+    const { data, error } = await supabase
+      .from('shop_locations')
+      .select('latitude, longitude, geofence_radius_m')
+      .eq('shop_id', shopId)
+      .maybeSingle()
+    if (error) throw error
+    return data ? {
+      latitude: Number(data.latitude),
+      longitude: Number(data.longitude),
+      radiusM: 100,
+    } : null
+  },
+
+  async saveLocation(shopId, latitude, longitude) {
+    const { data, error } = await supabase.rpc('save_shop_location', {
+      target_shop_id: shopId,
+      target_latitude: latitude,
+      target_longitude: longitude,
+    })
+    if (error) throw error
+    return { latitude: Number(data.latitude), longitude: Number(data.longitude), radiusM: 100 }
+  },
 }
