@@ -10,6 +10,8 @@ export function useSalesDashboard(shopId: string | undefined, filter: SalesDashb
     enabled: Boolean(shopId),
     queryFn: () => repository.getDashboard(shopId!, filter),
     staleTime: 60_000,
+    refetchInterval: 60_000,
+    refetchIntervalInBackground: false,
     gcTime: 10 * 60_000,
   })
 }
@@ -22,6 +24,8 @@ export function useSalesHistory(shopId: string | undefined, query: SalesHistoryQ
     queryFn: () => repository.getHistory(shopId!, query),
     placeholderData: keepPreviousData,
     staleTime: 2 * 60_000,
+    refetchInterval: 60_000,
+    refetchIntervalInBackground: false,
     gcTime: 10 * 60_000,
   })
 }

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { cartLineTotal } from './cart-store'
+import { cartLineTotal, useCartStore } from './cart-store'
 
 describe('cartLineTotal', () => {
   it('calculates option deltas and quantity in satang', () => {
@@ -17,4 +17,18 @@ describe('cartLineTotal', () => {
       ],
     })).toBe(17_000)
   })
+})
+
+it('keeps quantities finite, whole and within checkout limits', () => {
+  const line = { key: 'quantity', productId: 'p', productName: 'Kebab', basePriceSatang: 3900, quantity: 2, note: '', options: [] }
+  useCartStore.setState({ lines: [line] })
+  for (const invalid of [NaN, Infinity, -Infinity]) {
+    useCartStore.getState().changeQuantity(line.key, invalid)
+    expect(useCartStore.getState().lines[0]?.quantity).toBe(2)
+  }
+  for (const [input, expected] of [[2.5, 2], [99, 20], [0, 1], [-1, 1]] as const) {
+    useCartStore.getState().changeQuantity(line.key, input)
+    expect(useCartStore.getState().lines[0]?.quantity).toBe(expected)
+  }
+  useCartStore.getState().clear()
 })

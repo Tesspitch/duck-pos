@@ -19,6 +19,7 @@ export function PaymentPanel({ order, pending, onPay }: Props) {
   const change = method === 'CASH' ? Math.max(0, amountSatang - order.totalSatang) : 0
 
   function submit() {
+    if (pending) return
     const result = paymentSchema.safeParse({ amountBaht: amount })
     if (!result.success) return setError(result.error.issues[0]?.message ?? 'ยอดเงินไม่ถูกต้อง')
     if (method === 'BANK_TRANSFER' && amountSatang !== order.totalSatang) return setError('ยอดเงินโอนต้องเท่ากับยอดออเดอร์')
@@ -32,7 +33,7 @@ export function PaymentPanel({ order, pending, onPay }: Props) {
       <p className="font-semibold">บันทึกการชำระเงิน</p>
       <div className="mt-2 grid gap-2 sm:grid-cols-2">
         <label className="grid gap-1 text-sm">วิธีชำระ
-          <select value={method} onChange={(event) => {
+          <select disabled={pending} value={method} onChange={(event) => {
             const value = event.target.value as PaymentMethod
             setMethod(value)
             if (value === 'BANK_TRANSFER') setAmount((order.totalSatang / 100).toFixed(2))
@@ -41,13 +42,13 @@ export function PaymentPanel({ order, pending, onPay }: Props) {
           </select>
         </label>
         <label className="grid gap-1 text-sm">ยอดรับ (บาท)
-          <input type="number" min={order.totalSatang / 100} step="0.01" value={amount}
+          <input disabled={pending} inputMode="decimal" type="number" min={order.totalSatang / 100} step="0.01" value={amount}
             readOnly={method === 'BANK_TRANSFER'} onChange={(event) => setAmount(event.target.value)}
             className="rounded-lg border border-line bg-white px-3" />
         </label>
       </div>
       {method === 'CASH' ? <p className="mt-2 font-bold text-green-800">เงินทอน {money(change)}</p> : null}
-      {error ? <p className="mt-2 text-sm text-red-700">{error}</p> : null}
+      {error ? <p role="alert" className="mt-2 text-sm text-red-700">{error}</p> : null}
       <button type="button" disabled={pending} onClick={submit} className="mt-3 w-full rounded-lg bg-green-700 px-3 font-semibold text-white disabled:opacity-50">
         {pending ? 'กำลังบันทึก…' : 'ยืนยันรับชำระ'}
       </button>

@@ -1,3 +1,5 @@
+import { Icon } from '../../../../shared/presentation/Icon'
+import { ItemActions } from '../../../../shared/presentation/ItemActions'
 import type { Category, Product } from '../../domain/catalog'
 import { formatThaiBaht } from '../../domain/money'
 
@@ -43,49 +45,44 @@ export function CatalogList({
   return (
     <div className="grid gap-5">
       {visibleCategories.map((category) => (
-        <section key={category.id} className="overflow-hidden rounded-2xl border border-line bg-white">
+        <section key={category.id} className="rounded-2xl border border-line bg-white">
           <header className="flex flex-wrap items-center justify-between gap-3 bg-brand-soft px-4 py-3">
             <div>
               <h2 className="text-lg font-bold">{category.name}</h2>
               <p className="text-xs text-muted">{category.isVisible ? 'แสดงอยู่' : 'ซ่อนอยู่'}</p>
             </div>
             {isOwner ? (
-              <div className="flex gap-2">
-                <button type="button" onClick={() => onEditCategory(category)} className="rounded-lg border border-line bg-white px-3 text-sm">แก้ไข</button>
-                <button type="button" onClick={() => onDeleteCategory(category)} className="rounded-lg border border-red-200 bg-white px-3 text-sm text-red-700">ลบ</button>
-              </div>
+              <ItemActions name={`หมวด ${category.name}`} disabled={busy} onEdit={() => onEditCategory(category)} onDelete={() => onDeleteCategory(category)} />
             ) : null}
           </header>
-          <div className="grid gap-3 p-4 sm:grid-cols-2">
+          <div className="catalog-compact-grid">
             {category.products.length === 0 ? <p className="text-sm text-muted">ยังไม่มีสินค้าในหมวดนี้</p> : null}
             {category.products.map((product) => (
-              <article key={product.id} className="grid gap-3 rounded-xl border border-line p-3">
+              <article key={product.id} className="catalog-compact-card rounded border border-line">
                 <div className="flex gap-3">
                   {product.imageUrl ? (
-                    <img src={product.imageUrl} alt="" loading="lazy" className="h-20 w-20 rounded-lg object-cover" />
+                    <img src={product.imageUrl} alt="" loading="lazy" className="h-14 w-14 shrink-0 rounded object-cover" />
                   ) : (
-                    <div className="grid h-20 w-20 shrink-0 place-items-center rounded-lg bg-brand-soft text-2xl" aria-hidden="true">🌯</div>
+                    <div className="grid h-14 w-14 shrink-0 place-items-center rounded bg-brand-soft text-2xl" aria-hidden="true"><Icon name="menu" /></div>
                   )}
                   <div className="min-w-0 flex-1">
                     <div className="flex items-start justify-between gap-2">
                       <h3 className="font-bold">{product.name}</h3>
-                      <span className={`rounded-full px-2 py-1 text-xs font-semibold ${product.isAvailable ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
-                        {product.isAvailable ? 'พร้อมขาย' : 'หมด'}
-                      </span>
+                      {isOwner && <ItemActions name={`สินค้า ${product.name}`} disabled={busy} onEdit={() => onEditProduct(product)} onDelete={() => onDeleteProduct(product)} />}
                     </div>
+                      <span className={`rounded-full px-2 py-1 text-xs font-semibold ${product.isAvailable ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+                        {product.isAvailable ? '● พร้อมขาย' : '● ปิดขายอยู่'}
+                      </span>
                     <p className="mt-1 font-semibold text-brand-action">{formatThaiBaht(product.basePriceSatang)}</p>
                     {product.description ? <p className="mt-1 line-clamp-2 text-sm text-muted">{product.description}</p> : null}
                   </div>
                 </div>
-                <button type="button" disabled={busy} onClick={() => onToggleProduct(product)} className="rounded-lg border border-line px-3 text-sm font-semibold disabled:opacity-50">
-                  {product.isAvailable ? 'ปิดขายชั่วคราว' : 'เปิดขาย'}
+                <div className="catalog-compact-actions">
+                <button type="button" title={product.isAvailable ? 'หยุดรับออเดอร์สินค้านี้ทั้ง POS และ QR' : 'กลับมาเปิดรับออเดอร์สินค้านี้'} disabled={busy} aria-label={`${product.isAvailable ? 'ปิดขาย' : 'เปิดขาย'}สินค้า ${product.name}`} onClick={() => onToggleProduct(product)} className={`availability-action rounded ${product.isAvailable ? 'pause-sale' : 'resume-sale'}`}>
+                  <span aria-hidden="true">{product.isAvailable ? 'Ⅱ' : ''}</span>
+                  {product.isAvailable ? 'ปิดขายสินค้านี้' : 'เปิดขายสินค้านี้'}
                 </button>
-                {isOwner ? (
-                  <div className="flex flex-wrap gap-2">
-                    <button type="button" onClick={() => onEditProduct(product)} className="rounded-lg border border-line px-3 text-sm">แก้ไขสินค้า</button>
-                    <button type="button" onClick={() => onDeleteProduct(product)} className="rounded-lg border border-red-200 px-3 text-sm text-red-700">ลบ</button>
-                  </div>
-                ) : null}
+                </div>
               </article>
             ))}
           </div>

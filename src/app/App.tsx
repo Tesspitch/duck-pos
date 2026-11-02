@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 
 import { AuthGate } from '../features/auth/presentation/components/AuthGate'
+import { LoadingState } from '../shared/presentation/LoadingState'
 
 const AccessManagementPage = lazy(() =>
   import('../features/access-control/presentation/pages/AccessManagementPage').then((module) => ({
@@ -222,7 +223,7 @@ export function App() {
 function RouteLoading() {
   return (
     <main className="grid min-h-screen place-items-center p-6">
-      <p className="font-semibold">กำลังโหลด…</p>
+      <LoadingState label="กำลังเปิดหน้า…" />
     </main>
   )
 }

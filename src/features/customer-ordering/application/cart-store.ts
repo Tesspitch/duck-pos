@@ -20,7 +20,7 @@ export const useCartStore = create<CartState>()(persist(
     ensureShop: (shopId) => set((state) => state.shopId === shopId ? state : { shopId, lines: [] }),
     addLine: (line) => set((state) => ({ lines: [...state.lines, line] })),
     changeQuantity: (key, quantity) => set((state) => ({
-      lines: state.lines.map((line) => line.key === key ? { ...line, quantity: Math.max(1, Math.min(20, quantity)) } : line),
+      lines: state.lines.map((line) => line.key === key && Number.isFinite(quantity) ? { ...line, quantity: Math.max(1, Math.min(20, Math.trunc(quantity))) } : line),
     })),
     removeLine: (key) => set((state) => ({ lines: state.lines.filter((line) => line.key !== key) })),
     clear: () => set({ lines: [] }),

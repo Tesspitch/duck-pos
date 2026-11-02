@@ -1,3 +1,4 @@
+import { Icon } from '../../../../shared/presentation/Icon'
 import type { FormEvent } from 'react'
 
 import type { SalesHistoryQuery, SalesSessionOption } from '../../domain/sales-report'
@@ -37,7 +38,7 @@ export function SalesFilterPanel({ value, sessions, error, onChange, onSubmit }:
         <button type="button" onClick={() => quickRange(7)} className="rounded-lg border border-line bg-white px-3 text-sm font-semibold">7 วัน</button>
         <button type="button" onClick={() => quickRange(30)} className="rounded-lg border border-line bg-white px-3 text-sm font-semibold">30 วัน</button>
       </div>
-      <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <details className="mt-3" open><summary className="flex min-h-12 cursor-pointer items-center gap-2 font-semibold"><Icon name="search" /> ตัวกรองและช่วงเวลา</summary><div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <label className="grid gap-1 text-sm font-semibold">จากวันที่<input type="date" value={value.dateFrom} onChange={(event) => set('dateFrom', event.target.value)} className={selectClass} /></label>
         <label className="grid gap-1 text-sm font-semibold">ถึงวันที่<input type="date" value={value.dateTo} onChange={(event) => set('dateTo', event.target.value)} className={selectClass} /></label>
         <label className="grid gap-1 text-sm font-semibold">รอบร้าน<select value={value.storeSessionId ?? ''} onChange={(event) => set('storeSessionId', event.target.value || null)} className={selectClass}><option value="">ทุกรอบ</option>{sessions.map((session) => <option key={session.id} value={session.id}>{session.businessDate} · {session.status}</option>)}</select></label>
@@ -49,7 +50,7 @@ export function SalesFilterPanel({ value, sessions, error, onChange, onSubmit }:
         <label className="grid gap-1 text-sm font-semibold">วิธีชำระ<select value={value.paymentMethod ?? ''} onChange={(event) => set('paymentMethod', (event.target.value || null) as SalesHistoryQuery['paymentMethod'])} className={selectClass}><option value="">ทั้งหมด</option><option value="CASH">เงินสด</option><option value="BANK_TRANSFER">เงินโอน</option></select></label>
         <label className="grid gap-1 text-sm font-semibold">เรียงตาม<select value={value.sort} onChange={(event) => set('sort', event.target.value as SalesHistoryQuery['sort'])} className={selectClass}><option value="LATEST">ล่าสุด</option><option value="OLDEST">เก่าสุด</option><option value="HIGHEST_AMOUNT">ยอดสูงสุด</option><option value="LOWEST_AMOUNT">ยอดต่ำสุด</option></select></label>
         <label className="grid gap-1 text-sm font-semibold">ต่อหน้า<select value={value.pageSize} onChange={(event) => set('pageSize', Number(event.target.value))} className={selectClass}><option value="25">25</option><option value="50">50</option><option value="100">100</option></select></label>
-      </div>
+      </div></details>
       {error ? <p role="alert" className="mt-3 text-sm font-semibold text-red-700">{error}</p> : null}
       <button type="submit" className="mt-4 w-full rounded-xl bg-brand-action px-4 font-bold text-white sm:w-auto">แสดงรายงาน</button>
     </form>

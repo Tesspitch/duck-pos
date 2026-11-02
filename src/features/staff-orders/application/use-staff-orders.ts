@@ -11,6 +11,8 @@ export function useStaffOrders(shopId: string | undefined) {
     enabled: Boolean(shopId),
     staleTime: 10_000,
     gcTime: 5 * 60_000,
+    refetchInterval: 30_000,
+    refetchIntervalInBackground: false,
     queryFn: () => repository.listActive(shopId!),
   })
 }

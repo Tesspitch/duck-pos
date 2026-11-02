@@ -73,29 +73,29 @@ export function ToppingGroupForm({ shopId, categories, group, busy, onCancel, on
       <div><p className="text-sm font-semibold text-brand-action">หมวดท็อปปิง</p><h2 className="text-lg font-bold">{group ? 'แก้ไขหมวดท็อปปิง' : 'เพิ่มหมวดท็อปปิง'}</h2></div>
       {group ? <button type="button" onClick={onCancel} className="text-sm text-muted">ยกเลิก</button> : null}
     </div>
-    <label className="grid gap-1 text-sm font-medium">ชื่อหมวดท็อปปิง<input value={name} onChange={(event) => setName(event.target.value)} placeholder="เช่น เพิ่มชีส หรือ เลือกซอส" maxLength={80} className="rounded-lg border border-line px-3" /></label>
+    <label className="grid gap-1 text-sm font-medium">① ชื่อกลุ่ม<input value={name} onChange={(event) => setName(event.target.value)} placeholder="เช่น ซอส หรือ เพิ่มชีส" maxLength={80} className="rounded-lg border border-line px-3" /></label>
     <fieldset className="grid gap-2">
-      <legend className="text-sm font-semibold">ลูกค้าเลือกได้แบบไหน</legend>
+      <legend className="text-sm font-semibold">② วิธีเลือก</legend>
       <div className="grid gap-2 sm:grid-cols-2">
         <label className={`flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border p-3 text-sm ${selectionMode === 'SINGLE' ? 'border-brand bg-brand-soft' : 'border-line'}`}>
           <input type="radio" name="selection-mode" checked={selectionMode === 'SINGLE'} onChange={() => { setSelectionMode('SINGLE'); setPricingMode('PER_TOPPING') }} />
-          <span><strong className="block">เลือกได้อันเดียว</strong><span className="text-muted">เหมาะกับขนาดหรือชนิดที่ต้องเลือกหนึ่งอย่าง</span></span>
+          <span><strong className="block">เลือกหนึ่งอย่าง</strong><span className="text-muted">เช่น ขนาด</span></span>
         </label>
         <label className={`flex min-h-12 cursor-pointer items-center gap-3 rounded-xl border p-3 text-sm ${selectionMode === 'MULTIPLE' ? 'border-brand bg-brand-soft' : 'border-line'}`}>
           <input type="radio" name="selection-mode" checked={selectionMode === 'MULTIPLE'} onChange={() => setSelectionMode('MULTIPLE')} />
-          <span><strong className="block">เลือกได้หลายอัน</strong><span className="text-muted">เหมาะกับซอสหรือท็อปปิงที่เลือกผสมกันได้</span></span>
+          <span><strong className="block">เลือกหลายอย่าง</strong><span className="text-muted">เช่น ซอส</span></span>
         </label>
       </div>
     </fieldset>
     <label className="flex min-h-11 items-center gap-2 text-sm font-medium"><input type="checkbox" checked={isRequired} onChange={(event) => setIsRequired(event.target.checked)} /> จำเป็นต้องเลือกอย่างน้อย 1 รายการ</label>
     <fieldset className="grid gap-2">
-      <legend className="text-sm font-semibold">วิธีคิดราคา</legend>
+      <legend className="text-sm font-semibold">③ ราคา</legend>
       <label className="flex min-h-11 items-center gap-2 rounded-lg border border-line px-3 text-sm"><input type="radio" name="pricing-mode" checked={pricingMode === 'PER_TOPPING'} onChange={() => setPricingMode('PER_TOPPING')} /> คิดราคาตามท็อปปิงแต่ละรายการ</label>
       <label className={`flex min-h-11 items-center gap-2 rounded-lg border border-line px-3 text-sm ${selectionMode === 'SINGLE' ? 'cursor-not-allowed opacity-50' : ''}`}><input type="radio" name="pricing-mode" disabled={selectionMode === 'SINGLE'} checked={pricingMode === 'FIRST_FREE_THEN_FIXED'} onChange={() => setPricingMode('FIRST_FREE_THEN_FIXED')} /> รายการแรกฟรี รายการถัดไปราคาเท่ากัน</label>
       {pricingMode === 'FIRST_FREE_THEN_FIXED' ? <label className="grid gap-1 text-sm font-medium">ราคาต่อรายการตั้งแต่รายการที่ 2 (บาท)<input inputMode="decimal" value={additionalPriceBaht} onChange={(event) => setAdditionalPriceBaht(event.target.value)} className="rounded-lg border border-line px-3" /></label> : null}
     </fieldset>
     <fieldset className="grid gap-2">
-      <legend className="text-sm font-semibold">ใช้ได้กับหมวดหมู่เมนู</legend>
+      <legend className="text-sm font-semibold">④ ใช้กับเมนูหมวดไหน?</legend>
       {categories.length ? <div className="grid gap-2 sm:grid-cols-2">{categories.map((category) => <label key={category.id} className="flex min-h-11 items-center gap-2 rounded-lg bg-brand-soft px-3 text-sm"><input type="checkbox" checked={categoryIds.includes(category.id)} onChange={() => toggleCategory(category.id)} /> {category.name}</label>)}</div> : <p className="text-sm text-muted">กรุณาเพิ่มหมวดหมู่เมนูก่อน</p>}
     </fieldset>
     <label className="flex min-h-11 items-center gap-2 text-sm font-medium"><input type="checkbox" checked={isVisible} onChange={(event) => setIsVisible(event.target.checked)} /> แสดงหมวดท็อปปิงนี้</label>

@@ -20,6 +20,8 @@ export function AuthProvider({ children, gateway }: AuthProviderProps) {
         setSession(currentSession)
         setLoading(false)
       }
+    }).catch(() => {
+      if (mounted) { setSession(null); setLoading(false) }
     })
 
     const unsubscribe = gateway.onSessionChange((nextSession) => {

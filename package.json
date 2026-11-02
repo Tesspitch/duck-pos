@@ -8,6 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "test": "vitest run",
+    "test:ci": "vitest run --maxWorkers=1 --no-file-parallelism",
+    "verify:production": "npm run lint && npm run test:ci && npm run build",
     "test:watch": "vitest",
     "supabase:start": "supabase start",
     "supabase:stop": "supabase stop",

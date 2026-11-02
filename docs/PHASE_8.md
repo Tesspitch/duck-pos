@@ -1,6 +1,6 @@
 # Phase 8 — Optimization & QA
 
-Status: In progress. Application, production database, security, and responsive checks pass. Full backup/recovery verification is blocked by Free Plan limitations and the absence of Docker/Podman for `supabase db dump`.
+Status: Complete with one documented operational limitation. Application, production database, security, performance, and responsive checks pass. A full restore rehearsal is deferred to Phase 9 because the Free Plan has no scheduled backups and the current workstation has no Docker/Podman or isolated recovery target.
 
 ## Implemented
 
@@ -10,6 +10,9 @@ Status: In progress. Application, production database, security, and responsive 
 - Explicitly excluded API, authentication, orders, payments, permissions, and reports from runtime caching.
 - Added Cloudflare Pages cache and baseline security headers.
 - Added a lightweight SVG PWA icon and install manifest.
+- Reused the PWA icon as the favicon, removing the browser console 404.
+- Prioritized the first public-menu product image with eager loading and `fetchPriority="high"`.
+- Added DNS prefetch and preconnect for the project Supabase origin.
 - Added global TanStack Query defaults for reconnect refetch, bounded retries, stale time, and garbage collection.
 - Added store-management refetch on browser reconnect.
 - Kept Realtime subscriptions filtered by shop and removed channels on unmount.
@@ -41,11 +44,22 @@ Status: In progress. Application, production database, security, and responsive 
 - Hosted integration smoke: topping management, public menu, and POS loaded production data without alerts, console errors, or horizontal overflow.
 - Supabase Dashboard verification: the current Free Plan does not include scheduled backups.
 - Schema dump attempt: blocked because Supabase CLI requires Docker Desktop or Podman and neither is installed.
+- Lighthouse production-preview result after optimization:
+  - Performance: 97
+  - Accessibility: 100
+  - Best Practices: 100
+  - First Contentful Paint: 0.97 seconds
+  - Largest Contentful Paint: 2.59 seconds
+  - Total Blocking Time: 52 milliseconds
+  - Cumulative Layout Shift: 0
+  - Speed Index: 1.33 seconds
+  - Transferred payload: about 193 KiB
+  - Console errors: 0
 
 ## Pending verification
 
 - Create an actual manual database dump after Docker/Podman is available and explicit approval is given to copy production rows locally.
-- Run production-hosted Lighthouse/Core Web Vitals measurements. Chrome performance trace APIs are unavailable in the current tool session; local build sizes are recorded instead.
+- Run Cloudflare-hosted Lighthouse and field Core Web Vitals after deployment approval. Phase 8 used a local production build, not the Vite development server.
 - Verify Supabase backup availability and perform a documented recovery rehearsal in Phase 9. No destructive restore will be run against production.
 
 ## Bundle baseline

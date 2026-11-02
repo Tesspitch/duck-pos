@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { FormWorkspace } from '../../../../shared/presentation/FormWorkspace'
 
 import { formatThaiBaht } from '../../../catalog/domain/money'
 import type { SaveToppingInput, Topping, ToppingGroup, ToppingMenuCategory } from '../../domain/topping-library'
@@ -19,6 +20,7 @@ interface Props {
 
 export function ToppingGroupCard({ shopId, group, categories, isOwner, busy, onEditGroup, onDeleteGroup, onSaveTopping, onDeleteTopping, onToggleAvailability }: Props) {
   const [editingTopping, setEditingTopping] = useState<Topping | null>(null)
+  const [creating, setCreating] = useState(false)
   const categoryNames = group.categoryIds.map((id) => categories.find((category) => category.id === id)?.name).filter(Boolean)
   const selectionLabel = group.selectionMode === 'SINGLE' ? 'เลือกได้อันเดียว' : 'เลือกได้หลายอัน'
   const pricingLabel = group.pricingMode === 'FIRST_FREE_THEN_FIXED'
@@ -38,6 +40,7 @@ export function ToppingGroupCard({ shopId, group, categories, isOwner, busy, onE
         <div className="flex flex-wrap gap-2"><button type="button" disabled={busy} onClick={() => onToggleAvailability(topping)} className="min-h-9 rounded-lg border border-line bg-white px-3 disabled:opacity-50">{topping.isAvailable ? 'ปิดขาย' : 'เปิดขาย'}</button>{isOwner ? <><button type="button" onClick={() => setEditingTopping(topping)} className="min-h-9 rounded-lg border border-line bg-white px-3">แก้ไข</button><button type="button" onClick={() => onDeleteTopping(topping)} className="min-h-9 rounded-lg border border-red-200 bg-white px-3 text-red-700">ลบ</button></> : null}</div>
       </div>)}
     </div>
-    {isOwner ? <ToppingForm key={editingTopping?.id ?? `new-${group.id}`} shopId={shopId} groupId={group.id} topping={editingTopping} pricingMode={group.pricingMode} busy={busy} onCancel={() => setEditingTopping(null)} onSave={async (input) => { await onSaveTopping(input); setEditingTopping(null) }} /> : null}
+    {isOwner && <button type="button" onClick={() => setCreating(true)} className="mt-4 border border-brand-action bg-brand-soft px-4 font-semibold text-brand-action">＋ เพิ่มท็อปปิง</button>}
+    {isOwner && (creating || editingTopping) ? <FormWorkspace title={`${editingTopping ? 'แก้ไข' : 'เพิ่ม'}ท็อปปิง · ${group.name}`} busy={busy} onBack={() => { setEditingTopping(null); setCreating(false) }}><ToppingForm key={editingTopping?.id ?? `new-${group.id}`} shopId={shopId} groupId={group.id} topping={editingTopping} pricingMode={group.pricingMode} busy={busy} onCancel={() => { setEditingTopping(null); setCreating(false) }} onSave={async (input) => { await onSaveTopping(input); setEditingTopping(null); setCreating(false) }} /></FormWorkspace> : null}
   </article>
 }

@@ -9,6 +9,9 @@ export function usePublicMenu(shopId: string | undefined) {
     enabled: Boolean(shopId),
     staleTime: 5 * 60_000,
     gcTime: 30 * 60_000,
+    refetchInterval: 60_000,
+    refetchIntervalInBackground: false,
+    refetchOnWindowFocus: 'always',
     queryFn: () => repository.getMenu(shopId!),
   })
 }

@@ -1,3 +1,4 @@
+import { Icon } from '../../../../shared/presentation/Icon'
 import { useState } from 'react'
 import { Navigate } from 'react-router-dom'
 
@@ -26,7 +27,7 @@ export function PendingAccessPage() {
   return (
     <main className="grid min-h-screen place-items-center bg-brand-soft p-4">
       <section className="w-full max-w-lg rounded-2xl border border-line bg-white p-6">
-        <p className="text-3xl" aria-hidden="true">⏳</p>
+        <p className="text-3xl" aria-hidden="true"><Icon name="clock" /></p>
         <h1 className="mt-3 text-2xl font-bold">รอเจ้าของร้านอนุมัติ</h1>
         <p className="mt-2 text-muted">
           ส่ง Supabase User ID ด้านล่างให้เจ้าของร้านเพื่อเพิ่มสิทธิ์ Staff หรือ Owner

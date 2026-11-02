@@ -54,6 +54,13 @@ export function AuthGate({
   const isPlatformAdmin = platformAdmin.data === true
   const hasShopCreationGrant = shopCreationAccess.data?.status === 'ACTIVE'
 
+  // Query observers can update before the active-shop provider publishes its
+  // derived membership. Do not redirect an owner during that hydration frame.
+  if (activeMemberships.length > 0 && !activeMembership
+    && (requireMembership || requireOwner || requireShopCreationOrOwner)) {
+    return <FullPageMessage title="กำลังตรวจสอบสิทธิ์…" />
+  }
+
   if (requirePlatformAdmin && !isPlatformAdmin) {
     return <Navigate to="/" replace />
   }

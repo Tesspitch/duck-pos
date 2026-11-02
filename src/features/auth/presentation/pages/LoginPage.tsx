@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import logo from '../../../../../duckpos-logo.jpg'
 import { Navigate } from 'react-router-dom'
 
 import { useAuth } from '../../application/auth-context'
@@ -22,11 +23,12 @@ export function LoginPage() {
   }
 
   return (
-    <main className="grid min-h-screen place-items-center bg-brand-soft p-4">
-      <section className="w-full max-w-sm rounded-2xl border border-line bg-white p-6">
+    <main className="grid min-h-screen place-items-center bg-[#f7f7f5] p-6">
+      <section className="w-full max-w-md rounded-3xl border border-line bg-white p-8 sm:p-12">
         <div className="mb-6 text-center">
-          <p className="text-4xl" aria-hidden="true">🦆</p>
-          <h1 className="mt-3 text-2xl font-bold">เข้าสู่ระบบ DuckPOS</h1>
+          <img src={logo} alt="DuckPOS" width="160" height="160" className="mx-auto h-40 w-40 object-contain" />
+          <p className="mt-4 text-xs font-semibold tracking-widest text-brand-action">พร้อมสำหรับวันขายที่ดี</p>
+          <h1 className="mt-3 text-2xl font-bold">ยินดีต้อนรับกลับ</h1>
           <p className="mt-2 text-sm text-muted">สำหรับพนักงานและเจ้าของร้านที่ได้รับสิทธิ์</p>
         </div>
         <button

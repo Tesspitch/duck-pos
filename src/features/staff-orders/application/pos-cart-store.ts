@@ -27,8 +27,8 @@ export const usePosCartStore = create<PosCartState>()(persist(
       : { shopId, lines: [], orderNote: '', requestId: crypto.randomUUID() }),
     addLine: (line) => set((state) => ({ lines: [...state.lines, line], requestId: crypto.randomUUID() })),
     changeQuantity: (key, quantity) => set((state) => ({
-      lines: state.lines.map((line) => line.key === key
-        ? { ...line, quantity: Math.max(1, Math.min(20, quantity)) }
+      lines: state.lines.map((line) => line.key === key && Number.isFinite(quantity)
+        ? { ...line, quantity: Math.max(1, Math.min(20, Math.trunc(quantity))) }
         : line),
       requestId: crypto.randomUUID(),
     })),

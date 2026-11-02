@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { ProductSheet } from '../../../../shared/presentation/ProductSheet'
 
 import type { Product } from '../../../catalog/domain/catalog'
 import { usePosCartStore } from '../../application/pos-cart-store'
@@ -49,23 +50,18 @@ export function StaffProductCard({ product }: { product: Product }) {
     setNote('')
   }
 
-  if (!expanded) {
-    return (
+  return <>
       <button type="button" disabled={!product.isAvailable} onClick={() => setExpanded(true)}
-        className="min-h-28 rounded-2xl border border-line bg-white p-4 text-left disabled:bg-gray-100 disabled:text-muted">
+        className="food-card food-card-trigger disabled:opacity-50">
+        {product.imageUrl ? <img src={product.imageUrl} alt="" loading="lazy" className="food-card-image" /> : <span aria-hidden="true" className="food-card-placeholder">เมนูของร้าน</span>}
+        <span className="food-card-info">
         <span className="block font-bold">{product.name}</span>
-        <span className="mt-2 block font-bold text-brand-action">{money(product.basePriceSatang)}</span>
+        <span className="product-tile-price"><span>{money(product.basePriceSatang)}</span><span aria-hidden="true">+</span></span>
         {!product.isAvailable ? <span className="mt-1 block text-sm font-semibold text-red-700">สินค้าหมด</span> : null}
+        </span>
       </button>
-    )
-  }
-
-  return (
-    <article className="col-span-full rounded-2xl border-2 border-brand bg-white p-4">
-      <div className="flex items-start justify-between gap-3">
-        <div><h3 className="text-lg font-bold">{product.name}</h3><p className="text-brand-action">{money(product.basePriceSatang)}</p></div>
-        <button type="button" onClick={() => setExpanded(false)} className="rounded-lg border border-line px-3">ปิด</button>
-      </div>
+      {expanded && <ProductSheet title={product.name} onClose={() => setExpanded(false)}>
+      <p className="font-bold text-brand-action">{money(product.basePriceSatang)}</p>
       <div className="mt-3 grid gap-3 md:grid-cols-2">
         {product.optionGroups.map((group) => (
           <fieldset key={group.id} className="rounded-xl bg-brand-soft p-3">
@@ -89,14 +85,14 @@ export function StaffProductCard({ product }: { product: Product }) {
       </label>
       <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
         <label className="font-medium">จำนวน
-          <input type="number" min={1} max={20} value={quantity}
-            onChange={(event) => setQuantity(Math.max(1, Math.min(20, Number(event.target.value))))}
+          <input inputMode="numeric" type="number" min={1} max={20} step={1} value={quantity}
+            onChange={(event) => setQuantity(Math.max(1, Math.min(20, Math.trunc(Number(event.target.value)) || 1)))}
             className="ml-2 w-20 rounded-lg border border-line px-2" />
         </label>
         <button type="button" disabled={!valid} onClick={add}
           className="rounded-xl bg-brand-action px-5 font-semibold text-white disabled:opacity-50">เพิ่มลงตะกร้า</button>
       </div>
-    </article>
-  )
+    </ProductSheet>}
+  </>
 }
 

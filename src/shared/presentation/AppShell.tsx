@@ -1,165 +1,33 @@
-import type { PropsWithChildren } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-
+import { useRef, useState, type PropsWithChildren } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../features/auth/application/auth-context'
 import { usePlatformAdmin } from '../../features/platform-admin/application/use-platform-admin'
 import { useActiveShop } from '../../features/shop-context/application/active-shop-context'
+import { StoreNavigation } from './StoreNavigation'
+import { Icon } from './Icon'
+import { MobileNavigation } from './MobileNavigation'
 
 export function AppShell({ children }: PropsWithChildren) {
   const navigate = useNavigate()
+  const menu = useRef<HTMLDialogElement>(null)
+  const [error, setError] = useState('')
   const { signOut, user } = useAuth()
-  const { activeMembership, memberships, selectShop } = useActiveShop()
+  const { activeMembership, memberships } = useActiveShop()
   const { data: isPlatformAdmin = false } = usePlatformAdmin()
-  const isOwner = activeMembership?.role === 'OWNER'
-
   async function handleSignOut() {
-    await signOut()
-    navigate('/login', { replace: true })
+    try { await signOut(); navigate('/login', { replace: true }) }
+    catch { setError('ออกจากระบบไม่สำเร็จ กรุณาลองอีกครั้ง') }
   }
-
-  return (
-    <div className="min-h-screen bg-white">
-      <header className="border-b border-line bg-white">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-start justify-between gap-3 px-4 py-3">
-          <Link to="/" className="flex min-h-11 items-center gap-2 text-xl font-bold text-brand-action">
-            <span aria-hidden="true">🦆</span> DuckPOS
-          </Link>
-          <nav className="flex w-full min-w-0 flex-wrap items-center justify-start gap-2 sm:w-auto sm:flex-1 sm:justify-end" aria-label="เมนูหลัก">
-            {memberships.length > 0 ? (
-              <label className="sr-only" htmlFor="active-shop">ร้านที่กำลังใช้งาน</label>
-            ) : null}
-            {memberships.length > 0 ? (
-              <select
-                id="active-shop"
-                aria-label="ร้านที่กำลังใช้งาน"
-                value={activeMembership?.shop_id ?? ''}
-                onChange={(event) => selectShop(event.target.value)}
-                className="max-w-44 rounded-lg border border-line bg-white px-2 text-sm font-semibold"
-              >
-                {memberships.map((membership) => (
-                  <option key={membership.shop_id} value={membership.shop_id}>
-                    {membership.shops?.name ?? membership.shop_id} · {membership.role}
-                  </option>
-                ))}
-              </select>
-            ) : null}
-            {memberships.length > 0 ? (
-              <Link
-                to="/pos"
-                className="inline-flex min-w-11 items-center justify-center rounded-lg px-3 text-sm font-medium text-ink hover:bg-brand-soft"
-              >
-                POS
-              </Link>
-            ) : null}
-            {memberships.length > 0 ? (
-              <Link
-                to="/queue"
-                className="inline-flex min-w-11 items-center justify-center rounded-lg px-3 text-sm font-medium text-ink hover:bg-brand-soft"
-              >
-                คิว
-              </Link>
-            ) : null}
-            {memberships.length > 0 ? (
-              <Link
-                to="/catalog"
-                className="inline-flex min-w-11 items-center justify-center rounded-lg px-3 text-sm font-medium text-ink hover:bg-brand-soft"
-              >
-                เมนูสินค้า
-              </Link>
-            ) : null}
-            {memberships.length > 0 ? (
-              <Link
-                to="/toppings"
-                className="inline-flex min-w-11 items-center justify-center rounded-lg px-3 text-sm font-medium text-ink hover:bg-brand-soft"
-              >
-                ท็อปปิง
-              </Link>
-            ) : null}
-            {isPlatformAdmin ? (
-              <Link
-                to="/admin"
-                className="inline-flex min-w-11 items-center justify-center rounded-lg px-3 text-sm font-medium text-ink hover:bg-brand-soft"
-              >
-                Platform Admin
-              </Link>
-            ) : null}
-            {isOwner ? (
-              <Link
-                to="/store"
-                className="inline-flex min-w-11 items-center justify-center rounded-lg px-3 text-sm font-medium text-ink hover:bg-brand-soft"
-              >
-                เปิด–ปิดร้าน
-              </Link>
-            ) : null}
-            {isOwner ? (
-              <Link
-                to="/reports"
-                className="inline-flex min-w-11 items-center justify-center rounded-lg px-3 text-sm font-medium text-ink hover:bg-brand-soft"
-              >
-                รายงาน
-              </Link>
-            ) : null}
-            {isOwner ? (
-              <Link
-                to="/settings/qr"
-                className="inline-flex min-w-11 items-center justify-center rounded-lg px-3 text-sm font-medium text-ink hover:bg-brand-soft"
-              >
-                QR ร้าน
-              </Link>
-            ) : null}
-            {isOwner ? (
-              <Link
-                to="/settings/line"
-                className="inline-flex min-w-11 items-center justify-center rounded-lg px-3 text-sm font-medium text-ink hover:bg-brand-soft"
-              >
-                LINE
-              </Link>
-            ) : null}
-            {isOwner ? (
-              <Link
-                to="/create-shop"
-                className="inline-flex min-w-11 items-center justify-center rounded-lg px-3 text-sm font-medium text-ink hover:bg-brand-soft"
-              >
-                เพิ่มสาขา
-              </Link>
-            ) : null}
-            {isOwner ? (
-              <Link
-                to="/settings/shop"
-                className="inline-flex min-w-11 items-center justify-center rounded-lg px-3 text-sm font-medium text-ink hover:bg-brand-soft"
-              >
-                ตั้งค่าร้าน
-              </Link>
-            ) : null}
-            {isOwner ? (
-              <Link
-                to="/access"
-                className="inline-flex min-w-11 items-center justify-center rounded-lg px-3 text-sm font-medium text-ink hover:bg-brand-soft"
-              >
-                จัดการสิทธิ์
-              </Link>
-            ) : null}
-            <Link
-              to="/profile"
-              title={user?.email ?? 'โปรไฟล์'}
-              className="inline-flex min-w-11 items-center justify-center gap-2 rounded-lg px-3 text-sm font-medium text-ink hover:bg-brand-soft"
-            >
-              {user?.user_metadata.avatar_url ? <img src={user.user_metadata.avatar_url as string} alt="" referrerPolicy="no-referrer" className="h-7 w-7 rounded-full object-cover" /> : null}
-              <span className="hidden max-w-44 truncate sm:inline">{user?.email ?? 'โปรไฟล์'}</span>
-              <span className="sm:hidden">โปรไฟล์</span>
-            </Link>
-            <button
-              type="button"
-              onClick={() => void handleSignOut()}
-              className="rounded-lg border border-line px-3 text-sm font-medium hover:bg-brand-soft"
-            >
-              ออกจากระบบ
-            </button>
-          </nav>
-        </div>
-      </header>
-      {children}
+  const navigation = <StoreNavigation owner={activeMembership?.role === 'OWNER'} member={memberships.length > 0} admin={isPlatformAdmin} email={user?.email} onNavigate={() => menu.current?.close()} onSignOut={() => void handleSignOut()} />
+  return <div className={`release-layout${activeMembership ? ' has-mobile-navigation' : ''}`}>
+    <a className="skip-content" href="#workspace">ข้ามไปยังเนื้อหา</a>
+    <aside className="release-sidebar">{navigation}</aside>
+    <dialog ref={menu} className="release-drawer" aria-label="เมนูหลัก"><button autoFocus type="button" className="drawer-dismiss" onClick={() => menu.current?.close()}><Icon name="close" /> ปิดเมนู</button>{navigation}</dialog>
+    <div className="release-workspace">
+      <header className="workspace-toolbar"><button type="button" aria-label="เปิดเมนูหลัก" aria-haspopup="dialog" className="drawer-trigger" onClick={() => menu.current?.showModal()}><Icon name="bars" /></button><span className="toolbar-store-icon"><Icon name="store" /></span><div className="workspace-shop"><span>พื้นที่จัดการร้าน</span><strong>{activeMembership?.shops?.name ?? 'DuckPOS'}</strong></div><span className="role-badge">{activeMembership?.role === 'OWNER' ? 'เจ้าของร้าน' : activeMembership ? 'พนักงาน' : 'บัญชีของฉัน'}</span></header>
+      {error && <p role="alert" className="m-4 rounded-xl bg-red-50 p-4 text-red-700">{error}</p>}
+      <div id="workspace" tabIndex={-1} className="release-content">{children}</div>
+      {activeMembership && <MobileNavigation />}
     </div>
-  )
+  </div>
 }
-

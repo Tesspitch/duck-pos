@@ -28,6 +28,7 @@ export type OrderStatus = 'QUEUED' | 'PREPARING' | 'READY' | 'COMPLETED' | 'CANC
 
 export interface TrackedOrder {
   orderId: string
+  shopId: string
   shopName: string
   queueNumber: number
   orderReference: string

@@ -1,3 +1,4 @@
+import { Icon } from '../../../../shared/presentation/Icon'
 import { AppShell } from '../../../../shared/presentation/AppShell'
 import { useShopCreationGrants } from '../../application/use-shop-creation-grants'
 import { GrantShopForm } from '../components/GrantShopForm'
@@ -11,9 +12,9 @@ export function PlatformAdminPage() {
       <main className="mx-auto max-w-5xl p-4 sm:p-6">
         <div className="mb-5">
           <p className="text-sm font-semibold text-brand-action">Platform Admin</p>
-          <h1 className="text-2xl font-bold">อนุมัติผู้สร้างร้าน</h1>
+          <h1 className="text-2xl font-bold"><Icon name="shield" /> อนุมัติสร้างร้าน</h1>
           <p className="mt-1 text-sm text-muted">
-            กรอก User ID ของผู้ที่ Login Google แล้ว เพื่ออนุญาตให้สร้างร้านของตนเองหนึ่งร้าน
+            กรอกรหัสผู้ใช้เพื่ออนุมัติสร้างร้าน
           </p>
         </div>
         <GrantShopForm

@@ -1,6 +1,8 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import type { PropsWithChildren } from 'react'
 import { BrowserRouter } from 'react-router-dom'
+import { ConnectionStatus } from '../../shared/presentation/ConnectionStatus'
+import { AppErrorBoundary } from '../../shared/presentation/AppErrorBoundary'
 
 import { MembershipRepositoryProvider } from '../../features/access-control/application/MembershipRepositoryProvider'
 import { supabaseMembershipRepository } from '../../features/access-control/infrastructure/supabase-membership-repository'
@@ -78,7 +80,7 @@ export function AppProviders({ children }: PropsWithChildren) {
                               <SalesAnalyticsProvider repository={supabaseSalesAnalyticsRepository} csvExporter={browserSalesCsvExporter}>
                                 <LineNotificationProvider repository={supabaseLineNotificationRepository}>
                                   <QrCodeServiceProvider service={browserQrCodeService}>
-                                    <BrowserRouter>{children}</BrowserRouter>
+                                    <BrowserRouter><AppErrorBoundary><ConnectionStatus />{children}</AppErrorBoundary></BrowserRouter>
                                   </QrCodeServiceProvider>
                                 </LineNotificationProvider>
                               </SalesAnalyticsProvider>

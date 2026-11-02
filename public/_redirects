@@ -1,0 +1,2 @@
+# React Router SPA fallback. Existing static files are served before this rule.
+/* /index.html 200

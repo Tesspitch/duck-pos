@@ -13,6 +13,8 @@ export function useLineNotificationManagement(shopId: string) {
     queryFn: () => repository.getManagement(shopId),
     staleTime: 30_000,
     refetchOnWindowFocus: true,
+    refetchInterval: 60_000,
+    refetchIntervalInBackground: false,
   })
 }
 

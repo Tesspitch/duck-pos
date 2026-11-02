@@ -1,3 +1,4 @@
+import { Icon } from '../../../../shared/presentation/Icon'
 import { useState } from 'react'
 
 import { normalizeReportTimes, type LineNotificationSettings } from '../../domain/line-notification'
@@ -15,11 +16,11 @@ export function LineSettingsForm({ settings, pending, onSave }: Props) {
   function addTime() { if (times.length < 6) setTimes([...times, '12:00']) }
 
   return <section className="min-w-0 rounded-2xl border border-line p-4">
-    <h2 className="text-lg font-bold">ตั้งเวลารายงาน</h2>
-    <p className="mt-3 rounded-xl bg-brand-soft p-3 text-sm">ระบบจะแจ้งเมื่อเปิดร้าน และส่งรายงานปิดร้านทุกครั้ง แม้ไม่มีออเดอร์หรือยอดขาย</p>
+    <h2 className="text-lg font-bold"><Icon name="clock" /> เวลารายงาน</h2>
+    <p className="mt-3 rounded-xl bg-brand-soft p-3 text-sm">✓ แจ้งเปิดร้าน · ✓ สรุปปิดร้านอัตโนมัติ</p>
     <label className="flex min-h-11 items-center gap-3"><input type="checkbox" checked={periodic} onChange={(event) => setPeriodic(event.target.checked)} /> ส่งรายงานสะสมตามเวลา</label>
     {periodic ? <div className="mt-3 space-y-2">
-      <p className="text-sm text-muted">เวลาตาม timezone ของร้าน สูงสุด 6 รอบต่อวัน</p>
+      <p className="text-sm text-muted">เวลาท้องถิ่นร้าน · สูงสุด 6 รอบ/วัน</p>
       {times.map((time, index) => <div key={`${index}-${time}`} className="flex gap-2">
         <input aria-label={`เวลารายงานรอบที่ ${index + 1}`} type="time" value={time} onChange={(event) => setTimes(times.map((item, itemIndex) => itemIndex === index ? event.target.value : item))} className="rounded-lg border border-line px-3" />
         <button type="button" onClick={() => setTimes(times.filter((_, itemIndex) => itemIndex !== index))} className="rounded-lg border border-red-200 px-3 text-red-700">ลบ</button>

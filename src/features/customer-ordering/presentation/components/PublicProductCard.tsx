@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { ProductSheet } from '../../../../shared/presentation/ProductSheet'
 
 import { useCartStore } from '../../application/cart-store'
 import type { PublicMenuProduct } from '../../domain/public-menu'
@@ -8,6 +9,8 @@ const money = (satang: number) => `฿${(satang / 100).toFixed(2)}`
 
 export function PublicProductCard({ product, priority = false }: { product: PublicMenuProduct; priority?: boolean }) {
   const addLine = useCartStore((state) => state.addLine)
+  const [expanded, setExpanded] = useState(false)
+  const [added, setAdded] = useState(false)
   const [selected, setSelected] = useState<Record<string, string[]>>({})
   const [quantity, setQuantity] = useState(1)
   const [note, setNote] = useState('')
@@ -30,7 +33,7 @@ export function PublicProductCard({ product, priority = false }: { product: Publ
   }
 
   function add() {
-    if (!product.isAvailable || !valid) return
+    if (!product.isAvailable || !valid || !Number.isInteger(quantity) || quantity < 1 || quantity > 20) return
     addLine({
       key: crypto.randomUUID(),
       productId: product.id,
@@ -43,17 +46,21 @@ export function PublicProductCard({ product, priority = false }: { product: Publ
     setSelected({})
     setQuantity(1)
     setNote('')
+    setAdded(true)
+    setExpanded(false)
   }
 
   return (
-    <article className="overflow-hidden rounded-2xl border border-line bg-white">
-      {product.imageUrl ? <img src={product.imageUrl} alt={product.name} loading={priority ? 'eager' : 'lazy'} fetchPriority={priority ? 'high' : 'auto'} className="h-44 w-full object-cover" /> : null}
-      <div className="grid gap-3 p-4">
-        <div className="flex items-start justify-between gap-3">
-          <div><h3 className="font-bold">{product.name}</h3>{product.description ? <p className="mt-1 text-sm text-muted">{product.description}</p> : null}</div>
-          <p className="whitespace-nowrap font-bold text-brand-action">{money(product.basePriceSatang)}</p>
-        </div>
-        {!product.isAvailable ? <p className="rounded-lg bg-red-50 p-2 text-sm font-semibold text-red-700">สินค้าหมด</p> : null}
+    <article className="food-card">
+      <button type="button" className="food-card-trigger" disabled={!product.isAvailable} onClick={() => setExpanded(true)} aria-label={`เลือก ${product.name}`}>
+      {product.imageUrl ? <img src={product.imageUrl} alt="" loading={priority ? 'eager' : 'lazy'} fetchPriority={priority ? 'high' : 'auto'} className="food-card-image" /> : <span className="food-card-placeholder" aria-hidden="true">เมนูของร้าน</span>}
+      <span className="food-card-info"><span className="food-card-name">{product.name}</span><span className="food-card-bottom"><span>{money(product.basePriceSatang)}</span><span className="food-card-add" aria-hidden="true">{product.isAvailable ? '+' : 'หมด'}</span></span></span>
+      </button>
+      {added && <p role="status" className="px-2 pb-2 text-xs text-green-800">เพิ่มลงตะกร้าแล้ว ✓</p>}
+      {expanded && <ProductSheet title={product.name} onClose={() => setExpanded(false)}>
+      {product.description && <p className="text-sm text-muted">{product.description}</p>}
+        <div className="mt-4 grid gap-3">
+        {!valid && <p className="text-sm text-brand-action">กรุณาเลือกตัวเลือกที่จำเป็นให้ครบตามจำนวนที่กำหนด</p>}
         {product.isAvailable ? product.optionGroups.map((group) => (
           <fieldset key={group.id} className="grid gap-2 rounded-xl bg-brand-soft p-3">
             <legend className="px-1 text-sm font-semibold">{group.name} · {group.selectionMode === 'SINGLE' ? 'เลือกได้อันเดียว' : 'เลือกได้หลายอัน'} · {group.isRequired ? 'จำเป็น' : 'ไม่บังคับ'}</legend>
@@ -68,8 +75,9 @@ export function PublicProductCard({ product, priority = false }: { product: Publ
           </fieldset>
         )) : null}
         {product.isAvailable ? <label className="grid gap-1 text-sm">หมายเหตุ<input value={note} maxLength={300} onChange={(event) => setNote(event.target.value)} className="rounded-lg border border-line px-3" placeholder="เช่น ไม่ใส่หอม" /></label> : null}
-        {product.isAvailable ? <div className="flex items-center justify-between gap-3"><label className="text-sm font-medium">จำนวน <input type="number" min={1} max={20} value={quantity} onChange={(event) => setQuantity(Math.max(1, Math.min(20, Number(event.target.value))))} className="ml-2 w-20 rounded-lg border border-line px-2" /></label><button type="button" disabled={!valid} onClick={add} className="min-h-11 rounded-xl bg-brand-action px-4 font-semibold text-white disabled:opacity-50">เพิ่มลงตะกร้า</button></div> : null}
-      </div>
+        {product.isAvailable ? <div className="flex items-center justify-between gap-3"><label className="text-sm font-medium">จำนวน <input inputMode="numeric" type="number" min={1} max={20} step={1} value={quantity} onChange={(event) => setQuantity(Math.max(1, Math.min(20, Math.trunc(Number(event.target.value)) || 1)))} className="ml-2 w-20 rounded-lg border border-line px-2" /></label><button type="button" disabled={!valid} onClick={add} className="min-h-11 rounded-xl bg-brand-action px-4 font-semibold text-white disabled:opacity-50">เพิ่มลงตะกร้า</button></div> : null}
+        </div>
+        </ProductSheet>}
     </article>
   )
 }
