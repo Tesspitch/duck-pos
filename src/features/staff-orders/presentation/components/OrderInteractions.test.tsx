@@ -37,16 +37,32 @@ test('transfer uses the order total and pending payment locks all inputs', () =>
   expect(screen.getByRole('button')).toBeDisabled()
 })
 
-test('queue requires payment before completion and a reason before cancellation', () => {
+test('queue allows completion before payment and still requires a cancellation reason', () => {
   const status = vi.fn()
   render(<QueueOrderCard order={order} pending={false} onStatus={status} onPay={vi.fn()} />)
-  expect(screen.getByRole('button', { name: 'เสร็จแล้ว' })).toBeDisabled()
+  expect(screen.getByRole('button', { name: 'เสร็จแล้ว' })).toBeEnabled()
   fireEvent.click(screen.getByRole('button', { name: 'ยกเลิก' }))
   fireEvent.click(screen.getByRole('button', { name: 'ยืนยันยกเลิกออเดอร์' }))
   expect(status).not.toHaveBeenCalled()
   fireEvent.change(screen.getByLabelText('เหตุผลยกเลิก'), { target: { value: 'ลูกค้าขอยกเลิก' } })
   fireEvent.click(screen.getByRole('button', { name: 'ยืนยันยกเลิกออเดอร์' }))
   expect(status).toHaveBeenCalledExactlyOnceWith('READY', 'CANCELLED', 'ลูกค้าขอยกเลิก')
+})
+
+test('queued order starts cooking without implicitly recording payment', () => {
+  const status = vi.fn()
+  const pay = vi.fn()
+  render(<QueueOrderCard order={{ ...order, status: 'QUEUED' }} pending={false} onStatus={status} onPay={pay} />)
+  fireEvent.click(screen.getByRole('button', { name: 'เริ่มทำ' }))
+  expect(status).toHaveBeenCalledExactlyOnceWith('QUEUED', 'PREPARING')
+  expect(pay).not.toHaveBeenCalled()
+})
+
+test('completed unpaid order keeps payment controls and has no completion/cancel action', () => {
+  render(<QueueOrderCard order={{ ...order, status: 'COMPLETED' }} pending={false} onStatus={vi.fn()} onPay={vi.fn()} />)
+  expect(screen.getByRole('button', { name: 'ยืนยันรับชำระ' })).toBeEnabled()
+  expect(screen.queryByRole('button', { name: 'เสร็จแล้ว' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'ยกเลิก' })).not.toBeInTheDocument()
 })
 
 test('paid ready order completes without showing payment inputs', () => {
@@ -57,7 +73,7 @@ test('paid ready order completes without showing payment inputs', () => {
   expect(status).toHaveBeenCalledExactlyOnceWith('READY', 'COMPLETED')
 })
 
-test.each(['QUEUED', 'PREPARING', 'READY'] as const)('paid %s order completes in one click without intermediate buttons', (statusValue) => {
+test.each(['PREPARING', 'READY'] as const)('paid %s order completes in one click without intermediate buttons', (statusValue) => {
   const status = vi.fn()
   render(<QueueOrderCard order={{ ...order, status: statusValue, paymentStatus: 'PAID' }} pending={false} onStatus={status} onPay={vi.fn()} />)
   expect(screen.queryByRole('button', { name: 'เริ่มทำ' })).not.toBeInTheDocument()

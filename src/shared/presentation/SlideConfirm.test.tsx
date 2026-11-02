@@ -3,6 +3,14 @@ import { afterEach, vi, expect, test } from 'vitest'
 import { SlideConfirm } from './SlideConfirm'
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); vi.restoreAllMocks() })
 
+test('open and close actions expose distinct visual intents while keeping explicit labels', () => {
+  const view = render(<SlideConfirm label="เปิดร้าน" intent="open" onConfirm={vi.fn()} />)
+  expect(view.container.querySelector('.slide-confirm')).toHaveClass('intent-open')
+  view.rerender(<SlideConfirm label="ปิดร้าน" intent="close" onConfirm={vi.fn()} />)
+  expect(view.container.querySelector('.slide-confirm')).toHaveClass('intent-close')
+  expect(screen.getByRole('button', { name: 'ยืนยันปิดร้าน' })).toBeEnabled()
+})
+
 test('short drag cancels and a full drag confirms only on release', async () => {
   HTMLDialogElement.prototype.close = vi.fn()
   vi.stubGlobal('PointerEvent', MouseEvent)

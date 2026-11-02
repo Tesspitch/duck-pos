@@ -33,6 +33,7 @@ export interface TrackedOrder {
   queueNumber: number
   orderReference: string
   status: OrderStatus
+  paymentStatus: 'UNPAID' | 'PAID' | 'REFUNDED'
   totalSatang: number
   createdAt: string
   items: Array<{

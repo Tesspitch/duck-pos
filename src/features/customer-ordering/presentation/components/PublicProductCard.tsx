@@ -1,3 +1,4 @@
+import { QuantityStepper } from '../../../../shared/presentation/QuantityStepper'
 import { useMemo, useState } from 'react'
 import { ProductSheet } from '../../../../shared/presentation/ProductSheet'
 
@@ -75,7 +76,7 @@ export function PublicProductCard({ product, priority = false }: { product: Publ
           </fieldset>
         )) : null}
         {product.isAvailable ? <label className="grid gap-1 text-sm">หมายเหตุ<input value={note} maxLength={300} onChange={(event) => setNote(event.target.value)} className="rounded-lg border border-line px-3" placeholder="เช่น ไม่ใส่หอม" /></label> : null}
-        {product.isAvailable ? <div className="flex items-center justify-between gap-3"><label className="text-sm font-medium">จำนวน <input inputMode="numeric" type="number" min={1} max={20} step={1} value={quantity} onChange={(event) => setQuantity(Math.max(1, Math.min(20, Math.trunc(Number(event.target.value)) || 1)))} className="ml-2 w-20 rounded-lg border border-line px-2" /></label><button type="button" disabled={!valid} onClick={add} className="min-h-11 rounded-xl bg-brand-action px-4 font-semibold text-white disabled:opacity-50">เพิ่มลงตะกร้า</button></div> : null}
+        {product.isAvailable ? <div className="quantity-and-action"><QuantityStepper value={quantity} onChange={setQuantity} /><button type="button" disabled={!valid} onClick={add} className="min-h-11 rounded-xl bg-brand-action px-4 font-semibold text-white disabled:opacity-50">เพิ่มลงตะกร้า</button></div> : null}
         </div>
         </ProductSheet>}
     </article>

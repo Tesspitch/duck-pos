@@ -22,11 +22,11 @@ beforeEach(() => {
   capture.mockResolvedValue(location)
   checkout.mockResolvedValue(result)
 })
-afterEach(() => { cleanup(); useCartStore.getState().clear(); useCustomerTrackingStore.setState({ tokensByShop: {}, historyByShop: {} }); vi.restoreAllMocks(); vi.resetAllMocks() })
+afterEach(() => { cleanup(); useCartStore.getState().clear(); useCustomerTrackingStore.setState({ tokensByShop: {}, historyByShop: {} }); localStorage.clear(); sessionStorage.clear(); vi.restoreAllMocks(); vi.resetAllMocks() })
 
 function openCart(shopOpen = true) {
   const client = new QueryClient({ defaultOptions: { mutations: { retry: false } } })
-  render(<QueryClientProvider client={client}><CustomerLocationContext value={{ capture }}><CustomerOrderingContext value={{ checkout, getMenu: vi.fn(), track: vi.fn() }}><MemoryRouter><Routes><Route path="/" element={<CustomerCart shopId="shop" shopOpen={shopOpen} productImages={{ p: '/menu.jpg' }} />} /><Route path="/track/:token" element={<p>ติดตามออเดอร์</p>} /></Routes></MemoryRouter></CustomerOrderingContext></CustomerLocationContext></QueryClientProvider>)
+  render(<QueryClientProvider client={client}><CustomerLocationContext value={{ capture }}><CustomerOrderingContext value={{ checkout, cancel: vi.fn(), getMenu: vi.fn(), track: vi.fn() }}><MemoryRouter><Routes><Route path="/" element={<CustomerCart shopId="shop" shopOpen={shopOpen} productImages={{ p: '/menu.jpg' }} />} /><Route path="/track/:token" element={<p>ติดตามออเดอร์</p>} /></Routes></MemoryRouter></CustomerOrderingContext></CustomerLocationContext></QueryClientProvider>)
   fireEvent.click(screen.getByRole('button', { name: /ดูตะกร้า/ }))
 }
 

@@ -69,6 +69,7 @@ export function ToppingGroupForm({ shopId, categories, group, busy, onCancel, on
   }
 
   return <form onSubmit={(event) => void submit(event)} className="grid gap-4 rounded-2xl border border-line p-4">
+    <fieldset disabled={busy} className="contents">
     <div className="flex items-center justify-between gap-3">
       <div><p className="text-sm font-semibold text-brand-action">หมวดท็อปปิง</p><h2 className="text-lg font-bold">{group ? 'แก้ไขหมวดท็อปปิง' : 'เพิ่มหมวดท็อปปิง'}</h2></div>
       {group ? <button type="button" onClick={onCancel} className="text-sm text-muted">ยกเลิก</button> : null}
@@ -101,5 +102,6 @@ export function ToppingGroupForm({ shopId, categories, group, busy, onCancel, on
     <label className="flex min-h-11 items-center gap-2 text-sm font-medium"><input type="checkbox" checked={isVisible} onChange={(event) => setIsVisible(event.target.checked)} /> แสดงหมวดท็อปปิงนี้</label>
     {error ? <p role="alert" className="text-sm text-red-700">{error}</p> : null}
     <button disabled={busy || categories.length === 0} className="min-h-11 rounded-xl bg-brand-action px-4 font-bold text-white disabled:opacity-50">{busy ? 'กำลังบันทึก…' : 'บันทึกหมวดท็อปปิง'}</button>
+    </fieldset>
   </form>
 }

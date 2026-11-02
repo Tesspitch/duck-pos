@@ -1,3 +1,4 @@
+import { QuantityStepper } from '../../../../shared/presentation/QuantityStepper'
 import { posCartLineTotal, posCartTotal } from '../../domain/pos-cart'
 import { usePosCartStore } from '../../application/pos-cart-store'
 import { Icon } from '../../../../shared/presentation/Icon'
@@ -27,10 +28,8 @@ export function PosCart({ disabled, pending, error, onSubmit, onEmpty, productIm
             <div className="flex items-start gap-3">{productImages[line.productId] ? <img src={productImages[line.productId]!} alt={line.productName} width="64" height="64" className="cart-product-image" loading="lazy" /> : <span className="cart-product-placeholder" aria-hidden="true"><Icon name="menu" /></span>}<div className="min-w-0 flex-1"><p className="font-semibold">{line.productName}</p></div><p className="shrink-0 font-semibold">{money(posCartLineTotal(line))}</p></div>
             {line.options.length ? <p className="text-xs text-muted">{line.options.map((option) => option.name).join(', ')}</p> : null}
             {line.note ? <p className="text-xs text-muted">หมายเหตุ: {line.note}</p> : null}
-            <div className="mt-2 flex items-center gap-2">
-              <button type="button" disabled={pending || line.quantity <= 1} aria-label={`ลดจำนวน ${line.productName}`} onClick={() => changeQuantity(line.key, line.quantity - 1)} className="w-11 rounded-lg border border-line">−</button>
-              <span className="min-w-8 text-center font-bold">{line.quantity}</span>
-              <button type="button" disabled={pending || line.quantity >= 20} aria-label={`เพิ่มจำนวน ${line.productName}`} onClick={() => changeQuantity(line.key, line.quantity + 1)} className="w-11 rounded-lg border border-line">+</button>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <QuantityStepper disabled={pending} label={`จำนวน ${line.productName}`} value={line.quantity} onChange={(value) => changeQuantity(line.key, value)} showLabel={false} />
               <button type="button" disabled={pending} aria-label={`ลบ ${line.productName}`} onClick={() => { if (lines.length === 1) onEmpty?.(); removeLine(line.key) }} className="ml-auto rounded-lg px-2 text-sm text-red-700">ลบ</button>
             </div>
           </li>

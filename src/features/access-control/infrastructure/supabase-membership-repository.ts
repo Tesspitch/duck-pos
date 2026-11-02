@@ -6,7 +6,7 @@ export const supabaseMembershipRepository: MembershipRepository = {
   async listActiveForUser(userId) {
     const { data, error } = await supabase
       .from('shop_members')
-      .select('id, shop_id, user_id, role, status, granted_at, revoked_at, shops(id, name)')
+      .select('id, shop_id, user_id, role, status, granted_at, revoked_at, shops!inner(id, name)')
       .eq('user_id', userId)
       .eq('status', 'ACTIVE')
 

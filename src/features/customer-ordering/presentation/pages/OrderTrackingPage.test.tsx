@@ -7,15 +7,39 @@ import type { TrackedOrder } from '../../domain/customer-order'
 import { OrderTrackingPage } from './OrderTrackingPage'
 import { useCustomerTrackingStore } from '../../application/customer-tracking-store'
 
-const queued: TrackedOrder = { orderId: 'o', shopId: 'shop-a', shopName: 'ร้านทดสอบ', queueNumber: 12, orderReference: 'R12', status: 'QUEUED', totalSatang: 3900, createdAt: '', items: [{ name: 'เคบับ', quantity: 1, lineTotalSatang: 3900, options: [] }] }
+const queued: TrackedOrder = { orderId: 'o', shopId: 'shop-a', shopName: 'ร้านทดสอบ', queueNumber: 12, orderReference: 'R12', status: 'QUEUED', paymentStatus: 'UNPAID', totalSatang: 3900, createdAt: '', items: [{ name: 'เคบับ', quantity: 1, lineTotalSatang: 3900, options: [] }] }
 const clients: QueryClient[] = []
-afterEach(() => { cleanup(); clients.forEach((client) => client.clear()); clients.length = 0; useCustomerTrackingStore.setState({ tokensByShop: {}, historyByShop: {} }); vi.useRealTimers() })
+afterEach(() => { cleanup(); clients.forEach((client) => client.clear()); clients.length = 0; useCustomerTrackingStore.setState({ tokensByShop: {}, historyByShop: {} }); localStorage.clear(); sessionStorage.clear(); vi.useRealTimers() })
 
-function renderTracking(track: (token: string) => Promise<TrackedOrder | null>) {
+function renderTracking(track: (token: string) => Promise<TrackedOrder | null>, cancel = vi.fn()) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } })
   clients.push(client)
-  render(<QueryClientProvider client={client}><CustomerOrderingContext value={{ track, checkout: vi.fn(), getMenu: vi.fn() }}><MemoryRouter initialEntries={['/track/secret-token']}><Routes><Route path="/track/:token" element={<OrderTrackingPage />} /><Route path="/order/:shopId" element={<p>เมนูร้านเดิม</p>} /></Routes></MemoryRouter></CustomerOrderingContext></QueryClientProvider>)
+  render(<QueryClientProvider client={client}><CustomerOrderingContext value={{ track, cancel, checkout: vi.fn(), getMenu: vi.fn() }}><MemoryRouter initialEntries={['/track/secret-token']}><Routes><Route path="/track/:token" element={<OrderTrackingPage />} /><Route path="/order/:shopId" element={<p>เมนูร้านเดิม</p>} /></Routes></MemoryRouter></CustomerOrderingContext></QueryClientProvider>)
 }
+
+test('customer cancellation refreshes the actual tracking page and stops polling', async () => {
+  vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] })
+  let current = queued
+  const track = vi.fn(async () => current)
+  renderTracking(track, vi.fn(async () => { current = { ...queued, status: 'CANCELLED' } }))
+  fireEvent.click(await screen.findByRole('button', { name: 'ยกเลิกออเดอร์' }))
+  fireEvent.click(screen.getByRole('button', { name: 'ยืนยันยกเลิก' }))
+  await screen.findByText('ยกเลิกแล้ว')
+  expect(screen.queryByRole('button', { name: 'ยกเลิกออเดอร์' })).not.toBeInTheDocument()
+  const calls = track.mock.calls.length
+  await act(async () => { await vi.advanceTimersByTimeAsync(21000) })
+  expect(track).toHaveBeenCalledTimes(calls)
+})
+
+test('staff starting preparation removes the customer cancellation action on refresh', async () => {
+  vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] })
+  const track = vi.fn().mockResolvedValueOnce(queued).mockResolvedValue({ ...queued, status: 'PREPARING' })
+  renderTracking(track)
+  await screen.findByRole('button', { name: 'ยกเลิกออเดอร์' })
+  await act(async () => { await vi.advanceTimersByTimeAsync(7000) })
+  await screen.findByText('กำลังทำ')
+  expect(screen.queryByRole('button', { name: 'ยกเลิกออเดอร์' })).not.toBeInTheDocument()
+})
 
 test('tracking polls through queued and ready, then stops at completed', async () => {
   vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] })

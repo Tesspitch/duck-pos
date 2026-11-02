@@ -50,6 +50,7 @@ export function ToppingForm({ shopId, groupId, topping, pricingMode, busy, onCan
   }
 
   return <form onSubmit={(event) => void submit(event)} className="mt-3 grid gap-3 rounded-xl bg-neutral-50 p-3">
+    <fieldset disabled={busy} className="contents">
     <div className="flex items-center justify-between"><h4 className="text-sm font-semibold">{topping ? 'แก้ไขท็อปปิง' : 'เพิ่มท็อปปิงในหมวดนี้'}</h4>{topping ? <button type="button" onClick={onCancel} className="text-xs text-muted">ยกเลิก</button> : null}</div>
     <div className="grid gap-2 sm:grid-cols-2">
       <label className="grid gap-1 text-sm">ชื่อท็อปปิง<input value={name} onChange={(event) => setName(event.target.value)} maxLength={80} className="rounded-lg border border-line bg-white px-3" /></label>
@@ -58,5 +59,6 @@ export function ToppingForm({ shopId, groupId, topping, pricingMode, busy, onCan
     <div className="flex flex-wrap gap-4 text-sm"><label className="flex items-center gap-2"><input type="checkbox" checked={isVisible} onChange={(event) => setIsVisible(event.target.checked)} /> แสดง</label><label className="flex items-center gap-2"><input type="checkbox" checked={isAvailable} onChange={(event) => setIsAvailable(event.target.checked)} /> พร้อมขาย</label></div>
     {error ? <p role="alert" className="text-sm text-red-700">{error}</p> : null}
     <button disabled={busy} className="min-h-11 rounded-lg border border-brand-action bg-white px-3 text-sm font-semibold text-brand-action disabled:opacity-50">{busy ? 'กำลังบันทึก…' : 'บันทึกท็อปปิง'}</button>
+    </fieldset>
   </form>
 }

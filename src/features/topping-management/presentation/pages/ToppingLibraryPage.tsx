@@ -25,11 +25,11 @@ export function ToppingLibraryPage() {
   const error = useMemo(() => library.error ?? Object.values(actions).find((action) => action.error)?.error, [actions, library.error])
 
   function deleteGroup(group: ToppingGroup) {
-    if (window.confirm(`ลบหมวดท็อปปิง “${group.name}”? เมนูจะหยุดแสดงท็อปปิงในหมวดนี้ แต่ประวัติออเดอร์เดิมยังอยู่`)) void actions.deleteGroup.mutateAsync(group.id)
+    if (window.confirm(`ลบหมวดท็อปปิง “${group.name}”? เมนูจะหยุดแสดงท็อปปิงในหมวดนี้ แต่ประวัติออเดอร์เดิมยังอยู่`)) actions.deleteGroup.mutate(group.id)
   }
 
   function deleteTopping(topping: Topping) {
-    if (window.confirm(`ลบท็อปปิง “${topping.name}”? ประวัติออเดอร์เดิมจะไม่ถูกลบ`)) void actions.deleteTopping.mutateAsync(topping.id)
+    if (window.confirm(`ลบท็อปปิง “${topping.name}”? ประวัติออเดอร์เดิมจะไม่ถูกลบ`)) actions.deleteTopping.mutate(topping.id)
   }
 
   return <AppShell><main className="mx-auto grid max-w-5xl gap-5 p-4 sm:p-6">
@@ -39,6 +39,6 @@ export function ToppingLibraryPage() {
     {isOwner && <button type="button" aria-expanded={creating || Boolean(editingGroup)} onClick={() => { setEditingGroup(null); setCreating(!creating) }} className="min-h-12 justify-self-start bg-brand px-5 font-bold text-ink">{creating ? 'ปิดฟอร์ม' : '＋ สร้างกลุ่มท็อปปิง'}</button>}
     {library.data && isOwner && (creating || editingGroup) ? <FormWorkspace title={editingGroup ? ' แก้ไขกลุ่มท็อปปิง' : ' สร้างกลุ่มท็อปปิง'} busy={busy} onBack={() => { setEditingGroup(null); setCreating(false) }}><ToppingGroupForm key={editingGroup?.id ?? 'new-topping-group'} shopId={shopId} categories={library.data.categories} group={editingGroup} busy={actions.saveGroup.isPending} onCancel={() => { setEditingGroup(null); setCreating(false) }} onSave={async (input) => { await actions.saveGroup.mutateAsync(input); setEditingGroup(null); setCreating(false) }} /></FormWorkspace> : null}
     {library.data?.groups.length === 0 ? <p className="rounded-xl border border-dashed border-line p-8 text-center text-muted">ยังไม่มีหมวดท็อปปิง{isOwner ? ' กดสร้างกลุ่มท็อปปิงเพื่อเริ่มต้น' : ''}</p> : null}
-    {library.data ? <section className="grid gap-4">{library.data.groups.map((group) => <ToppingGroupCard key={group.id} shopId={shopId} group={group} categories={library.data.categories} isOwner={isOwner} busy={busy} onEditGroup={setEditingGroup} onDeleteGroup={deleteGroup} onSaveTopping={(input) => actions.saveTopping.mutateAsync(input).then(() => undefined)} onDeleteTopping={deleteTopping} onToggleAvailability={(topping) => void actions.setAvailability.mutateAsync({ toppingId: topping.id, available: !topping.isAvailable })} />)}</section> : null}
+    {library.data ? <section className="grid gap-4">{library.data.groups.map((group) => <ToppingGroupCard key={group.id} shopId={shopId} group={group} categories={library.data.categories} isOwner={isOwner} busy={busy} onEditGroup={setEditingGroup} onDeleteGroup={deleteGroup} onSaveTopping={(input) => actions.saveTopping.mutateAsync(input).then(() => undefined)} onDeleteTopping={deleteTopping} onToggleAvailability={(topping) => actions.setAvailability.mutate({ toppingId: topping.id, available: !topping.isAvailable })} />)}</section> : null}
   </main></AppShell>
 }

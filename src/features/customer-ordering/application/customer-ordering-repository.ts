@@ -12,4 +12,5 @@ export interface CustomerOrderingRepository {
     note: string
   }): Promise<CheckoutResult>
   track(trackingToken: string): Promise<TrackedOrder | null>
+  cancel(trackingToken: string): Promise<void>
 }

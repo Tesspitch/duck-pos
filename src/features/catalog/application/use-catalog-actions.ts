@@ -6,6 +6,7 @@ import type {
 } from '../domain/catalog'
 import { useCatalogServices } from './catalog-services-context'
 import { catalogQueryKey } from './use-catalog'
+import { toppingLibraryQueryKey } from '../../topping-management/application/use-topping-library'
 
 interface SaveProductWithImageInput extends SaveProductInput {
   imageFile?: File | null
@@ -14,7 +15,11 @@ interface SaveProductWithImageInput extends SaveProductInput {
 export function useCatalogActions(shopId: string) {
   const { repository, imageService } = useCatalogServices()
   const queryClient = useQueryClient()
-  const refresh = () => queryClient.invalidateQueries({ queryKey: catalogQueryKey(shopId) })
+  const refresh = () => Promise.all([
+    queryClient.invalidateQueries({ queryKey: catalogQueryKey(shopId) }),
+    queryClient.invalidateQueries({ queryKey: toppingLibraryQueryKey(shopId) }),
+    queryClient.invalidateQueries({ queryKey: ['public-menu', shopId] }),
+  ])
 
   const saveCategory = useMutation({
     mutationFn: (input: SaveCategoryInput) => repository.saveCategory(input),

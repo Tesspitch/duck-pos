@@ -1,0 +1,38 @@
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { afterEach, beforeAll, expect, test, vi } from 'vitest'
+import { PlatformAdminRepositoryContext } from '../../application/platform-admin-repository-context'
+import { PlatformShopList } from './PlatformShopList'
+
+const clients: QueryClient[] = []
+beforeAll(() => {
+  HTMLDialogElement.prototype.showModal = function () { this.setAttribute('open', '') }
+  HTMLDialogElement.prototype.close = function () { this.removeAttribute('open') }
+  window.scrollTo = vi.fn()
+})
+afterEach(() => { cleanup(); clients.forEach((client) => client.clear()); clients.length = 0 })
+function setup(remove = vi.fn().mockResolvedValue(undefined)) {
+  const list = vi.fn().mockResolvedValue({ shops: [{ id: 'shop-1', name: 'ร้านทดสอบ' }], hasMore: false })
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } })
+  clients.push(client)
+  render(<QueryClientProvider client={client}><PlatformAdminRepositoryContext value={{ isPlatformAdmin: vi.fn(), listShopCreationGrants: vi.fn(), grantShopCreation: vi.fn(), revokeShopCreation: vi.fn(), listShops: list, deleteShop: remove }}><PlatformShopList /></PlatformAdminRepositoryContext></QueryClientProvider>)
+  return { list, remove }
+}
+test('admin must confirm the exact shop name before deleting and the list refreshes', async () => {
+  const { list, remove } = setup()
+  fireEvent.click(await screen.findByRole('button', { name: 'ลบร้าน ร้านทดสอบ' }))
+  expect(screen.getByRole('button', { name: 'ยืนยันลบร้าน' })).toBeDisabled()
+  fireEvent.change(screen.getByLabelText('พิมพ์ชื่อร้านเพื่อยืนยัน'), { target: { value: 'ร้านผิด' } })
+  expect(screen.getByRole('button', { name: 'ยืนยันลบร้าน' })).toBeDisabled()
+  fireEvent.change(screen.getByLabelText('พิมพ์ชื่อร้านเพื่อยืนยัน'), { target: { value: 'ร้านทดสอบ' } })
+  fireEvent.click(screen.getByRole('button', { name: 'ยืนยันลบร้าน' }))
+  await waitFor(() => expect(remove).toHaveBeenCalledExactlyOnceWith('shop-1', 'ร้านทดสอบ'))
+  await waitFor(() => expect(list).toHaveBeenCalledTimes(2))
+})
+test('admin sees actionable feedback when the shop still has an open session', async () => {
+  setup(vi.fn().mockRejectedValue(new Error('Close the store session before deleting this shop.')))
+  fireEvent.click(await screen.findByRole('button', { name: 'ลบร้าน ร้านทดสอบ' }))
+  fireEvent.change(screen.getByLabelText('พิมพ์ชื่อร้านเพื่อยืนยัน'), { target: { value: 'ร้านทดสอบ' } })
+  fireEvent.click(screen.getByRole('button', { name: 'ยืนยันลบร้าน' }))
+  expect(await screen.findByRole('alert')).toHaveTextContent('ปิดรอบขาย')
+})

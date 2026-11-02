@@ -1,9 +1,9 @@
 import { Icon } from './Icon'
 import { useRef, useState } from 'react'
 
-interface Props { label: string; disabled?: boolean; onConfirm: () => Promise<void> }
+interface Props { label: string; disabled?: boolean; intent?: 'open' | 'close'; onConfirm: () => Promise<void> }
 
-export function SlideConfirm({ label, disabled = false, onConfirm }: Props) {
+export function SlideConfirm({ label, disabled = false, intent = 'open', onConfirm }: Props) {
   const track = useRef<HTMLDivElement>(null)
   const dialog = useRef<HTMLDialogElement>(null)
   const drag = useRef<{ pointerId: number; start: number; distance: number; value: number } | null>(null)
@@ -22,7 +22,7 @@ export function SlideConfirm({ label, disabled = false, onConfirm }: Props) {
   }
 
   return <div>
-    <div ref={track} className={`slide-confirm ${blocked ? 'is-disabled' : ''}`}>
+    <div ref={track} className={`slide-confirm intent-${intent} ${blocked ? 'is-disabled' : ''}`}>
       <span className="slide-confirm-label">{running ? 'กำลังดำเนินการ…' : `รูดเพื่อ${label} →`}</span>
       <button type="button" aria-label={`ยืนยัน${label}`} disabled={blocked} className="slide-confirm-handle" style={{ left: `calc(${progress * 100}% - ${progress * 52}px)` }}
         onPointerDown={(event) => {
@@ -47,8 +47,8 @@ export function SlideConfirm({ label, disabled = false, onConfirm }: Props) {
         onPointerCancel={() => { drag.current = null; setProgress(0) }}
         onLostPointerCapture={() => { drag.current = null; setProgress(0) }}
         onClick={(event) => { if (event.detail === 0 && !blocked) dialog.current?.showModal() }}
-      ><span aria-hidden="true"><Icon name="store" /></span></button>
+      ><span aria-hidden="true"><Icon name="arrow" /></span></button>
     </div>
-    <dialog ref={dialog} aria-label={`ยืนยัน${label}`} className="confirm-action-dialog"><h2 className="text-xl font-bold">ยืนยัน{label}?</h2><p className="mt-2 text-sm text-muted">การดำเนินการนี้จะเปลี่ยนสถานะการรับออเดอร์ของร้าน</p><div className="mt-5 flex gap-3"><button type="button" onClick={() => dialog.current?.close()} className="flex-1 border border-line px-4">ยกเลิก</button><button type="button" disabled={blocked} onClick={() => void confirm().catch(() => undefined)} className="flex-1 bg-brand-action px-4 font-bold text-white">ยืนยัน{label}</button></div></dialog>
+    <dialog ref={dialog} aria-label={`ยืนยัน${label}`} className={`confirm-action-dialog intent-${intent}`}><h2 className="text-xl font-bold">ยืนยัน{label}?</h2><p className="mt-2 text-sm text-muted">การดำเนินการนี้จะเปลี่ยนสถานะการรับออเดอร์ของร้าน</p><div className="mt-5 flex gap-3"><button type="button" onClick={() => dialog.current?.close()} className="flex-1 border border-line px-4">ยกเลิก</button><button type="button" disabled={blocked} onClick={() => void confirm().catch(() => undefined)} className="store-confirm-primary flex-1 px-4 font-bold text-white">ยืนยัน{label}</button></div></dialog>
   </div>
 }

@@ -12,6 +12,7 @@ export function useToppingLibraryActions(shopId: string) {
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: toppingLibraryQueryKey(shopId) }),
       queryClient.invalidateQueries({ queryKey: catalogQueryKey(shopId) }),
+      queryClient.invalidateQueries({ queryKey: ['public-menu', shopId] }),
     ])
   }
 

@@ -1,4 +1,4 @@
-export type RealtimeConnectionState = 'CONNECTING' | 'CONNECTED' | 'RECONNECTING'
+export type RealtimeConnectionState = 'CONNECTING' | 'CONNECTED' | 'RECONNECTING' | 'DISCONNECTED'
 
 export interface StaffOrdersRealtime {
   subscribe(

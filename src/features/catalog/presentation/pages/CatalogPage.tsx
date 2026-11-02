@@ -30,12 +30,12 @@ export function CatalogPage() {
 
   async function deleteCategory(category: Category) {
     if (!window.confirm(`ลบหมวด “${category.name}”? หมวดที่ยังมีสินค้าจะลบไม่ได้`)) return
-    await actions.deleteCategory.mutateAsync(category.id)
+    actions.deleteCategory.mutate(category.id)
   }
 
   async function deleteProduct(product: Product) {
     if (!window.confirm(`ลบสินค้า “${product.name}” และตัวเลือกทั้งหมด?`)) return
-    await actions.deleteProduct.mutateAsync({ productId: product.id, imagePath: product.imagePath })
+    actions.deleteProduct.mutate({ productId: product.id, imagePath: product.imagePath })
   }
 
   return (
@@ -69,7 +69,7 @@ export function CatalogPage() {
             onDeleteCategory={(category) => void deleteCategory(category)}
             onEditProduct={setEditingProduct}
             onDeleteProduct={(product) => void deleteProduct(product)}
-            onToggleProduct={(product) => void actions.setProductAvailability.mutateAsync({ productId: product.id, available: !product.isAvailable })}
+            onToggleProduct={(product) => actions.setProductAvailability.mutate({ productId: product.id, available: !product.isAvailable })}
           />
         ) : null}
       </main>

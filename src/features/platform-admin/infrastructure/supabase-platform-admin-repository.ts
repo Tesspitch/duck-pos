@@ -3,6 +3,15 @@ import type { ShopCreationGrant } from '../domain/shop-creation-grant'
 import { supabase } from '../../../lib/supabase'
 
 export const supabasePlatformAdminRepository: PlatformAdminRepository = {
+  async listShops(search, offset) {
+    const { data, error } = await supabase.rpc('list_platform_shops', { search_text: search, page_offset: offset })
+    if (error) throw error
+    return data
+  },
+  async deleteShop(shopId, confirmationName) {
+    const { error } = await supabase.rpc('delete_platform_shop', { target_shop_id: shopId, confirmation_name: confirmationName })
+    if (error) throw error
+  },
   async isPlatformAdmin(userId) {
     const { data, error } = await supabase
       .from('platform_admins')

@@ -38,6 +38,7 @@ export function CategoryForm({ shopId, category, nextSortOrder, busy, onCancel, 
 
   return (
     <form onSubmit={(event) => void handleSubmit(event)} className="grid gap-3 rounded-xl border border-line p-4">
+    <fieldset disabled={busy} className="contents">
       <div className="flex items-center justify-between gap-3">
         <h2 className="font-bold">{category ? 'แก้ไขหมวดหมู่' : 'เพิ่มหมวดหมู่'}</h2>
         {category ? <button type="button" onClick={onCancel} className="text-sm text-muted">ยกเลิก</button> : null}
@@ -54,6 +55,7 @@ export function CategoryForm({ shopId, category, nextSortOrder, busy, onCancel, 
       <button disabled={busy} className="rounded-lg bg-brand-action px-4 font-semibold text-white disabled:opacity-50">
         {busy ? 'กำลังบันทึก…' : 'บันทึกหมวดหมู่'}
       </button>
+    </fieldset>
     </form>
   )
 }

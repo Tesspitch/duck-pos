@@ -59,4 +59,8 @@ export const supabaseCustomerOrderingRepository: CustomerOrderingRepository = {
     if (error) throw error
     return data
   },
+  async cancel(trackingToken) {
+    const { error } = await supabase.rpc('cancel_customer_order', { request_tracking_token: trackingToken })
+    if (error) throw error
+  },
 }

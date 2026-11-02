@@ -18,9 +18,12 @@ export function useStaffOrdersRealtime(shopId: string | undefined) {
       setState('RECONNECTING')
       refresh()
     }
+    const handleOffline = () => setState('DISCONNECTED')
     window.addEventListener('online', handleOnline)
+    window.addEventListener('offline', handleOffline)
     return () => {
       window.removeEventListener('online', handleOnline)
+      window.removeEventListener('offline', handleOffline)
       unsubscribe()
     }
   }, [queryClient, realtime, shopId])

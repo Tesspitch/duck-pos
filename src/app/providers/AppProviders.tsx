@@ -1,7 +1,11 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { useCustomerTrackingSync } from '../../features/customer-ordering/application/use-customer-tracking-sync'
 import type { PropsWithChildren } from 'react'
 import { BrowserRouter } from 'react-router-dom'
 import { ConnectionStatus } from '../../shared/presentation/ConnectionStatus'
+import { MutationFeedback } from '../../shared/presentation/MutationFeedback'
+import { HistoryDeletionContext } from '../../features/history-management/application/history-deletion-context'
+import { supabaseHistoryDeletionRepository } from '../../features/history-management/infrastructure/supabase-history-deletion-repository'
 import { AppErrorBoundary } from '../../shared/presentation/AppErrorBoundary'
 
 import { MembershipRepositoryProvider } from '../../features/access-control/application/MembershipRepositoryProvider'
@@ -55,8 +59,11 @@ const queryClient = new QueryClient({
 })
 
 export function AppProviders({ children }: PropsWithChildren) {
+  useCustomerTrackingSync()
   return (
     <QueryClientProvider client={queryClient}>
+      <HistoryDeletionContext value={supabaseHistoryDeletionRepository}>
+      <MutationFeedback />
       <AuthProvider gateway={supabaseAuthGateway}>
         <PlatformAdminRepositoryProvider repository={supabasePlatformAdminRepository}>
           <ShopOnboardingRepositoryProvider repository={supabaseShopOnboardingRepository}>
@@ -97,6 +104,7 @@ export function AppProviders({ children }: PropsWithChildren) {
           </ShopOnboardingRepositoryProvider>
         </PlatformAdminRepositoryProvider>
       </AuthProvider>
+      </HistoryDeletionContext>
     </QueryClientProvider>
   )
 }

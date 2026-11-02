@@ -32,8 +32,8 @@ export function PosPage() {
 
   useEffect(() => { if (shopId) ensureShop(shopId) }, [ensureShop, shopId])
   const categories = useMemo(() => (catalog.data ?? []).filter((category) => category.isVisible), [catalog.data])
-  const activeCategory = categories.find((category) => category.id === categoryId) ?? categories[0]
-  const products = (search.trim() ? categories.flatMap((category) => category.products) : activeCategory?.products ?? []).filter((product) => product.isVisible && product.name.toLocaleLowerCase().includes(search.trim().toLocaleLowerCase()))
+  const activeCategory = categories.find((category) => category.id === categoryId)
+  const products = (search.trim() || !activeCategory ? categories.flatMap((category) => category.products) : activeCategory.products).filter((product) => product.isVisible && product.name.toLocaleLowerCase().includes(search.trim().toLocaleLowerCase()))
 
   async function submit() {
     if (!shopId || submitLock.current || !lines.length || !queue.data?.isOpen) return
@@ -63,6 +63,7 @@ export function PosPage() {
         <div className="mt-5">
           <section>
             <nav aria-label="หมวดหมู่สินค้า" className="flex gap-2 overflow-x-auto pb-3">
+              <button type="button" aria-pressed={!activeCategory} onClick={() => setCategoryId(null)} className={`whitespace-nowrap rounded-xl border px-4 font-semibold ${!activeCategory ? 'border-brand bg-brand-soft text-brand-action' : 'border-line bg-white'}`}>ทุกหมวดหมู่</button>
               {categories.map((category) => <button type="button" key={category.id} onClick={() => setCategoryId(category.id)} className={`whitespace-nowrap rounded-xl border px-4 font-semibold ${activeCategory?.id === category.id ? 'border-brand bg-brand-soft text-brand-action' : 'border-line bg-white'}`}>{category.name}</button>)}
             </nav>
             {catalog.isLoading ? <LoadingState label="กำลังโหลดเมนู…" /> : null}

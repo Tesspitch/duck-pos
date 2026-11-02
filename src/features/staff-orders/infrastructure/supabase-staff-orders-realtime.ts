@@ -13,7 +13,7 @@ export const supabaseStaffOrdersRealtime: StaffOrdersRealtime = {
         event: '*', schema: 'public', table: 'payments', filter: `shop_id=eq.${shopId}`,
       }, onChange)
       .subscribe((status) => {
-        onConnectionState(status === 'SUBSCRIBED' ? 'CONNECTED' : 'RECONNECTING')
+        onConnectionState(status === 'SUBSCRIBED' ? 'CONNECTED' : 'DISCONNECTED')
       })
 
     return () => { void supabase.removeChannel(channel) }

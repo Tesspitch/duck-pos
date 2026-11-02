@@ -88,6 +88,7 @@ export function ProductForm({
 
   return (
     <form onSubmit={(event) => void handleSubmit(event)} className="grid gap-3 rounded-xl border border-line p-4">
+    <fieldset disabled={busy} className="contents">
       <div className="flex items-center justify-between gap-3">
         <h2 className="font-bold">{product ? 'แก้ไขสินค้า' : 'เพิ่มสินค้า'}</h2>
         {product ? <button type="button" onClick={onCancel} className="text-sm text-muted">ยกเลิก</button> : null}
@@ -122,6 +123,7 @@ export function ProductForm({
       <button disabled={busy} className="rounded-lg bg-brand-action px-4 font-semibold text-white disabled:opacity-50">
         {busy ? 'กำลังบันทึกและปรับรูป…' : 'บันทึกสินค้า'}
       </button>
+    </fieldset>
     </form>
   )
 }
