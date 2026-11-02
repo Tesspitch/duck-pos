@@ -22,7 +22,7 @@ beforeEach(() => {
   capture.mockResolvedValue(location)
   checkout.mockResolvedValue(result)
 })
-afterEach(() => { cleanup(); useCartStore.getState().clear(); useCustomerTrackingStore.setState({ tokensByShop: {} }); vi.restoreAllMocks(); vi.resetAllMocks() })
+afterEach(() => { cleanup(); useCartStore.getState().clear(); useCustomerTrackingStore.setState({ tokensByShop: {}, historyByShop: {} }); vi.restoreAllMocks(); vi.resetAllMocks() })
 
 function openCart(shopOpen = true) {
   const client = new QueryClient({ defaultOptions: { mutations: { retry: false } } })

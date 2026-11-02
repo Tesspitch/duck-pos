@@ -6,11 +6,6 @@ import { PaymentPanel } from './PaymentPanel'
 
 const money = (satang: number) => `฿${(satang / 100).toFixed(2)}`
 const labels: Record<OrderStatus, string> = { QUEUED: 'รอทำ', PREPARING: 'กำลังทำ', READY: 'พร้อมรับ', COMPLETED: 'เสร็จสิ้น', CANCELLED: 'ยกเลิก' }
-const next: Partial<Record<OrderStatus, { status: OrderStatus; label: string }>> = {
-  QUEUED: { status: 'PREPARING', label: 'เริ่มทำ' },
-  PREPARING: { status: 'READY', label: 'อาหารพร้อม' },
-  READY: { status: 'COMPLETED', label: 'ปิดรายการ' },
-}
 
 interface Props {
   order: StaffOrder
@@ -23,7 +18,7 @@ export function QueueOrderCard({ order, pending, onStatus, onPay }: Props) {
   const [showCancel, setShowCancel] = useState(false)
   const [reason, setReason] = useState('')
   const [cancelError, setCancelError] = useState<string | null>(null)
-  const action = next[order.status]
+  const canComplete = ['QUEUED', 'PREPARING', 'READY'].includes(order.status)
 
   function cancel() {
     const result = cancellationSchema.safeParse({ reason })
@@ -44,10 +39,11 @@ export function QueueOrderCard({ order, pending, onStatus, onPay }: Props) {
       <p className="mt-3 text-right text-xl font-bold">รวม {money(order.totalSatang)}</p>
       {order.paymentStatus === 'UNPAID' ? <PaymentPanel order={order} pending={pending} onPay={onPay} /> : null}
       <div className="mt-3 grid grid-cols-2 gap-2">
-        {action ? <button type="button" disabled={pending || (action.status === 'COMPLETED' && order.paymentStatus !== 'PAID')}
-          onClick={() => onStatus(order.status, action.status)} className="rounded-xl bg-brand-action px-3 font-semibold text-white disabled:opacity-50">{action.status === 'COMPLETED' && order.paymentStatus !== 'PAID' ? 'รับชำระก่อนปิดรายการ' : action.label}</button> : null}
+        {canComplete ? <button type="button" disabled={pending || order.paymentStatus !== 'PAID'}
+          onClick={() => onStatus(order.status, 'COMPLETED')} className="rounded-xl bg-brand-action px-3 font-semibold text-white disabled:opacity-50">เสร็จแล้ว</button> : null}
         <button type="button" disabled={pending || order.paymentStatus !== 'UNPAID'} onClick={() => setShowCancel((value) => !value)} className="rounded-xl border border-red-200 px-3 font-semibold text-red-700 disabled:opacity-50">ยกเลิก</button>
       </div>
+      {canComplete && order.paymentStatus === 'UNPAID' && <p className="mt-2 text-xs text-muted">รับชำระก่อนกดเสร็จแล้ว</p>}
       {showCancel ? <div className="mt-3 rounded-xl border border-red-200 p-3"><label className="grid gap-1 text-sm">เหตุผลยกเลิก<input value={reason} maxLength={300} onChange={(event) => setReason(event.target.value)} className="rounded-lg border border-line px-3" /></label>{cancelError ? <p className="mt-1 text-sm text-red-700">{cancelError}</p> : null}<button type="button" disabled={pending} onClick={cancel} className="mt-2 w-full rounded-lg bg-red-700 px-3 font-semibold text-white">ยืนยันยกเลิกออเดอร์</button></div> : null}
     </article>
   )

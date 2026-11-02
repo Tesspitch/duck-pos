@@ -12,6 +12,7 @@ afterEach(() => { cleanup(); usePosCartStore.getState().clear() })
 test('cash rejects underpayment and records the amount received with correct change', () => {
   const pay = vi.fn()
   render(<PaymentPanel order={order} pending={false} onPay={pay} />)
+  fireEvent.change(screen.getByLabelText('วิธีชำระ'), { target: { value: 'CASH' } })
   fireEvent.change(screen.getByLabelText('ยอดรับ (บาท)'), { target: { value: '40' } })
   fireEvent.click(screen.getByRole('button', { name: 'ยืนยันรับชำระ' }))
   expect(pay).not.toHaveBeenCalled()
@@ -25,7 +26,7 @@ test('cash rejects underpayment and records the amount received with correct cha
 test('transfer uses the order total and pending payment locks all inputs', () => {
   const pay = vi.fn()
   const view = render(<PaymentPanel order={order} pending={false} onPay={pay} />)
-  fireEvent.change(screen.getByLabelText('วิธีชำระ'), { target: { value: 'BANK_TRANSFER' } })
+  expect(screen.getByLabelText('วิธีชำระ')).toHaveValue('BANK_TRANSFER')
   expect(screen.getByLabelText('ยอดรับ (บาท)')).toHaveValue(49)
   expect(screen.getByLabelText('ยอดรับ (บาท)')).toHaveAttribute('readonly')
   fireEvent.click(screen.getByRole('button', { name: 'ยืนยันรับชำระ' }))
@@ -39,7 +40,7 @@ test('transfer uses the order total and pending payment locks all inputs', () =>
 test('queue requires payment before completion and a reason before cancellation', () => {
   const status = vi.fn()
   render(<QueueOrderCard order={order} pending={false} onStatus={status} onPay={vi.fn()} />)
-  expect(screen.getByRole('button', { name: 'รับชำระก่อนปิดรายการ' })).toBeDisabled()
+  expect(screen.getByRole('button', { name: 'เสร็จแล้ว' })).toBeDisabled()
   fireEvent.click(screen.getByRole('button', { name: 'ยกเลิก' }))
   fireEvent.click(screen.getByRole('button', { name: 'ยืนยันยกเลิกออเดอร์' }))
   expect(status).not.toHaveBeenCalled()
@@ -52,8 +53,17 @@ test('paid ready order completes without showing payment inputs', () => {
   const status = vi.fn()
   render(<QueueOrderCard order={{ ...order, paymentStatus: 'PAID' }} pending={false} onStatus={status} onPay={vi.fn()} />)
   expect(screen.queryByLabelText('ยอดรับ (บาท)')).not.toBeInTheDocument()
-  fireEvent.click(screen.getByRole('button', { name: 'ปิดรายการ' }))
+  fireEvent.click(screen.getByRole('button', { name: 'เสร็จแล้ว' }))
   expect(status).toHaveBeenCalledExactlyOnceWith('READY', 'COMPLETED')
+})
+
+test.each(['QUEUED', 'PREPARING', 'READY'] as const)('paid %s order completes in one click without intermediate buttons', (statusValue) => {
+  const status = vi.fn()
+  render(<QueueOrderCard order={{ ...order, status: statusValue, paymentStatus: 'PAID' }} pending={false} onStatus={status} onPay={vi.fn()} />)
+  expect(screen.queryByRole('button', { name: 'เริ่มทำ' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'อาหารพร้อม' })).not.toBeInTheDocument()
+  fireEvent.click(screen.getByRole('button', { name: 'เสร็จแล้ว' }))
+  expect(status).toHaveBeenCalledExactlyOnceWith(statusValue, 'COMPLETED')
 })
 
 test('POS confirmation locks quantity, remove, note and submit while sending', () => {

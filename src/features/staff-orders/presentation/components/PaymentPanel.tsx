@@ -12,7 +12,7 @@ interface Props {
 }
 
 export function PaymentPanel({ order, pending, onPay }: Props) {
-  const [method, setMethod] = useState<PaymentMethod>('CASH')
+  const [method, setMethod] = useState<PaymentMethod>('BANK_TRANSFER')
   const [amount, setAmount] = useState((order.totalSatang / 100).toFixed(2))
   const [error, setError] = useState<string | null>(null)
   const amountSatang = Math.round(Number(amount || 0) * 100)

@@ -9,7 +9,7 @@ import { useCustomerTrackingStore } from '../../application/customer-tracking-st
 
 const queued: TrackedOrder = { orderId: 'o', shopId: 'shop-a', shopName: 'ร้านทดสอบ', queueNumber: 12, orderReference: 'R12', status: 'QUEUED', totalSatang: 3900, createdAt: '', items: [{ name: 'เคบับ', quantity: 1, lineTotalSatang: 3900, options: [] }] }
 const clients: QueryClient[] = []
-afterEach(() => { cleanup(); clients.forEach((client) => client.clear()); clients.length = 0; useCustomerTrackingStore.setState({ tokensByShop: {} }); vi.useRealTimers() })
+afterEach(() => { cleanup(); clients.forEach((client) => client.clear()); clients.length = 0; useCustomerTrackingStore.setState({ tokensByShop: {}, historyByShop: {} }); vi.useRealTimers() })
 
 function renderTracking(track: (token: string) => Promise<TrackedOrder | null>) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } })
@@ -26,10 +26,23 @@ test('tracking polls through queued and ready, then stops at completed', async (
   await act(async () => { await vi.advanceTimersByTimeAsync(7000) })
   await screen.findByText('พร้อมรับอาหาร')
   await act(async () => { await vi.advanceTimersByTimeAsync(7000) })
-  await screen.findByText('รับอาหารแล้ว')
+  await screen.findByText('เสร็จแล้ว')
   const completedCalls = track.mock.calls.length
   await act(async () => { await vi.advanceTimersByTimeAsync(21000) })
   expect(track).toHaveBeenCalledTimes(completedCalls)
+})
+
+test('customer observes direct queued-to-completed transition and polling stops', async () => {
+  vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] })
+  const track = vi.fn().mockResolvedValueOnce(queued).mockResolvedValue({ ...queued, status: 'COMPLETED' })
+  renderTracking(track)
+  await screen.findByText('อยู่ในคิว')
+  await act(async () => { await vi.advanceTimersByTimeAsync(7000) })
+  await screen.findByText('เสร็จแล้ว')
+  expect(screen.queryByRole('button', { name: /แจ้งเตือน/ })).not.toBeInTheDocument()
+  const calls = track.mock.calls.length
+  await act(async () => { await vi.advanceTimersByTimeAsync(21000) })
+  expect(track).toHaveBeenCalledTimes(calls)
 })
 
 test('temporary tracking failure offers retry without claiming the token is invalid', async () => {
@@ -53,4 +66,22 @@ test('tracking navigation opens the correct shop and remembers a shop-scoped ret
   expect(useCustomerTrackingStore.getState().tokensByShop).toEqual({ 'shop-a': 'secret-token' })
   fireEvent.click(screen.getByRole('button', { name: 'เมนู' }))
   await screen.findByText('เมนูร้านเดิม')
+})
+
+test('two orders remain available and customer can switch to the earlier queue', async () => {
+  const { remember } = useCustomerTrackingStore.getState()
+  remember('shop-a', 'earlier-token')
+  remember('shop-a', 'secret-token')
+  remember('other-shop', 'unrelated-token')
+  const track = vi.fn(async (token: string) => token === 'earlier-token'
+    ? { ...queued, orderId: 'earlier', queueNumber: 11, orderReference: 'R11' }
+    : queued)
+  renderTracking(track)
+  await screen.findByRole('heading', { name: '012' })
+  expect(await screen.findByRole('heading', { name: 'ออเดอร์ของคุณ · 2' })).toBeVisible()
+  fireEvent.click(await screen.findByRole('link', { name: 'คิว 011 R11' }))
+  await screen.findByRole('heading', { name: '011' })
+  expect(screen.getByRole('link', { name: 'คิว 012 R12' })).toBeVisible()
+  expect(useCustomerTrackingStore.getState().historyByShop['shop-a']).toEqual(['secret-token', 'earlier-token'])
+  expect(track).not.toHaveBeenCalledWith('unrelated-token')
 })

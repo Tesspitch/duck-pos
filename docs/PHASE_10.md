@@ -2,6 +2,23 @@
 
 Status: In progress. User approved the redesign scope. No deployment performed.
 
+## Multiple customer orders — 2026-11-02
+
+- Fixed per-shop tracking storage overwriting the previous link. Private sessionStorage now retains a deduplicated history and preserves the legacy single saved token when the next order is added.
+- Tracking shows an order selector with queue number/reference. Switching preserves tab order and allows viewing both active and completed orders. Only the selected order polls; other known tokens use cached reads without polling. No public order-list endpoint or additional credentials were introduced.
+- Frontend regression: 20 files / 60 tests passed. Browser fixtures at 390×844 and 768×1024 verified two orders, earlier-order selection, completed/queued details and refresh; screenshots are `artifacts/qa/screenshots/multiple-orders-*-fixture.jpg`.
+- History is scoped to the current browser tab and shop. Earlier tokens already overwritten by old builds cannot be recovered from the new UI; reopening the original tracking link adds the order back. This change does not imply order deletion in PostgreSQL.
+- Requires frontend redeployment; no database migration.
+
+## One-step completion and transfer default — 2026-11-02
+
+- Staff status control is now a single “เสร็จแล้ว” action from QUEUED/PREPARING/READY; existing cancellation and manual payment recording are retained. Payment defaults to BANK_TRANSFER, with cash still selectable.
+- Completion requires PAID on both UI and server. Migration 030 applied: atomic direct completion retains row locking, active-shop membership checks, expected-status conflict detection and one status event. Legacy intermediate transitions remain valid for older deployed clients.
+- Customer tracking displays “เสร็จแล้ว”, supports direct QUEUED → COMPLETED updates, and stops polling at the terminal status. The existing active-queue query omits completed orders after invalidation/Realtime refresh.
+- Validation: full frontend gate passed (19 files / 57 tests, lint, TypeScript, production/PWA build); hosted rollback regressions passed 14 new completion assertions and 13 legacy POS assertions after migration.
+- Browser fixture checks at 390×844 and 768×1024: default transfer, payment before completion, one-click removal from queue, and customer completed state. No live sales/payment records were created. Screenshots: `artifacts/qa/screenshots/one-step-completion-*-fixture.jpg` and `completed-customer-*-fixture.jpg`.
+- Frontend must be redeployed by the owner for the new button/default/copy to appear in production.
+
 ## Customer bottom navigation — cart and tracking
 
 - Shared SVG navigation is rendered inside the full-screen cart dialog and on the tracking page at mobile/tablet widths, with reserved space and the active destination highlighted.
