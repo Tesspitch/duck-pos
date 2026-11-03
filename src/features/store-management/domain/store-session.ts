@@ -5,6 +5,7 @@ export interface ActiveStoreSession {
   businessDate: string
   openedAt: string
   pendingOrderCount: number
+  acceptingOrders: boolean
 }
 
 export interface StoreSessionHistory {
@@ -22,6 +23,7 @@ export interface StoreSessionHistory {
 
 export interface StoreManagement {
   isOpen: boolean
+  acceptingOrders: boolean
   activeSession: ActiveStoreSession | null
   history: StoreSessionHistory[]
 }

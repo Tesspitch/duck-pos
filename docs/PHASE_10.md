@@ -104,7 +104,7 @@ Status: In progress. User approved the redesign scope. Frontend deployment remai
 - Customer cart now opens a full-viewport FormWorkspace with back navigation. Visually inspected at 390px and 768px; measured dialog width/height equal viewport and no horizontal overflow.
 - Browser tested required-size selection, local-cart addition, back/reopen and removal. No checkout was submitted.
 - Higher contrast cart actions use dark orange/white; disabled checkout uses neutral gray instead of a faded orange that resembles an active action.
-- Migration 027 applied to hosted Supabase: active STAFF/OWNER may open their own shop; closing remains Owner-only.
+- Migration 027 originally allowed active STAFF/OWNER to open while closing remained Owner-only; migration 034 below supersedes that closing restriction.
 - Live database regression transaction passed: STAFF opening, close denial, cross-shop denial, revoked-member denial, duplicate session guard and audit creation. All test fixtures were rolled back.
 - Frontend quality gate passed 28 tests and production build; subsequent POS copy/link adjustment requires only final compilation verification.
 
@@ -150,8 +150,8 @@ Status: In progress. User approved the redesign scope. Frontend deployment remai
 
 ## Implemented
 
-- Home priorities: owner store-state control, POS, queue, then catalog. Removed redundant shop/role tiles.
-- Owner can open/close from home through SlideConfirm: deliberate handle drag and release beyond 90%, short-drag cancellation, keyboard-accessible two-step alternative, in-flight duplicate guard.
+- Home priorities: member store-state control, POS, queue, then catalog. Removed redundant shop/role tiles.
+- Active OWNER/STAFF can open or close from home through SlideConfirm: deliberate handle drag and release beyond 90%, short-drag cancellation, keyboard-accessible two-step alternative, in-flight duplicate guard.
 - Fresh store-state check before mutation; existing atomic RPC authorization and pending-order close rules remain authoritative. Pending orders link to queue instead of offering close.
 - No live store state was changed to test this UI; slider interactions were tested against mocked callbacks.
 
@@ -170,6 +170,16 @@ Status: In progress. User approved the redesign scope. Frontend deployment remai
 - Queue status filters with counts and a visible query-error state.
 - Sticky public-menu category navigation with section anchors.
 - Visible keyboard focus and mobile input typography.
+
+## 2026-11-03 — Order intake, staff store control and sales-history deletion
+
+- Added a server-authoritative intake state separate from the sales session. An open shop can pause new QR/POS orders while staff finish the existing queue; resuming does not create a new business day or reset queue numbers.
+- OWNER and active STAFF can open, pause/resume intake and close a settled sales session. Closing still fails atomically while food is pending or any non-cancelled order remains unpaid. All operational changes are audited.
+- Public menu and staff POS both reflect paused intake, and a database trigger rejects a new insert if another device pauses intake between the client check and checkout.
+- Shop status now stays green while the sales session is open and red when closed. Intake state is a separate compact secondary control; mobile/tablet layouts at 390×844 and 768×1024 had no horizontal overflow.
+- Owner sales history supports both physical deletion by business-date range and physical deletion of one terminal paid/cancelled order. Preview, exact shop-name confirmation, row locks, stale fingerprint rejection, private idempotency tombstones and audit logs are retained. Reports decrease only by the deleted records; sessions and queue counters remain.
+- Hosted migrations 034 and 035 applied. Rollback database checks: 20/20 new assertions, 36/36 history regression, 15/15 checkout regression and the updated STAFF authorization flow passed. Frontend production gate passed: lint, 35 files / 108 tests, TypeScript, Vite/PWA build.
+- Browser interaction used in-memory QA repositories only; no real order, payment or sales history was deleted. Frontend redeployment is still required for the new controls.
 
 ## Release checks still required
 

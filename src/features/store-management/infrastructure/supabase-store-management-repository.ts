@@ -19,5 +19,13 @@ export const supabaseStoreManagementRepository: StoreManagementRepository = {
     })
     if (error) throw error
   },
+  async setAcceptingOrders(shopId, sessionId, accepting) {
+    const { error } = await supabase.rpc('set_store_order_acceptance', {
+      target_shop_id: shopId,
+      expected_session_id: sessionId,
+      accept_new_orders: accepting,
+    })
+    if (error) throw error
+  },
 }
 

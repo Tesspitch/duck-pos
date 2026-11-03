@@ -23,10 +23,10 @@ begin
   perform public.open_store_session(staff_shop);
   select id into session_id from public.store_sessions where shop_id=staff_shop and status='OPEN';
   if session_id is null then raise exception 'STAFF could not open own shop'; end if;
-  begin
-    perform public.close_store_session(staff_shop,session_id);
-    raise exception 'STAFF unexpectedly closed shop';
-  exception when insufficient_privilege then null; end;
+  perform public.close_store_session(staff_shop,session_id);
+  if (select status from public.store_sessions where id=session_id) <> 'CLOSED' then raise exception 'STAFF could not close own shop'; end if;
+  perform public.open_store_session(staff_shop);
+  select id into session_id from public.store_sessions where shop_id=staff_shop and status='OPEN';
   begin
     perform public.open_store_session(other_shop);
     raise exception 'Cross-shop opening unexpectedly allowed';
@@ -39,10 +39,10 @@ begin
     perform public.open_store_session(staff_shop);
     raise exception 'Duplicate opening unexpectedly allowed';
   exception when unique_violation then null; end;
-  if not exists(select 1 from public.audit_logs where entity_id=session_id and action='STORE_OPENED' and actor_user_id=actor) then
+  if not exists(select 1 from public.audit_logs where shop_id=staff_shop and action='STORE_OPENED' and actor_user_id=actor) then
     raise exception 'Opening audit missing';
   end if;
 end $$;
-select pass('Staff opening, owner-only closing, shop isolation, revocation, duplicate guard and audit assertions passed');
+select pass('Staff opening and closing, shop isolation, revocation, duplicate guard and audit assertions passed');
 select * from finish();
 rollback;

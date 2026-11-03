@@ -145,7 +145,7 @@ export function App() {
         <Route
           path="/store"
           element={
-            <AuthGate requireOwner>
+            <AuthGate>
               <StoreManagementPage />
             </AuthGate>
           }

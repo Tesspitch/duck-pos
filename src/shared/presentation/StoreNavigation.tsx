@@ -16,7 +16,7 @@ export function StoreNavigation({ owner, member, admin, email, onNavigate, onSig
   const icons: Record<string, IconName> = { '/': 'home', '/pos': 'bag', '/queue': 'queue', '/catalog': 'menu', '/toppings': 'toppings', '/store': 'store', '/reports': 'chart', '/settings/qr': 'qr', '/settings/shop': 'settings', '/access': 'users', '/settings/line': 'message', '/create-shop': 'plus', '/admin': 'shield' }
   const groups: { title: string; items: [string, string][] }[] = [
     { title: 'หน้าร้าน', items: member ? [['/', 'ภาพรวม'], ['/pos', 'ขายหน้าร้าน'], ['/queue', 'คิวออเดอร์']] : [] },
-    { title: 'จัดการร้าน', items: member ? [['/catalog', 'เมนูสินค้า'], ['/toppings', 'ท็อปปิง'], ...(owner ? [['/store', 'รอบการขาย'], ['/reports', 'รายงานยอดขาย'], ['/settings/qr', 'QR สั่งอาหาร']] as [string, string][] : [])] : [] },
+    { title: 'จัดการร้าน', items: member ? [['/catalog', 'เมนูสินค้า'], ['/toppings', 'ท็อปปิง'], ['/store', 'รอบการขาย'], ...(owner ? [['/reports', 'รายงานยอดขาย'], ['/settings/qr', 'QR สั่งอาหาร']] as [string, string][] : [])] : [] },
     { title: 'ตั้งค่า', items: [...(owner ? [['/settings/shop', 'ข้อมูลร้าน'], ['/access', 'พนักงานและสิทธิ์'], ['/settings/line', 'แจ้งเตือน LINE'], ['/create-shop', 'เพิ่มสาขา']] as [string, string][] : []), ...(admin ? [['/admin', 'ผู้ดูแลระบบ']] as [string, string][] : [])] },
   ]
   return <div className="store-navigation">

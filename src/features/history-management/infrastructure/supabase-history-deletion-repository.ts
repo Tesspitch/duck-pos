@@ -14,4 +14,19 @@ export const supabaseHistoryDeletionRepository: HistoryDeletionRepository = {
     if (error) throw error
     return data
   },
+  async previewOrder(target) {
+    const { data, error } = await supabase.rpc('preview_shop_order_deletion', { target_shop_id: target.shopId, target_order_id: target.orderId })
+    if (error) throw error
+    return data
+  },
+  async removeOrder(input) {
+    const { data, error } = await supabase.rpc('delete_shop_order_history', {
+      target_shop_id: input.shopId,
+      target_order_id: input.orderId,
+      expected_fingerprint: input.fingerprint,
+      confirmation_name: input.confirmationName,
+    })
+    if (error) throw error
+    return data
+  },
 }

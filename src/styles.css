@@ -400,13 +400,16 @@ svg { display: inline-block; vertical-align: middle; flex-shrink: 0; }
 .queue-item-title h3 { flex: 1; }
 .queue-item-price { flex-shrink: 0; padding-top: 4px; color: #667085; font-size: 14px; line-height: 1.5; }
 
-/* Explicit green/open and red/close actions; text remains the source of meaning. */
-.slide-confirm.intent-open { border-color: #15803d; background: #15803d; }
-.slide-confirm.intent-close { border-color: #b91c1c; background: #b91c1c; }
-.slide-confirm.intent-open .slide-confirm-label, .slide-confirm.intent-close .slide-confirm-label { color: white; font-weight: 750; }
-.slide-confirm.intent-open .slide-confirm-handle, .slide-confirm.intent-close .slide-confirm-handle { display: grid; place-items: center; background: white; border-radius: 2px; }
-.slide-confirm.intent-open .slide-confirm-handle { color: #166534; }
-.slide-confirm.intent-close .slide-confirm-handle { color: #991b1b; }
+/* Track shows the current store state: closed before opening, open before closing. */
+.slide-confirm.intent-open { --slide-state-color: #b91c1c; --slide-action-color: #15803d; }
+.slide-confirm.intent-close { --slide-state-color: #15803d; --slide-action-color: #b91c1c; }
+.slide-confirm.intent-open, .slide-confirm.intent-close { height: 60px; border: 1.5px solid var(--slide-state-color); border-radius: 4px; background: white; }
+.slide-confirm-progress { position: absolute; inset: 0 auto 0 0; background: var(--slide-action-color); pointer-events: none; }
+.slide-confirm.intent-open .slide-confirm-label, .slide-confirm.intent-close .slide-confirm-label { position: relative; padding: 0 12px 0 58px; color: #344054; font-size: 14px; font-weight: 650; letter-spacing: .1px; }
+.slide-confirm.intent-open .slide-confirm-filled-label, .slide-confirm.intent-close .slide-confirm-filled-label { position: absolute; inset: 0; color: white; pointer-events: none; }
+.slide-confirm.intent-open .slide-confirm-handle, .slide-confirm.intent-close .slide-confirm-handle { display: grid; place-items: center; top: 4px; width: 50px; height: 50px; min-height: 50px; background: white; color: #344054; border: 1px solid var(--slide-state-color); border-radius: 3px; box-shadow: 0 1px 3px rgb(16 24 40 / 8%); cursor: grab; }
+.slide-confirm .slide-confirm-handle:active { cursor: grabbing; box-shadow: none; }
+.slide-confirm .slide-confirm-handle:focus-visible { outline: 2px solid #344054; outline-offset: -5px; }
 .confirm-action-dialog.intent-open .store-confirm-primary { background: #15803d; }
 .confirm-action-dialog.intent-close .store-confirm-primary { background: #b91c1c; }
 .store-state-badge { display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px; border-radius: 3px; font-size: 14px; font-weight: 750; color: white; }

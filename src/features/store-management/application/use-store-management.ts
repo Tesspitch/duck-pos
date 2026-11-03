@@ -52,3 +52,17 @@ export function useCloseStore(shopId: string) {
   })
 }
 
+export function useSetOrderAcceptance(shopId: string) {
+  const { repository } = useStoreManagementServices()
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ sessionId, accepting }: { sessionId: string; accepting: boolean }) =>
+      repository.setAcceptingOrders(shopId, sessionId, accepting),
+    onSuccess: () => Promise.all([
+      queryClient.invalidateQueries({ queryKey: storeManagementQueryKey(shopId) }),
+      queryClient.invalidateQueries({ queryKey: ['staff-orders', shopId] }),
+      queryClient.invalidateQueries({ queryKey: ['public-menu', shopId] }),
+    ]),
+  })
+}
+

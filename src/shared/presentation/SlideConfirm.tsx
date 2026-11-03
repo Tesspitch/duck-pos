@@ -23,7 +23,9 @@ export function SlideConfirm({ label, disabled = false, intent = 'open', onConfi
 
   return <div>
     <div ref={track} className={`slide-confirm intent-${intent} ${blocked ? 'is-disabled' : ''}`}>
+      <span className="slide-confirm-progress" aria-hidden="true" style={{ width: `${progress * 100}%` }} />
       <span className="slide-confirm-label">{running ? 'กำลังดำเนินการ…' : `รูดเพื่อ${label} →`}</span>
+      <span aria-hidden="true" className="slide-confirm-label slide-confirm-filled-label" style={{ clipPath: `inset(0 ${100 - progress * 100}% 0 0)` }}>{running ? 'กำลังดำเนินการ…' : `รูดเพื่อ${label} →`}</span>
       <button type="button" aria-label={`ยืนยัน${label}`} disabled={blocked} className="slide-confirm-handle" style={{ left: `calc(${progress * 100}% - ${progress * 52}px)` }}
         onPointerDown={(event) => {
           if (blocked || event.button !== 0) return

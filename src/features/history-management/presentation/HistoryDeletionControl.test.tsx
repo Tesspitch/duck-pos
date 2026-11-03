@@ -11,7 +11,7 @@ afterEach(() => { cleanup(); clients.forEach((client) => client.clear()); client
 function setup(preview = vi.fn().mockResolvedValue(summary), remove = vi.fn().mockResolvedValue(summary)) {
   const client = new QueryClient({ defaultOptions: { mutations: { retry: false } } }); clients.push(client)
   const invalidate = vi.spyOn(client, 'invalidateQueries')
-  render(<QueryClientProvider client={client}><HistoryDeletionContext value={{ preview, remove }}><HistoryDeletionControl shopId="shop" shopName="ร้านทดสอบ" kind="SALES" dateFrom="2026-11-01" dateTo="2026-11-02" /></HistoryDeletionContext></QueryClientProvider>)
+  render(<QueryClientProvider client={client}><HistoryDeletionContext value={{ preview, remove, previewOrder: vi.fn(), removeOrder: vi.fn() }}><HistoryDeletionControl shopId="shop" shopName="ร้านทดสอบ" kind="SALES" dateFrom="2026-11-01" dateTo="2026-11-02" /></HistoryDeletionContext></QueryClientProvider>)
   fireEvent.click(screen.getByRole('button', { name: 'ตัวเลือก ลบประวัติการขาย' }))
   fireEvent.click(screen.getByRole('button', { name: 'ลบประวัติการขาย' }))
   return { preview, remove, invalidate }
