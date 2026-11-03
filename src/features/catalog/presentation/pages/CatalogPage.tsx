@@ -46,7 +46,7 @@ export function CatalogPage() {
           <label className="grid gap-1 text-sm font-medium">ค้นหาเมนู<input type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="ชื่อสินค้าหรือรายละเอียด" className="w-72 max-w-full rounded-lg border border-line px-3" /></label>
         </header>
 
-        {isOwner && <div className="flex flex-wrap gap-3"><button type="button" onClick={() => { setEditingProduct(null); setEditor(editor === 'product' ? null : 'product') }} className="rounded-xl bg-brand px-5 font-bold text-ink">＋ เพิ่มเมนู</button><button type="button" onClick={() => { setEditingCategory(null); setEditor(editor === 'category' ? null : 'category') }} className="rounded-xl border border-line bg-white px-5 font-semibold">＋ เพิ่มหมวดหมู่</button></div>}
+        {isOwner && <div className="flex flex-wrap gap-3"><button type="button" onClick={() => { setEditingProduct(null); setEditor(editor === 'product' ? null : 'product') }} className="rounded-xl bg-brand-action px-5 font-bold text-white">＋ เพิ่มเมนู</button><button type="button" onClick={() => { setEditingCategory(null); setEditor(editor === 'category' ? null : 'category') }} className="rounded-xl border border-line bg-white px-5 font-semibold">＋ เพิ่มหมวดหมู่</button></div>}
         {isOwner && (editor || editingCategory || editingProduct) ? (
           <FormWorkspace title={editingCategory || editor === 'category' ? ' หมวดหมู่เมนู' : ' เมนูสินค้า'} busy={busy} onBack={() => { setEditingCategory(null); setEditingProduct(null); setEditor(null) }}>
             <div hidden={editor !== 'category' && !editingCategory}>
