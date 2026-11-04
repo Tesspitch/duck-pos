@@ -77,8 +77,8 @@ export function ShopSettingsPage() {
 
   return (
     <AppShell>
-      <main className="mx-auto max-w-3xl p-4 sm:p-6">
-        <section className="rounded-2xl border border-line bg-white p-6">
+      <main className="shop-settings-page mx-auto w-full min-w-0 max-w-3xl p-4 sm:p-6">
+        <section className="min-w-0 rounded-2xl border border-line bg-white p-4 sm:p-6">
           <p className="text-sm font-semibold text-brand-action">ข้อมูลและตำแหน่งร้าน</p>
           <h1 className="mt-1 text-2xl font-bold"><Icon name="settings" /> ตั้งค่าร้าน</h1>
           <p className="mt-1 text-sm text-muted">ชื่อร้าน · โลโก้ · ตำแหน่ง</p>
@@ -95,7 +95,7 @@ export function ShopSettingsPage() {
             <form onSubmit={(event) => void submit(event)} className="mt-6 grid gap-4">
               <div className="flex items-center gap-4">
                 {settings.data.logoUrl ? <img src={settings.data.logoUrl} alt="โลโก้ร้าน" className="h-24 w-24 rounded-2xl border border-line object-cover" /> : <div className="grid h-24 w-24 place-items-center rounded-2xl bg-brand-soft text-4xl"><Icon name="store" /></div>}
-                <div><p className="font-semibold">{settings.data.name}</p><p className="text-sm text-muted">{settings.data.timezone} · {settings.data.currencyCode}</p></div>
+                <div className="min-w-0 break-words"><p className="font-semibold">{settings.data.name}</p><p className="text-sm text-muted">{settings.data.timezone} · {settings.data.currencyCode}</p></div>
               </div>
               <label className="grid gap-1 text-sm font-medium">ชื่อร้าน<input value={name ?? settings.data.name} onChange={(event) => setName(event.target.value)} className="rounded-lg border border-line px-3" maxLength={120} /></label>
               <label className="grid gap-1 text-sm font-medium">โลโก้ร้าน<input type="file" accept="image/jpeg,image/png,image/webp,image/avif" onChange={(event) => setLogoFile(event.target.files?.[0] ?? null)} className="rounded-lg border border-line p-2" /><span className="text-xs font-normal text-muted">JPG, PNG, WebP หรือ AVIF · ไม่เกิน 2 MB</span></label>
