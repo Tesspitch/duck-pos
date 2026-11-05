@@ -1,0 +1,158 @@
+[
+  {
+    "width": 390,
+    "height": 844,
+    "bucket": "DAY",
+    "count": 2,
+    "layout": {
+      "viewport": 390,
+      "width": 390,
+      "overflow": [],
+      "smallButtons": []
+    },
+    "errors": []
+  },
+  {
+    "width": 390,
+    "height": 844,
+    "bucket": "WEEK",
+    "count": 1,
+    "layout": {
+      "viewport": 390,
+      "width": 390,
+      "overflow": [],
+      "smallButtons": []
+    },
+    "errors": []
+  },
+  {
+    "width": 390,
+    "height": 844,
+    "bucket": "MONTH",
+    "count": 2,
+    "layout": {
+      "viewport": 390,
+      "width": 390,
+      "overflow": [],
+      "smallButtons": []
+    },
+    "errors": []
+  },
+  {
+    "width": 768,
+    "height": 1024,
+    "bucket": "DAY",
+    "count": 2,
+    "layout": {
+      "viewport": 768,
+      "width": 768,
+      "overflow": [],
+      "smallButtons": []
+    },
+    "errors": []
+  },
+  {
+    "width": 768,
+    "height": 1024,
+    "bucket": "WEEK",
+    "count": 1,
+    "layout": {
+      "viewport": 768,
+      "width": 768,
+      "overflow": [],
+      "smallButtons": []
+    },
+    "errors": []
+  },
+  {
+    "width": 768,
+    "height": 1024,
+    "bucket": "MONTH",
+    "count": 2,
+    "layout": {
+      "viewport": 768,
+      "width": 768,
+      "overflow": [],
+      "smallButtons": []
+    },
+    "errors": []
+  },
+  {
+    "width": 320,
+    "height": 740,
+    "bucket": "DAY",
+    "count": 2,
+    "layout": {
+      "viewport": 320,
+      "width": 320,
+      "overflow": [],
+      "smallButtons": []
+    },
+    "errors": []
+  },
+  {
+    "width": 320,
+    "height": 740,
+    "bucket": "WEEK",
+    "count": 1,
+    "layout": {
+      "viewport": 320,
+      "width": 320,
+      "overflow": [],
+      "smallButtons": []
+    },
+    "errors": []
+  },
+  {
+    "width": 320,
+    "height": 740,
+    "bucket": "MONTH",
+    "count": 2,
+    "layout": {
+      "viewport": 320,
+      "width": 320,
+      "overflow": [],
+      "smallButtons": []
+    },
+    "errors": []
+  },
+  {
+    "width": 1024,
+    "height": 768,
+    "bucket": "DAY",
+    "count": 2,
+    "layout": {
+      "viewport": 1024,
+      "width": 1024,
+      "overflow": [],
+      "smallButtons": []
+    },
+    "errors": []
+  },
+  {
+    "width": 1024,
+    "height": 768,
+    "bucket": "WEEK",
+    "count": 1,
+    "layout": {
+      "viewport": 1024,
+      "width": 1024,
+      "overflow": [],
+      "smallButtons": []
+    },
+    "errors": []
+  },
+  {
+    "width": 1024,
+    "height": 768,
+    "bucket": "MONTH",
+    "count": 2,
+    "layout": {
+      "viewport": 1024,
+      "width": 1024,
+      "overflow": [],
+      "smallButtons": []
+    },
+    "errors": []
+  }
+]

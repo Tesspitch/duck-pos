@@ -7,6 +7,9 @@ import { MutationFeedback } from '../../shared/presentation/MutationFeedback'
 import { HistoryDeletionContext } from '../../features/history-management/application/history-deletion-context'
 import { supabaseHistoryDeletionRepository } from '../../features/history-management/infrastructure/supabase-history-deletion-repository'
 import { AppErrorBoundary } from '../../shared/presentation/AppErrorBoundary'
+import { AttendanceContext, AttendanceLocationContext } from '../../features/attendance/application/attendance-context'
+import { browserAttendanceLocation } from '../../features/attendance/infrastructure/browser-attendance-location'
+import { supabaseAttendanceRepository } from '../../features/attendance/infrastructure/supabase-attendance-repository'
 
 import { MembershipRepositoryProvider } from '../../features/access-control/application/MembershipRepositoryProvider'
 import { supabaseMembershipRepository } from '../../features/access-control/infrastructure/supabase-membership-repository'
@@ -63,6 +66,8 @@ export function AppProviders({ children }: PropsWithChildren) {
   return (
     <QueryClientProvider client={queryClient}>
       <HistoryDeletionContext value={supabaseHistoryDeletionRepository}>
+      <AttendanceContext value={supabaseAttendanceRepository}>
+      <AttendanceLocationContext value={browserAttendanceLocation}>
       <MutationFeedback />
       <AuthProvider gateway={supabaseAuthGateway}>
         <PlatformAdminRepositoryProvider repository={supabasePlatformAdminRepository}>
@@ -104,6 +109,8 @@ export function AppProviders({ children }: PropsWithChildren) {
           </ShopOnboardingRepositoryProvider>
         </PlatformAdminRepositoryProvider>
       </AuthProvider>
+      </AttendanceLocationContext>
+      </AttendanceContext>
       </HistoryDeletionContext>
     </QueryClientProvider>
   )

@@ -68,6 +68,7 @@
 .shop-settings-page input[type=file] { overflow: hidden; }
 .shop-settings-page form > div > img, .shop-settings-page form > div > div:first-child:has(svg) { flex-shrink: 0; }
 .shop-settings-page :where(p, span) { overflow-wrap: anywhere; }
+.attendance-workspace :is(button, input, select) { scroll-margin-block: 100px; }
 .form-workspace-content legend { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
 .form-workspace-bar h1 { min-width: 0; overflow-wrap: anywhere; }
 .queue-connection-indicator { display: inline-flex; align-items: center; justify-content: center; width: 32px; min-height: 48px; }

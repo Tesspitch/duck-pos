@@ -76,6 +76,9 @@ const QueuePage = lazy(() =>
 const StoreManagementPage = lazy(() =>
   import('../features/store-management/presentation/pages/StoreManagementPage').then((module) => ({ default: module.StoreManagementPage })),
 )
+const AttendancePage = lazy(() =>
+  import('../features/attendance/presentation/AttendancePage').then((module) => ({ default: module.AttendancePage })),
+)
 const SalesAnalyticsPage = lazy(() =>
   import('../features/sales-analytics/presentation/pages/SalesAnalyticsPage').then((module) => ({ default: module.SalesAnalyticsPage })),
 )
@@ -150,6 +153,7 @@ export function App() {
             </AuthGate>
           }
         />
+        <Route path="/attendance" element={<AuthGate><AttendancePage /></AuthGate>} />
         <Route
           path="/reports"
           element={
