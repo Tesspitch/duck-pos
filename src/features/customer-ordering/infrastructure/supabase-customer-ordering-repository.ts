@@ -41,6 +41,7 @@ export const supabaseCustomerOrderingRepository: CustomerOrderingRepository = {
           optionIds: line.options.map((option) => option.id),
         })),
         orderNote: input.note,
+        ...(input.tableOrder ? { tableOrder: input.tableOrder } : {}),
       },
     })
     if (error) {

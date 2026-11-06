@@ -1,0 +1,58 @@
+begin;
+create extension if not exists pgtap with schema extensions;
+create temporary table admin_tap(result text) on commit drop;
+insert into admin_tap select no_plan();
+create temporary table admin_context(actor uuid,shop uuid,session_id uuid,order_id uuid,table_id uuid,table_session uuid) on commit drop;
+do $$
+declare a uuid; s uuid:=gen_random_uuid(); ss uuid:=gen_random_uuid(); o uuid:=gen_random_uuid(); t uuid:=gen_random_uuid(); ts uuid:=gen_random_uuid();
+begin
+ select user_id into strict a from public.platform_admins limit 1;
+ insert into public.shops(id,name,created_by) values(s,'Platform close QA',a);
+ -- Intentionally no shop membership for the administrator.
+ insert into public.store_sessions(id,shop_id,business_date,opened_by) values(ss,s,current_date,a);
+ insert into public.orders(id,shop_id,store_session_id,business_date,queue_number,order_reference,source,status,payment_status,subtotal_satang,total_satang,idempotency_key,tracking_token_hash)
+ values(o,s,ss,current_date,1,'ADMIN-CLOSE-QA-001','POS','QUEUED','UNPAID',3900,3900,gen_random_uuid(),repeat('a',64));
+ insert into admin_context values(a,s,ss,o,t,ts);
+end $$;
+grant select on admin_context to authenticated;
+grant insert,select on admin_tap to authenticated;
+insert into admin_tap select ok(not has_function_privilege('anon','public.close_store_session(uuid,uuid)','EXECUTE'),'anonymous cannot close shops');
+select set_config('request.jwt.claims',jsonb_build_object('sub',gen_random_uuid(),'role','authenticated')::text,true);
+set local role authenticated;
+insert into admin_tap select throws_ok($$select public.close_store_session(shop,session_id) from admin_context$$,'42501','Active owner or staff membership is required to close the store.','unrelated user cannot close shop');
+insert into admin_tap select throws_ok($$select public.set_store_order_acceptance(shop,session_id,false) from admin_context$$,'42501','Active owner or staff membership is required.','unrelated user cannot pause intake');
+insert into admin_tap select throws_ok($$select public.list_platform_shops()$$,'42501','Platform administrator access required.','status listing remains admin only');
+reset role;
+select set_config('request.jwt.claims',jsonb_build_object('sub',actor,'role','authenticated')::text,true) from admin_context;
+insert into admin_tap select is((select count(*)::integer from public.shop_members where shop_id=(select shop from admin_context)),0,'admin has no shop membership');
+set local role authenticated;
+insert into admin_tap select is(public.list_platform_shops((select shop::text from admin_context))->'shops'->0->>'isOpen','true','admin sees open status');
+insert into admin_tap select is(public.list_platform_shops((select shop::text from admin_context))->'shops'->0->>'activeSessionId',(select session_id::text from admin_context),'status exposes current session for optimistic checks');
+insert into admin_tap select throws_ok($$select public.close_store_session(shop,gen_random_uuid()) from admin_context$$,'40001','The active store session changed on another device.','stale session cannot close a newer round');
+insert into admin_tap select lives_ok($$select public.set_store_order_acceptance(shop,session_id,false) from admin_context$$,'admin without membership pauses intake');
+insert into admin_tap select throws_ok($$select public.set_store_order_acceptance(shop,session_id,true) from admin_context$$,'42501','Active owner or staff membership is required.','admin closure permission cannot reopen order intake');
+insert into admin_tap select is(public.list_platform_shops((select shop::text from admin_context))->'shops'->0->>'acceptingOrders','false','paused status returned');
+insert into admin_tap select is(public.list_platform_shops((select shop::text from admin_context))->'shops'->0->>'isOpen','true','pause preserves open session for clearing orders');
+insert into admin_tap select throws_ok($$select public.close_store_session(shop,session_id) from admin_context$$,'P0001','Pending or unpaid orders must be resolved before closing the store.','admin cannot discard unresolved orders');
+reset role;
+insert into admin_tap select is((select count(*)::integer from public.orders where id=(select order_id from admin_context)),1,'order survives admin pause and rejected close');
+update public.orders set status='CANCELLED' where id=(select order_id from admin_context);
+insert into public.dining_tables(id,shop_id,name) select table_id,shop,'Admin table QA' from admin_context;
+insert into public.table_sessions(id,shop_id,table_id,table_name,store_session_id,opened_by) select table_session,shop,table_id,'Admin table QA',session_id,actor from admin_context;
+insert into public.table_bills(shop_id,table_session_id) select shop,table_session from admin_context;
+set local role authenticated;
+insert into admin_tap select throws_ok($$select public.close_store_session(shop,session_id) from admin_context$$,'P0001','Close active dining tables before closing the store.','admin respects active dining table guard');
+reset role;
+update public.table_sessions set closed_at=now(),closed_by=(select actor from admin_context) where id=(select table_session from admin_context);
+update public.table_bills set status='VOID' where table_session_id=(select table_session from admin_context);
+set local role authenticated;
+insert into admin_tap select lives_ok($$select public.close_store_session(shop,session_id) from admin_context$$,'admin closes settled shop without membership');
+insert into admin_tap select is(public.list_platform_shops((select shop::text from admin_context))->'shops'->0->>'isOpen','false','listing reports closed status');
+insert into admin_tap select is(public.list_platform_shops((select shop::text from admin_context))->'shops'->0->>'acceptingOrders','false','closed session cannot accept orders');
+insert into admin_tap select throws_ok($$select public.close_store_session(shop,session_id) from admin_context$$,'P0001','The store is already closed.','repeated close cannot emit duplicate event');
+reset role;
+insert into admin_tap select is((select count(*)::integer from public.audit_logs where entity_id=(select session_id from admin_context) and actor_user_id=(select actor from admin_context) and action='STORE_CLOSED'),1,'administrator identity audited once');
+insert into admin_tap select is((select count(*)::integer from public.store_events where store_session_id=(select session_id from admin_context) and event_type='CLOSED'),1,'close event preserved for reports and LINE');
+insert into admin_tap select * from finish();
+select result from admin_tap;
+rollback;

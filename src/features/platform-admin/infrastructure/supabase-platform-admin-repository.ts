@@ -3,6 +3,14 @@ import type { ShopCreationGrant } from '../domain/shop-creation-grant'
 import { supabase } from '../../../lib/supabase'
 
 export const supabasePlatformAdminRepository: PlatformAdminRepository = {
+  async closeShop(shopId, sessionId) {
+    const { error } = await supabase.rpc('close_store_session', { target_shop_id: shopId, expected_session_id: sessionId })
+    if (error) throw error
+  },
+  async pauseShop(shopId, sessionId) {
+    const { error } = await supabase.rpc('set_store_order_acceptance', { target_shop_id: shopId, expected_session_id: sessionId, accept_new_orders: false })
+    if (error) throw error
+  },
   async listShops(search, offset) {
     const { data, error } = await supabase.rpc('list_platform_shops', { search_text: search, page_offset: offset })
     if (error) throw error

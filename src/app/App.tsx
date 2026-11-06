@@ -76,6 +76,9 @@ const QueuePage = lazy(() =>
 const StoreManagementPage = lazy(() =>
   import('../features/store-management/presentation/pages/StoreManagementPage').then((module) => ({ default: module.StoreManagementPage })),
 )
+const DiningTablesPage = lazy(() => import('../features/dining/presentation/DiningTablesPage').then(m=>({default:m.DiningTablesPage})))
+const TableMenuPage = lazy(() => import('../features/dining/presentation/TableCustomerPages').then(m=>({default:m.TableMenuPage})))
+const TableRoundPage = lazy(() => import('../features/dining/presentation/TableCustomerPages').then(m=>({default:m.TableRoundPage})))
 const AttendancePage = lazy(() =>
   import('../features/attendance/presentation/AttendancePage').then((module) => ({ default: module.AttendancePage })),
 )
@@ -96,6 +99,9 @@ export function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/auth/callback" element={<AuthCallbackPage />} />
         <Route path="/order/:shopId" element={<PublicMenuPage />} />
+        <Route path="/table/:qrToken" element={<TableMenuPage />} />
+        <Route path="/table-round/:guestToken" element={<TableRoundPage />} />
+        <Route path="/tables" element={<AuthGate><DiningTablesPage /></AuthGate>} />
         <Route path="/track/:token" element={<OrderTrackingPage />} />
         <Route
           path="/pending"

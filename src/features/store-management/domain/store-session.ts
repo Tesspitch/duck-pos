@@ -5,6 +5,7 @@ export interface ActiveStoreSession {
   businessDate: string
   openedAt: string
   pendingOrderCount: number
+  pendingTableCount?: number
   acceptingOrders: boolean
 }
 
@@ -29,5 +30,5 @@ export interface StoreManagement {
 }
 
 export const canCloseStore = (session: ActiveStoreSession | null) =>
-  Boolean(session && session.pendingOrderCount === 0)
+  Boolean(session && session.pendingOrderCount === 0 && (session.pendingTableCount ?? 0) === 0)
 

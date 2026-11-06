@@ -9,14 +9,18 @@ import { useCustomerCheckout } from '../../application/use-customer-checkout'
 import { useCustomerLocationService } from '../../application/customer-location-context'
 import { CustomerNavigation } from './CustomerNavigation'
 import { useCustomerTrackingStore } from '../../application/customer-tracking-store'
+import type { TableOrderContext } from '../../../dining/domain/dining'
+import { diningError } from '../../../dining/domain/dining'
+import { tableCheckoutAttempt, clearTableCheckoutAttempt } from '../../../dining/application/checkout-attempt'
+import { saveRound } from '../../../dining/application/round-memory'
 
 const money = (satang: number) => `฿${(satang / 100).toFixed(2)}`
 
-export function CustomerCart({ shopId, shopOpen, productImages = {} }: { shopId: string; shopOpen: boolean; productImages?: Record<string, string | null> }) {
+export function CustomerCart({ shopId, shopOpen, productImages = {}, tableOrder }: { shopId: string; shopOpen: boolean; productImages?: Record<string, string | null>; tableOrder?: TableOrderContext }) {
   const navigate = useNavigate()
   const trackingToken = useCustomerTrackingStore((state) => state.tokensByShop[shopId])
   const rememberTracking = useCustomerTrackingStore((state) => state.remember)
-  const trackingPath = trackingToken ? `/track/${trackingToken}` : undefined
+  const trackingPath = tableOrder ? `/table-round/${tableOrder.guestToken}` : trackingToken ? `/track/${trackingToken}` : undefined
   const locationService = useCustomerLocationService()
   const checkout = useCustomerCheckout()
   const lines = useCartStore((state) => state.lines)
@@ -39,14 +43,17 @@ export function CustomerCart({ shopId, shopOpen, productImages = {} }: { shopId:
     setErrorMessage(null)
     if (!requestIds.current) requestIds.current = { idempotencyKey: crypto.randomUUID(), trackingToken: crypto.randomUUID() }
     try {
+      if (tableOrder) requestIds.current = tableCheckoutAttempt(tableOrder.billId,tableOrder.guestToken,JSON.stringify({ lines,note }))
       const location = await locationService.capture()
-      const result = await checkout.mutateAsync({ shopId, location, lines, note, ...requestIds.current })
-      rememberTracking(shopId, result.trackingToken)
+      const result = await checkout.mutateAsync({ shopId, location, lines, note, ...requestIds.current, ...(tableOrder ? { tableOrder } : {}) })
+      if (tableOrder && result.tableBillId) saveRound({billId:result.tableBillId,guestToken:tableOrder.guestToken,tableQrToken:tableOrder.tableQrToken,shopId,tableEpoch:tableOrder.tableEpoch})
+      if (!tableOrder) rememberTracking(shopId, result.trackingToken)
+      if (tableOrder) clearTableCheckoutAttempt(tableOrder.billId,tableOrder.guestToken)
       clear()
       requestIds.current = null
-      navigate(`/track/${result.trackingToken}`)
+      navigate(tableOrder ? `/table-round/${tableOrder.guestToken}` : `/track/${result.trackingToken}`)
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : 'ส่งออเดอร์ไม่สำเร็จ')
+      setErrorMessage(tableOrder ? diningError(error) : error instanceof Error ? error.message : 'ส่งออเดอร์ไม่สำเร็จ')
     } finally {
       submitLock.current = false
       setSubmitting(false)
@@ -62,6 +69,7 @@ export function CustomerCart({ shopId, shopOpen, productImages = {} }: { shopId:
         {expanded && <FormWorkspace title="ตะกร้าของคุณ" busy={submitting} onBack={() => setExpanded(false)}>
         <div className="customer-cart-workspace">
         <div id="customer-cart-details" className="customer-cart-page">
+        {tableOrder && <p className="mb-3 border border-brand-action bg-brand-soft p-3 font-bold">ทานที่ร้าน · {tableOrder.tableName} · รวมบิลโต๊ะ</p>}
         <div className="flex items-center justify-between"><h2 className="text-lg font-bold">ตะกร้า · {lines.length} รายการ</h2><p className="text-xl font-bold text-brand-action">{money(total)}</p></div>
         <ul className="mt-3 grid gap-2">
           {lines.map((line) => <li key={line.key} className="cart-item"><div className="flex items-start gap-3">{productImages[line.productId] ? <img src={productImages[line.productId]!} alt={line.productName} width="64" height="64" className="cart-product-image" loading="lazy" /> : <span className="cart-product-placeholder" aria-hidden="true"><Icon name="menu" /></span>}<div className="min-w-0"><p className="font-semibold">{line.productName}</p><p className="text-xs text-muted">{line.options.map((option) => option.name).join(', ')}</p>{line.note && <p className="text-xs text-muted">{line.note}</p>}</div></div><div className="flex flex-wrap items-center gap-2"><QuantityStepper disabled={submitting} label={`จำนวน ${line.productName}`} value={line.quantity} onChange={(value) => changeQuantity(line.key, value)} showLabel={false} /><span className="w-24 text-right font-semibold">{money(cartLineTotal(line))}</span><button type="button" disabled={submitting} aria-label={`ลบ ${line.productName}`} onClick={() => { if (lines.length === 1) setExpanded(false); removeLine(line.key) }} className="min-h-11 px-2 text-sm text-red-700">ลบ</button></div></li>)}

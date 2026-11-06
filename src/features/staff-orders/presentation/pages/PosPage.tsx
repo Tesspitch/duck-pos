@@ -1,6 +1,6 @@
 import { Icon } from '../../../../shared/presentation/Icon'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { LoadingState } from '../../../../shared/presentation/LoadingState'
 import { FlowGuide } from '../../../../shared/presentation/FlowGuide'
 import { FormWorkspace } from '../../../../shared/presentation/FormWorkspace'
@@ -20,6 +20,9 @@ const errorText = (error: unknown) => error instanceof Error ? error.message : '
 export function PosPage() {
   const { activeMembership } = useActiveShop()
   const shopId = activeMembership?.shop_id
+  const [params] = useSearchParams()
+  const tableBillId = params.get('tableBill') ?? undefined
+  const tableName = params.get('tableName') ?? 'โต๊ะ'
   const catalog = useCatalog(shopId)
   const queue = useStaffOrders(shopId)
   const createOrder = useCreatePosOrder(shopId ?? '')
@@ -30,7 +33,7 @@ export function PosPage() {
   const [cartOpen, setCartOpen] = useState(false)
   const submitLock = useRef(false)
 
-  useEffect(() => { if (shopId) ensureShop(shopId) }, [ensureShop, shopId])
+  useEffect(() => { if (shopId) ensureShop(tableBillId ? shopId+':table:'+tableBillId : shopId) }, [ensureShop, shopId, tableBillId])
   const categories = useMemo(() => (catalog.data ?? []).filter((category) => category.isVisible), [catalog.data])
   const activeCategory = categories.find((category) => category.id === categoryId)
   const products = (search.trim() || !activeCategory ? categories.flatMap((category) => category.products) : activeCategory.products).filter((product) => product.isVisible && product.name.toLocaleLowerCase().includes(search.trim().toLocaleLowerCase()))
@@ -40,7 +43,7 @@ export function PosPage() {
     submitLock.current = true
     setSuccess(null)
     let result
-    try { result = await createOrder.mutateAsync({ idempotencyKey: requestId, lines, note: orderNote }) }
+    try { result = await createOrder.mutateAsync({ idempotencyKey: requestId, lines, note: orderNote, ...(tableBillId ? { tableBillId } : {}) }) }
     catch { return }
     finally { submitLock.current = false }
     clear()
@@ -51,6 +54,7 @@ export function PosPage() {
   return (
     <AppShell>
       <main className="pos-page mx-auto max-w-7xl p-4 sm:p-6">
+        {tableBillId && <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border border-brand-action bg-brand-soft p-3"><strong>เพิ่มอาหารให้ {tableName} · รวมบิลโต๊ะ</strong><Link className="min-h-11 content-center border border-line bg-white px-3" to={`/tables?bill=${tableBillId}`}>กลับไปที่บิล</Link></div>}
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div><p className="text-sm font-semibold text-brand-action">ขายหน้าร้าน</p><h1 className="text-2xl font-bold"><Icon name="bag" /> รับออเดอร์</h1><p className="text-sm text-muted">{activeMembership?.shops?.name}</p></div>
           <p className={`rounded-full px-3 py-2 text-sm font-bold ${queue.data?.isOpen ? 'bg-green-100 text-green-800' : 'bg-red-50 text-red-700'}`}>{queue.isLoading ? 'กำลังตรวจสอบสถานะร้าน…' : queue.error ? 'ตรวจสอบสถานะร้านไม่สำเร็จ' : queue.data?.isOpen ? 'ร้านเปิด · รับออเดอร์ได้' : 'ร้านปิด · เปิดรอบก่อนรับออเดอร์'}</p>

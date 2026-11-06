@@ -7,6 +7,8 @@ import { CustomerOrderingContext } from '../../application/customer-ordering-con
 import { useCartStore } from '../../application/cart-store'
 import { CustomerCart } from './CustomerCart'
 import { useCustomerTrackingStore } from '../../application/customer-tracking-store'
+import { findSavedRound } from '../../../dining/application/round-memory'
+import type { TableOrderContext } from '../../../dining/domain/dining'
 
 const capture = vi.fn()
 const checkout = vi.fn()
@@ -24,11 +26,24 @@ beforeEach(() => {
 })
 afterEach(() => { cleanup(); useCartStore.getState().clear(); useCustomerTrackingStore.setState({ tokensByShop: {}, historyByShop: {} }); localStorage.clear(); sessionStorage.clear(); vi.restoreAllMocks(); vi.resetAllMocks() })
 
-function openCart(shopOpen = true) {
+function openCart(shopOpen = true,tableOrder?:TableOrderContext) {
   const client = new QueryClient({ defaultOptions: { mutations: { retry: false } } })
-  render(<QueryClientProvider client={client}><CustomerLocationContext value={{ capture }}><CustomerOrderingContext value={{ checkout, cancel: vi.fn(), getMenu: vi.fn(), track: vi.fn() }}><MemoryRouter><Routes><Route path="/" element={<CustomerCart shopId="shop" shopOpen={shopOpen} productImages={{ p: '/menu.jpg' }} />} /><Route path="/track/:token" element={<p>ติดตามออเดอร์</p>} /></Routes></MemoryRouter></CustomerOrderingContext></CustomerLocationContext></QueryClientProvider>)
+  render(<QueryClientProvider client={client}><CustomerLocationContext value={{ capture }}><CustomerOrderingContext value={{ checkout, cancel: vi.fn(), getMenu: vi.fn(), track: vi.fn() }}><MemoryRouter><Routes><Route path="/" element={<CustomerCart shopId="shop" shopOpen={shopOpen} tableOrder={tableOrder} productImages={{ p: '/menu.jpg' }} />} /><Route path="/track/:token" element={<p>ติดตามออเดอร์</p>} /><Route path="/table-round/:guestToken" element={<p>ติดตามโต๊ะ</p>}/></Routes></MemoryRouter></CustomerOrderingContext></CustomerLocationContext></QueryClientProvider>)
   fireEvent.click(screen.getByRole('button', { name: /ดูตะกร้า/ }))
 }
+
+test('automatic table checkout remembers the server bill and preserves the guest epoch',async()=>{
+ const tableOrder={billId:'10000000-0000-4000-8000-000000000001',guestToken:'20000000-0000-4000-8000-000000000001',tableQrToken:'30000000-0000-4000-8000-000000000001',tableName:'โต๊ะ 1',tableEpoch:'10000000-0000-4000-8000-000000000001'}
+ checkout.mockResolvedValue({...result,tableBillId:'40000000-0000-4000-8000-000000000001'})
+ openCart(true,tableOrder)
+ fireEvent.click(screen.getByRole('button',{name:/ยืนยันออเดอร์/}))
+ await screen.findByText('ติดตามโต๊ะ')
+ expect(checkout.mock.calls[0]?.[0].tableOrder).toEqual(tableOrder)
+ // The test shop ID is deliberately a fixture string; inspect raw stored data instead of UUID validation.
+ expect(localStorage.getItem('duckpos.dining.table.'+tableOrder.tableQrToken)).toBe('40000000-0000-4000-8000-000000000001')
+ expect(localStorage.getItem('duckpos.dining.round.40000000-0000-4000-8000-000000000001')).toContain(tableOrder.tableEpoch)
+ expect(findSavedRound('unknown')).toBeNull()
+})
 
 test('closed shop allows cart review but prevents checkout', () => {
   openCart(false)

@@ -10,7 +10,7 @@ export const supabaseStaffOrdersRepository: StaffOrdersRepository = {
   },
 
   async createPosOrder(input) {
-    const { data, error } = await supabase.rpc('create_pos_order', {
+    const { data, error } = await supabase.rpc(input.tableBillId ? 'create_table_pos_order' : 'create_pos_order', {
       target_shop_id: input.shopId,
       request_idempotency_key: input.idempotencyKey,
       cart_items: input.lines.map((line) => ({
@@ -20,6 +20,7 @@ export const supabaseStaffOrdersRepository: StaffOrdersRepository = {
         optionIds: line.options.map((option) => option.id),
       })),
       order_note: input.note,
+      ...(input.tableBillId ? { target_bill_id: input.tableBillId } : {}),
     })
     if (error) throw error
     return data as PosOrderResult

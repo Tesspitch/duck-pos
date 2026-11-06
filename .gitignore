@@ -1,13 +1,33 @@
 node_modules/
 dist/
+# Local environment values; keep safe setup templates in version control.
 .env
-.env.local
-.env.*.local
+.env.*
+!.env.example
+!.env.production.example
 .DS_Store
 *.log
 .supabase/
 .local-backups/
 .local-audits/
+
+# Supabase CLI state is specific to this machine, not database source.
+/supabase/.temp/
+/supabase/.branches/
+
+# Generated test evidence and reports (source tests remain tracked).
+/artifacts/qa/
+/coverage/
+/test-results/
+/playwright-report/
+/docs/phase-1-platform-admin-proof.png
+/docs/phase-2-migration-ready.png
+*.tsbuildinfo
+
+# Local editor / operating system state.
+/.idea/
+Thumbs.db
+Desktop.ini
 
 DuckPOS-MasterPrompt.md
 DuckPOS-specificationRequirement.md

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Icon } from '../../../../shared/presentation/Icon'
+import { Link } from 'react-router-dom'
 
 import { cancellationSchema } from '../../application/staff-order-schemas'
 import type { OrderStatus, PaymentMethod, StaffOrder } from '../../domain/staff-order'
@@ -39,6 +40,7 @@ export function QueueOrderCard({ order, pending, onStatus, onPay }: Props) {
         <div><p className="queue-ticket-label">เลขคิว</p><h2 className="queue-ticket-number">{String(order.queueNumber).padStart(3, '0')}</h2></div>
         <div className="queue-ticket-meta"><span className={`queue-status status-${order.status.toLowerCase()}`}>{labels[order.status]}</span><span>{order.source === 'QR' ? 'สั่งผ่าน QR' : 'หน้าร้าน'}</span>{createdTime && <time dateTime={order.createdAt}><Icon name="clock" size={14} /> {createdTime}</time>}</div>
       </header>
+      {order.tableBillId && <Link className="mt-3 flex min-h-12 items-center justify-between border border-brand-action bg-brand-soft px-3 text-lg font-bold text-brand-action" to={`/tables?bill=${order.tableBillId}`}>{order.tableName} <span className="text-sm">บิลโต๊ะ →</span></Link>}
       <div className="queue-ticket-summary"><span>{order.items.length} รายการ · <strong>{quantity} ชิ้น</strong></span><span className={`queue-payment-state ${order.paymentStatus === 'PAID' ? 'paid' : ''}`}>{order.paymentStatus === 'PAID' ? 'ชำระแล้ว' : order.paymentStatus === 'REFUNDED' ? 'คืนเงินแล้ว' : 'ยังไม่ชำระ'}</span></div>
       {order.customerNote && <div className="queue-order-note"><Icon name="message" /><div><strong>หมายเหตุทั้งออเดอร์</strong><p>{order.customerNote}</p></div></div>}
       <QueueOrderItems items={order.items} />
@@ -48,8 +50,8 @@ export function QueueOrderCard({ order, pending, onStatus, onPay }: Props) {
       </div>}
       {showCancel && canComplete && order.paymentStatus === 'UNPAID' ? <div className="mt-3 rounded-xl border border-red-200 p-3"><label className="grid gap-1 text-sm">เหตุผลยกเลิก<input disabled={pending} value={reason} maxLength={300} onChange={(event) => setReason(event.target.value)} className="rounded-lg border border-line px-3" /></label>{cancelError ? <p role="alert" className="mt-1 text-sm text-red-700">{cancelError}</p> : null}<button type="button" disabled={pending} onClick={cancel} className="mt-2 w-full rounded-lg bg-red-700 px-3 font-semibold text-white">ยืนยันยกเลิกออเดอร์</button></div> : null}
       <footer className="queue-ticket-payment">
-        <div className="queue-payment-summary"><p><span>ยอดรวม</span><strong>{money(order.totalSatang)}</strong></p>{order.paymentStatus === 'UNPAID' && order.status !== 'CANCELLED' && order.status !== 'COMPLETED' && <button type="button" disabled={pending} aria-expanded={paymentOpen} onClick={() => setPaymentOpen((value) => !value)}>{paymentOpen ? 'ซ่อนรับชำระ' : 'รับชำระ'}<Icon name={paymentOpen ? 'close' : 'arrow'} size={16} /></button>}</div>
-        {order.paymentStatus === 'UNPAID' && order.status !== 'CANCELLED' && showPayment && <PaymentPanel order={order} pending={pending} onPay={onPay} />}
+        <div className="queue-payment-summary"><p><span>ยอดรวม</span><strong>{money(order.totalSatang)}</strong></p>{!order.tableBillId && order.paymentStatus === 'UNPAID' && order.status !== 'CANCELLED' && order.status !== 'COMPLETED' && <button type="button" disabled={pending} aria-expanded={paymentOpen} onClick={() => setPaymentOpen((value) => !value)}>{paymentOpen ? 'ซ่อนรับชำระ' : 'รับชำระ'}<Icon name={paymentOpen ? 'close' : 'arrow'} size={16} /></button>}</div>
+        {!order.tableBillId && order.paymentStatus === 'UNPAID' && order.status !== 'CANCELLED' && showPayment && <PaymentPanel order={order} pending={pending} onPay={onPay} />}
         <p className="queue-ticket-reference">{order.orderReference}</p>
       </footer>
     </article>

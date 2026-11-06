@@ -19,6 +19,8 @@ export interface StaffOrderPayment {
 }
 
 export interface StaffOrder {
+  tableBillId?: string | null
+  tableName?: string | null
   id: string
   queueNumber: number
   orderReference: string

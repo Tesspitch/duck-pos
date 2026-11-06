@@ -53,7 +53,11 @@ Deno.serve(async (request) => {
     if (rateError) throw rateError
     if (!allowed) return new Response(JSON.stringify({ error: 'ส่งออเดอร์ถี่เกินไป กรุณารอสักครู่' }), { status: 429, headers })
 
-    const { data, error } = await supabase.rpc('create_qr_order', {
+    const tableOrder = body.tableOrder
+    if (tableOrder && (!tableOrder.tableQrToken || !tableOrder.billId || !tableOrder.guestToken)) {
+      return new Response(JSON.stringify({ error: 'Invalid table checkout.' }), { status: 400, headers })
+    }
+    const { data, error } = await supabase.rpc(tableOrder?.tableEpoch ? 'create_auto_table_qr_order' : tableOrder ? 'create_table_qr_order' : 'create_qr_order', {
       target_shop_id: body.shopId,
       request_idempotency_key: body.idempotencyKey,
       request_tracking_token: body.trackingToken,
@@ -63,6 +67,7 @@ Deno.serve(async (request) => {
       location_captured_at: body.location?.capturedAt,
       cart_items: body.cartItems,
       order_note: body.orderNote ?? '',
+      ...(tableOrder ? { table_qr_token: tableOrder.tableQrToken, ...(tableOrder.tableEpoch ? {expected_table_epoch:tableOrder.tableEpoch} : {expected_bill_id:tableOrder.billId}), guest_token: tableOrder.guestToken } : {}),
     })
     if (error) return new Response(JSON.stringify({ error: error.message }), { status: 400, headers })
     return new Response(JSON.stringify(data), { status: 200, headers })

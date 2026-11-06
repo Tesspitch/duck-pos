@@ -6,14 +6,19 @@ import { useCartStore } from '../../application/cart-store'
 import { usePublicMenu } from '../../application/use-public-menu'
 import { CustomerCart } from '../components/CustomerCart'
 import { PublicProductCard } from '../components/PublicProductCard'
+import type { TableOrderContext } from '../../../dining/domain/dining'
 
 export function PublicMenuPage() {
   const { shopId } = useParams()
+  return <PublicMenuView shopId={shopId} />
+}
+
+export function PublicMenuView({ shopId, tableOrder, canOrder=true }: { shopId: string | undefined; tableOrder?: TableOrderContext; canOrder?: boolean }) {
   const ensureShop = useCartStore((state) => state.ensureShop)
   const menu = usePublicMenu(shopId)
   const [search, setSearch] = useState('')
 
-  useEffect(() => { if (shopId) ensureShop(shopId) }, [ensureShop, shopId])
+  useEffect(() => { if (shopId) ensureShop(tableOrder ? `${shopId}:table:${tableOrder.tableEpoch??tableOrder.billId}` : shopId) }, [ensureShop, shopId, tableOrder])
 
   if (menu.isLoading) return <main className="grid min-h-screen place-items-center bg-brand-soft p-6"><LoadingState label="กำลังโหลดเมนู…" /></main>
   if (menu.isError) return <Message title="โหลดเมนูไม่สำเร็จ" detail={menu.error.message} onRetry={() => void menu.refetch()} busy={menu.isFetching} />
@@ -24,7 +29,8 @@ export function PublicMenuPage() {
 
   return (
     <div className="ordering-page">
-      <header className="restaurant-header"><div className="restaurant-cover">{cover ? <img src={cover} alt="" fetchPriority="high" /> : <span>สดใหม่ พร้อมเสิร์ฟ</span>}<span className="takeaway-label">สั่งกลับบ้าน · รับที่ร้าน</span></div><div className="restaurant-identity">{menu.data.logoUrl ? <img src={menu.data.logoUrl} alt="โลโก้ร้าน" /> : <span className="restaurant-monogram">{menu.data.shopName.slice(0,1)}</span>}<h1>{menu.data.shopName}</h1><p className={menu.data.isOpen ? 'text-green-700' : 'text-red-700'}>{menu.data.isOpen ? 'เปิดรับออเดอร์ · เลือกเมนูด้านล่างได้เลย' : 'ร้านปิดอยู่ · ดูเมนูได้ แต่ยังสั่งไม่ได้'}</p></div></header>
+      {tableOrder && <div className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-line bg-white p-3"><strong>ทานที่ร้าน · {tableOrder.tableName}</strong><a className="min-h-11 content-center border border-line px-3 text-sm" href={`/table-round/${tableOrder.guestToken}`}>รายการรอบนี้</a></div>}
+      <header className="restaurant-header"><div className="restaurant-cover">{cover ? <img src={cover} alt="" fetchPriority="high" /> : <span>สดใหม่ พร้อมเสิร์ฟ</span>}<span className="takeaway-label">{tableOrder ? `ทานที่ร้าน · ${tableOrder.tableName}` : 'สั่งกลับบ้าน · รับที่ร้าน'}</span></div><div className="restaurant-identity">{menu.data.logoUrl ? <img src={menu.data.logoUrl} alt="โลโก้ร้าน" /> : <span className="restaurant-monogram">{menu.data.shopName.slice(0,1)}</span>}<h1>{menu.data.shopName}</h1><p className={menu.data.isOpen ? 'text-green-700' : 'text-red-700'}>{menu.data.isOpen ? 'เปิดรับออเดอร์ · เลือกเมนูด้านล่างได้เลย' : 'ร้านปิดอยู่ · ดูเมนูได้ แต่ยังสั่งไม่ได้'}</p></div></header>
       <nav aria-label="หมวดหมู่เมนู" className="sticky top-0 z-20 border-b border-line bg-white"><div className="mx-auto flex max-w-4xl gap-2 overflow-x-auto p-3">{menu.data.categories.map((category) => <a key={category.id} href={`#category-${category.id}`} className="inline-flex shrink-0 items-center rounded-full bg-brand-soft px-5 font-semibold text-brand-action">{category.name}</a>)}</div></nav>
       <main className="customer-menu mx-auto grid max-w-4xl gap-7 p-4 pb-40">
         <label className="grid gap-2 text-sm font-semibold">ค้นหาเมนู<input type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="วันนี้อยากทานอะไร?" className="border border-line bg-white px-4" /></label>
@@ -32,7 +38,7 @@ export function PublicMenuPage() {
         {search && visibleCategories.length === 0 && <p className="p-6 text-center text-muted">ไม่พบเมนู ลองค้นหาด้วยชื่ออื่น</p>}
         {menu.data.categories.length === 0 ? <p className="rounded-xl bg-white p-6 text-center text-muted">ร้านยังไม่มีเมนูที่แสดง</p> : null}
       </main>
-      <CustomerCart shopId={shopId} shopOpen={menu.data.isOpen} productImages={Object.fromEntries(menu.data.categories.flatMap((category) => category.products.map((product) => [product.id, product.imageUrl])))} />
+      <CustomerCart shopId={shopId} shopOpen={menu.data.isOpen&&canOrder} tableOrder={tableOrder} productImages={Object.fromEntries(menu.data.categories.flatMap((category) => category.products.map((product) => [product.id, product.imageUrl])))} />
     </div>
   )
 }

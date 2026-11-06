@@ -12,6 +12,7 @@ export interface CreatePosOrderInput {
   idempotencyKey: string
   lines: PosCartLine[]
   note: string
+  tableBillId?: string
 }
 
 export interface StaffOrdersRepository {

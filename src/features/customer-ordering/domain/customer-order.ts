@@ -16,6 +16,7 @@ export interface CheckoutLocation {
 }
 
 export interface CheckoutResult {
+  tableBillId?: string
   orderId: string
   queueNumber: number
   orderReference: string
