@@ -442,3 +442,5 @@ svg { display: inline-block; vertical-align: middle; flex-shrink: 0; }
 .app-update-primary:disabled { background: #e5e7eb; color: #4b5563; }
 .app-update-later { border: 1px solid #d1d5db; }
 .app-update-chip { position: fixed; top: max(12px, env(safe-area-inset-top)); right: 12px; z-index: 180; display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 8px 12px; border: 1px solid #c2410c; background: white; color: #9a3412; font-weight: 700; }
+.table-payment-success-active .app-update-notice,
+.table-payment-success-active .app-update-chip { display: none; }

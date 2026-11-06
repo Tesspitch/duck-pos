@@ -31,7 +31,7 @@ function TableMenu({ qrToken }: { qrToken: string | undefined }) {
   },[selected,data,qrToken,epoch])
 
   useEffect(()=>{
-    if(entryHandled||!data||!selected||round.isPending||round.isFetching||round.error)return
+    if(entryHandled||!data||!selected||!context.isFetchedAfterMount||context.isFetching||!round.isFetchedAfterMount||round.isPending||round.isFetching||round.error)return
     if(scanEntry.current===null)scanEntry.current=Boolean(qrToken&&consumeFreshTableEntry(`/table/${qrToken}`))
     if(!scanEntry.current)return
     const current=selected.tableEpoch?selected.tableEpoch===epoch:selected.billId===data.billId
@@ -41,7 +41,7 @@ function TableMenu({ qrToken }: { qrToken: string | undefined }) {
     const prepare=data.tableEpoch?prepareAutomaticRound(epoch!,qrToken!,data.shopId):startRound(epoch!,qrToken!,data.shopId)
     void prepare.then(saved=>{if(active){setSelected(saved);setEntryHandled(true)}}).catch(error=>{if(active){setError(error instanceof Error?error.message:'เปิดเมนูไม่สำเร็จ');setEntryHandled(true)}})
     return ()=>{active=false}
-  },[entryHandled,data,selected,round.isPending,round.isFetching,round.error,round.data,epoch,qrToken])
+  },[entryHandled,data,selected,context.isFetchedAfterMount,context.isFetching,round.isFetchedAfterMount,round.isPending,round.isFetching,round.error,round.data,epoch,qrToken])
 
   const tableOrder = useMemo(() => selected && data ? {
     tableQrToken:selected.tableQrToken,billId:selected.billId,guestToken:selected.guestToken,tableName:data.tableName,
@@ -56,11 +56,12 @@ function TableMenu({ qrToken }: { qrToken: string | undefined }) {
   }
   if(context.isPending||(selected&&round.isPending))return <main className="p-6"><LoadingState label="กำลังตรวจสอบรอบโต๊ะ…"/></main>
   if(context.error||round.error)return <main className="p-6"><p role="alert">ตรวจสอบรอบโต๊ะไม่สำเร็จ</p><button className="mt-3 border border-line px-4" onClick={()=>{void context.refetch();void round.refetch()}}>ลองใหม่</button></main>
+  if(selected&&(!context.isFetchedAfterMount||!round.isFetchedAfterMount))return <main className="p-6"><LoadingState label="กำลังตรวจสอบสถานะล่าสุด…"/></main>
   if(!data)return <main className="p-6">ไม่พบโต๊ะ กรุณาติดต่อพนักงาน</main>
   const current=selected&&(selected.tableEpoch?selected.tableEpoch===epoch:selected.billId===data.billId)
   if(selected&&(!current||(round.data&&(round.data.status!=='OPEN'||round.data.closed||!data.acceptingOrders))))return <main className="min-h-screen bg-surface">
     {round.data?<TableRoundSummary round={round.data} token={selected.guestToken}/>:<p className="mx-auto max-w-3xl p-5">รอบโต๊ะเดิมสิ้นสุดแล้ว</p>}
-    {!current&&<p className="mx-auto max-w-3xl px-4 pb-28 text-sm text-muted">หากต้องการสั่งใหม่ กรุณาสแกน QR ที่โต๊ะอีกครั้ง</p>}
+    {!current&&round.data?.status!=='PAID'&&<p className="mx-auto max-w-3xl px-4 pb-28 text-sm text-muted">หากต้องการสั่งใหม่ กรุณาสแกน QR ที่โต๊ะอีกครั้ง</p>}
     {error&&<p role="alert" className="p-4 text-red-700">{error}</p>}
   </main>
   if(tableOrder&&current)return <PublicMenuView shopId={data.shopId} tableOrder={tableOrder} canOrder={data.acceptingOrders}/>
@@ -77,6 +78,7 @@ export function TableRoundPage() {
   },[round.data,guestToken])
   if(round.isPending)return <main className="p-6"><LoadingState label="กำลังโหลดรอบโต๊ะ…"/></main>
   if(round.error)return <main className="p-6"><p role="alert">โหลดสถานะไม่สำเร็จ</p><button className="mt-3 border border-line px-4" onClick={()=>void round.refetch()}>ลองใหม่</button></main>
+  if(!round.isFetchedAfterMount)return <main className="p-6"><LoadingState label="กำลังตรวจสอบสถานะล่าสุด…"/></main>
   if(!round.data||!guestToken){
     const saved=guestToken?findSavedRound(guestToken):null
     return <main className="grid gap-4 p-6"><p>ยังไม่มีรายการในรอบนี้</p>{saved?<Link className="flex min-h-12 items-center justify-center border border-line bg-white px-4" to={`/table/${saved.tableQrToken}`}>กลับไปเลือกเมนู</Link>:<p>กรุณาสแกน QR โต๊ะอีกครั้ง</p>}</main>

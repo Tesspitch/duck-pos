@@ -26,17 +26,38 @@ function setup(path:string,empty=false){
 test('saved paid round stays finished when static QR has already moved to a new bill',async()=>{
  saveRound({billId:oldBill,guestToken:token,tableQrToken:qr,shopId:shop})
  setup('/table/'+qr)
- expect(await screen.findByText('การสั่งซื้อเสร็จสิ้น · ชำระเงินแล้ว')).toBeInTheDocument()
+ expect(await screen.findByRole('heading',{name:'ชำระเงินสำเร็จ'})).toBeInTheDocument()
  expect(screen.queryByText('เมนูรอบ '+newBill)).not.toBeInTheDocument()
  expect(screen.queryByRole('button',{name:/เริ่มรอบใหม่/})).not.toBeInTheDocument()
- expect(screen.getAllByText('หากต้องการสั่งใหม่ กรุณาสแกน QR ที่โต๊ะอีกครั้ง').length).toBeGreaterThan(0)
+ expect(screen.queryByRole('button')).not.toBeInTheDocument()
+ expect(screen.queryByRole('link')).not.toBeInTheDocument()
 })
 test('direct old link restores the same paid receipt and provides no add-order action',async()=>{
  const {track}=setup('/table-round/'+token)
- expect(await screen.findByText('การสั่งซื้อเสร็จสิ้น · ชำระเงินแล้ว')).toBeInTheDocument()
+ expect(await screen.findByRole('heading',{name:'ชำระเงินสำเร็จ'})).toBeInTheDocument()
  expect(track).toHaveBeenCalledWith(token)
  expect(screen.queryByRole('link',{name:'สั่งเพิ่มในรอบนี้'})).not.toBeInTheDocument()
  expect(screen.queryByRole('link',{name:'เมนู / โต๊ะ'})).not.toBeInTheDocument()
+})
+
+test('returning to the menu waits for fresh bill status instead of showing a cached open round',async()=>{
+ saveRound({billId:oldBill,guestToken:token,tableQrToken:qr,shopId:shop,tableEpoch:oldBill})
+ let resolveContext!: (value: Awaited<ReturnType<DiningRepository['context']>>) => void
+ let resolveRound!: (value: Awaited<ReturnType<DiningRepository['track']>>) => void
+ const contextPromise=new Promise<Awaited<ReturnType<DiningRepository['context']>>>(resolve=>{resolveContext=resolve})
+ const roundPromise=new Promise<Awaited<ReturnType<DiningRepository['track']>>>(resolve=>{resolveRound=resolve})
+ const openContext={shopId:shop,shopName:'QA',tableId:qr,tableName:'โต๊ะ 5',billId:oldBill,billStatus:'OPEN' as const,tableEpoch:oldBill,acceptingOrders:true}
+ const openRound={billId:oldBill,shopId:shop,shopName:'QA',tableName:'โต๊ะ 5',tableQrToken:qr,status:'OPEN' as const,closed:false,acceptingOrders:true,ownTotalSatang:3900,orders:[]}
+ const repository:DiningRepository={cancel:vi.fn(),list:vi.fn(),create:vi.fn(),open:vi.fn(),bill:vi.fn(),checkout:vi.fn(),close:vi.fn(),pay:vi.fn(),track:vi.fn(()=>roundPromise),context:vi.fn(()=>contextPromise)}
+ const client=new QueryClient({defaultOptions:{queries:{retry:false}}});clients.push(client)
+ client.setQueryData(['dining-context',qr],openContext)
+ client.setQueryData(['dining-round',token],openRound)
+ render(<QueryClientProvider client={client}><DiningContextProvider value={repository}><MemoryRouter initialEntries={['/table/'+qr]}><Routes><Route path="/table/:qrToken" element={<TableMenuPage/>}/></Routes></MemoryRouter></DiningContextProvider></QueryClientProvider>)
+ expect(screen.queryByText('เมนูรอบ '+oldBill)).not.toBeInTheDocument()
+ await act(async()=>{resolveContext({...openContext,billId:null,billStatus:null,tableEpoch:newBill});resolveRound({...openRound,status:'PAID',closed:true,acceptingOrders:false})})
+ expect(await screen.findByRole('heading',{name:'ชำระเงินสำเร็จ'})).toBeInTheDocument()
+ expect(screen.queryByText('เมนูรอบ '+newBill)).not.toBeInTheDocument()
+ expect(screen.queryByRole('button')).not.toBeInTheDocument()
 })
 
 test('first scan opens menu immediately without creating a bill or asking staff',async()=>{
@@ -65,7 +86,9 @@ test('a tab opened before payment cannot start a new round when it later becomes
  await act(async()=>{await Promise.resolve()})
  paid=true
  await act(async()=>{await Promise.all([client.invalidateQueries({queryKey:['dining-context']}),client.invalidateQueries({queryKey:['dining-round']})])})
- expect(await screen.findByText('การสั่งซื้อเสร็จสิ้น · ชำระเงินแล้ว')).toBeInTheDocument()
+ expect(await screen.findByRole('heading',{name:'ชำระเงินสำเร็จ'})).toBeInTheDocument()
+ expect(screen.queryByRole('button')).not.toBeInTheDocument()
+ expect(screen.queryByRole('link')).not.toBeInTheDocument()
  await waitFor(()=>expect(screen.queryByText('เมนูรอบ '+newBill)).not.toBeInTheDocument())
  expect(screen.queryByRole('button',{name:/เริ่มรอบใหม่/})).not.toBeInTheDocument()
 })

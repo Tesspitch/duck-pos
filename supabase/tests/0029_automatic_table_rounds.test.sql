@@ -49,6 +49,7 @@ insert into auto_tap select throws_ok($$select pg_temp.auto_order(16,gen_random_
 update auto_context set fp=public.get_table_bill(bill)->>'fingerprint';
 select public.pay_table_bill(bill,'BANK_TRANSFER',7800,gen_random_uuid(),fp) from auto_context;
 insert into auto_tap select is(public.track_table_round((select guest from auto_context))->>'status','PAID','old link shows paid immediately');
+insert into auto_tap select throws_ok($$select pg_temp.auto_order(16,gen_random_uuid(),gen_random_uuid(),gen_random_uuid())$$,'P0001','Table is not accepting orders.','paid bill cannot accept another order even before food is finished');
 insert into auto_tap select is(public.get_table_bill((select bill from auto_context))->>'closed','false','paid table with pending food not reused');
 insert into auto_tap select is(jsonb_array_length(public.list_active_staff_orders((select shop from auto_context))->'orders'),2,'payment does not hide unfinished food from kitchen');
 select public.update_order_status(id,status,'COMPLETED') from public.orders where table_bill_id=(select bill from auto_context);
