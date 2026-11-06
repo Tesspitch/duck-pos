@@ -238,3 +238,4 @@ function RouteLoading() {
   )
 }
 
+import '../shared/application/entry-navigation'

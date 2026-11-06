@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useDiningContext, useDiningRound } from '../application/use-dining'
 import { findSavedRound, lastRound, prepareAutomaticRound, saveRound, startRound, type SavedRound } from '../application/round-memory'
 import { PublicMenuView } from '../../customer-ordering/presentation/pages/PublicMenuPage'
 import { TableRoundSummary } from './TableRoundSummary'
 import { LoadingState } from '../../../shared/presentation/LoadingState'
+import { consumeFreshTableEntry } from '../../../shared/application/entry-navigation'
 
 export function TableMenuPage() {
   const { qrToken } = useParams()
@@ -16,6 +17,8 @@ function TableMenu({ qrToken }: { qrToken: string | undefined }) {
   const round = useDiningRound(selected?.guestToken)
   const [error,setError] = useState('')
   const [busy,setBusy] = useState(false)
+ const scanEntry = useRef<boolean|null>(null)
+ const [entryHandled,setEntryHandled] = useState(false)
   const data=context.data
   const epoch=data?.tableEpoch??data?.billId
 
@@ -26,6 +29,19 @@ function TableMenu({ qrToken }: { qrToken: string | undefined }) {
     void prepare.then(saved=>{if(active)setSelected(saved)}).catch(error=>{if(active)setError(error instanceof Error?error.message:'จดจำรอบไม่สำเร็จ')})
     return ()=>{active=false}
   },[selected,data,qrToken,epoch])
+
+  useEffect(()=>{
+    if(entryHandled||!data||!selected||round.isPending||round.isFetching||round.error)return
+    if(scanEntry.current===null)scanEntry.current=Boolean(qrToken&&consumeFreshTableEntry(`/table/${qrToken}`))
+    if(!scanEntry.current)return
+    const current=selected.tableEpoch?selected.tableEpoch===epoch:selected.billId===data.billId
+    const mayStart=round.data?.status==='PAID'&&!current&&data.acceptingOrders&&Boolean(qrToken&&epoch)
+    if(!mayStart){queueMicrotask(()=>setEntryHandled(true));return}
+    let active=true
+    const prepare=data.tableEpoch?prepareAutomaticRound(epoch!,qrToken!,data.shopId):startRound(epoch!,qrToken!,data.shopId)
+    void prepare.then(saved=>{if(active){setSelected(saved);setEntryHandled(true)}}).catch(error=>{if(active){setError(error instanceof Error?error.message:'เปิดเมนูไม่สำเร็จ');setEntryHandled(true)}})
+    return ()=>{active=false}
+  },[entryHandled,data,selected,round.isPending,round.isFetching,round.error,round.data,epoch,qrToken])
 
   const tableOrder = useMemo(() => selected && data ? {
     tableQrToken:selected.tableQrToken,billId:selected.billId,guestToken:selected.guestToken,tableName:data.tableName,
@@ -44,7 +60,7 @@ function TableMenu({ qrToken }: { qrToken: string | undefined }) {
   const current=selected&&(selected.tableEpoch?selected.tableEpoch===epoch:selected.billId===data.billId)
   if(selected&&(!current||(round.data&&(round.data.status!=='OPEN'||round.data.closed||!data.acceptingOrders))))return <main className="min-h-screen bg-surface">
     {round.data?<TableRoundSummary round={round.data} token={selected.guestToken}/>:<p className="mx-auto max-w-3xl p-5">รอบโต๊ะเดิมสิ้นสุดแล้ว</p>}
-    {data.acceptingOrders&&!current&&<div className="mx-auto max-w-3xl px-4 pb-28"><button disabled={busy} onClick={()=>void begin()} className="min-h-12 w-full border border-brand-action bg-white px-4 font-bold text-brand-action">เริ่มรอบใหม่ที่ {data.tableName}</button></div>}
+    {!current&&<p className="mx-auto max-w-3xl px-4 pb-28 text-sm text-muted">หากต้องการสั่งใหม่ กรุณาสแกน QR ที่โต๊ะอีกครั้ง</p>}
     {error&&<p role="alert" className="p-4 text-red-700">{error}</p>}
   </main>
   if(tableOrder&&current)return <PublicMenuView shopId={data.shopId} tableOrder={tableOrder} canOrder={data.acceptingOrders}/>
