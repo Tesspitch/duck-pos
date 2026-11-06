@@ -1,6 +1,7 @@
 import type { SVGProps } from 'react'
 
 const paths = {
+  refresh: 'M20 7v5h-5M4 17v-5h5m-4-3a7 7 0 0 1 12-4l3 7M4 12l3 7a7 7 0 0 0 12-4',
   home: 'm3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1Z',
   bag: 'M5 7h14l1 14H4L5 7Zm3 0V6a4 4 0 0 1 8 0v1',
   queue: 'M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01',

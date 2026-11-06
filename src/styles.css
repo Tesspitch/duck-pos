@@ -434,3 +434,11 @@ svg { display: inline-block; vertical-align: middle; flex-shrink: 0; }
 .quantity-and-action { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px; }
 .quantity-and-action > button, .staff-product-footer > button { flex: 1 1 140px; min-height: 48px; }
 .staff-product-footer { align-items: flex-end; }
+.app-update-notice { position: fixed; top: max(12px, env(safe-area-inset-top)); left: 50%; transform: translateX(-50%); z-index: 180; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; width: min(680px, calc(100vw - 24px)); padding: 14px; border: 2px solid #c2410c; background: #fff; color: #111827; box-shadow: 0 4px 16px #0002; }
+.app-update-notice > div { flex: 1 1 200px; min-width: 0; }
+.app-update-notice p { font-size: 12px; color: #4b5563; }
+.app-update-notice button { min-height: 44px; padding: 0 14px; font-weight: 700; }
+.app-update-primary { background: #c2410c; color: white; }
+.app-update-primary:disabled { background: #e5e7eb; color: #4b5563; }
+.app-update-later { border: 1px solid #d1d5db; }
+.app-update-chip { position: fixed; top: max(12px, env(safe-area-inset-top)); right: 12px; z-index: 180; display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 8px 12px; border: 1px solid #c2410c; background: white; color: #9a3412; font-weight: 700; }

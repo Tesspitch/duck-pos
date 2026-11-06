@@ -3,6 +3,7 @@ import { useCustomerTrackingSync } from '../../features/customer-ordering/applic
 import type { PropsWithChildren } from 'react'
 import { BrowserRouter } from 'react-router-dom'
 import { ConnectionStatus } from '../../shared/presentation/ConnectionStatus'
+import { AppUpdateNotice } from '../../shared/presentation/AppUpdateNotice'
 import { MutationFeedback } from '../../shared/presentation/MutationFeedback'
 import { HistoryDeletionContext } from '../../features/history-management/application/history-deletion-context'
 import { supabaseHistoryDeletionRepository } from '../../features/history-management/infrastructure/supabase-history-deletion-repository'
@@ -67,6 +68,7 @@ export function AppProviders({ children }: PropsWithChildren) {
   useCustomerTrackingSync()
   return (
     <QueryClientProvider client={queryClient}>
+      <AppUpdateNotice/>
       <HistoryDeletionContext value={supabaseHistoryDeletionRepository}>
       <DiningContextProvider value={supabaseDiningRepository}>
       <AttendanceContext value={supabaseAttendanceRepository}>

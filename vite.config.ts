@@ -8,7 +8,8 @@ export default defineConfig({
     react(),
     tailwindcss(),
     VitePWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
+      injectRegister: false,
       includeAssets: ['duckpos-icon.svg'],
       manifest: {
         name: 'DuckPOS',
@@ -25,6 +26,8 @@ export default defineConfig({
         ],
       },
       workbox: {
+        skipWaiting: false,
+        clientsClaim: false,
         navigateFallback: '/index.html',
         globPatterns: ['**/*.{js,css,html,svg,ico}'],
         cleanupOutdatedCaches: true,

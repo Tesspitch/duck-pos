@@ -32,3 +32,19 @@ it('keeps quantities finite, whole and within checkout limits', () => {
   }
   useCartStore.getState().clear()
 })
+
+it('restores notes and reuses the accepted-request identity after rehydration',async()=>{
+  const cart=useCartStore.getState()
+  cart.ensureShop('update-test')
+  cart.addLine({key:'persistent',productId:'p',productName:'Kebab',basePriceSatang:3900,quantity:2,note:'เผ็ดน้อย',options:[]})
+  cart.setOrderNote('แยกซอส')
+  const identity=cart.checkoutIdentity('unchanged-cart')
+  const saved=sessionStorage.getItem('duckpos-customer-cart')!
+  useCartStore.setState({lines:[],orderNote:'',request:null})
+  sessionStorage.setItem('duckpos-customer-cart',saved)
+  await useCartStore.persist.rehydrate()
+  expect(useCartStore.getState().orderNote).toBe('แยกซอส')
+  expect(useCartStore.getState().lines[0]).toMatchObject({quantity:2,note:'เผ็ดน้อย'})
+  expect(useCartStore.getState().checkoutIdentity('unchanged-cart')).toEqual(identity)
+  useCartStore.getState().clear()
+})

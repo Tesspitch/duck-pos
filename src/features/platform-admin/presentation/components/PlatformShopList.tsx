@@ -35,7 +35,7 @@ export function PlatformShopList() {
   return <section className="mt-8 min-w-0 border border-line bg-white p-4">
     <h2 className="text-lg font-bold">ร้านค้าบนแพลตฟอร์ม</h2>
     <form className="my-4 flex gap-2" onSubmit={(event) => { event.preventDefault(); setSearch(input.trim()); setOffset(0) }}>
-      <input aria-label="ค้นหาร้าน" placeholder="ชื่อร้าน / Shop ID" maxLength={120} value={input} onChange={(event) => setInput(event.target.value)} className="min-w-0 flex-1 border border-line px-3" />
+      <input type="search" aria-label="ค้นหาร้าน" placeholder="ชื่อร้าน / Shop ID" maxLength={120} value={input} onChange={(event) => setInput(event.target.value)} className="min-w-0 flex-1 border border-line px-3" />
       <button type="submit" className="min-h-12 border border-line px-4">ค้นหา</button>
     </form>
     {shops.isLoading && <p role="status">กำลังโหลดร้านค้า…</p>}

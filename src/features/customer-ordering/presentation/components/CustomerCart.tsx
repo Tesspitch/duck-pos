@@ -13,6 +13,7 @@ import type { TableOrderContext } from '../../../dining/domain/dining'
 import { diningError } from '../../../dining/domain/dining'
 import { tableCheckoutAttempt, clearTableCheckoutAttempt } from '../../../dining/application/checkout-attempt'
 import { saveRound } from '../../../dining/application/round-memory'
+import { beginCriticalTask } from '../../../../shared/application/update-safety'
 
 const money = (satang: number) => `฿${(satang / 100).toFixed(2)}`
 
@@ -27,34 +28,36 @@ export function CustomerCart({ shopId, shopOpen, productImages = {}, tableOrder 
   const changeQuantity = useCartStore((state) => state.changeQuantity)
   const removeLine = useCartStore((state) => state.removeLine)
   const clear = useCartStore((state) => state.clear)
-  const [note, setNote] = useState('')
+  const note = useCartStore(state=>state.orderNote)
+  const setNote = useCartStore(state=>state.setOrderNote)
+  const checkoutIdentity = useCartStore(state=>state.checkoutIdentity)
   const [expanded, setExpanded] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const submitLock = useRef(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
-  const requestIds = useRef<{ idempotencyKey: string; trackingToken: string } | null>(null)
   const total = useMemo(() => lines.reduce((sum, line) => sum + cartLineTotal(line), 0), [lines])
   const quantity = lines.reduce((count, line) => count + line.quantity, 0)
 
   async function submit() {
     if (!shopOpen || lines.length === 0 || submitLock.current) return
     submitLock.current = true
+    const finishTask=beginCriticalTask()
     setSubmitting(true)
     setErrorMessage(null)
-    if (!requestIds.current) requestIds.current = { idempotencyKey: crypto.randomUUID(), trackingToken: crypto.randomUUID() }
     try {
-      if (tableOrder) requestIds.current = tableCheckoutAttempt(tableOrder.billId,tableOrder.guestToken,JSON.stringify({ lines,note }))
+      const signature=JSON.stringify({lines,note})
+      const requestIds=tableOrder?tableCheckoutAttempt(tableOrder.billId,tableOrder.guestToken,signature):checkoutIdentity(signature)
       const location = tableOrder ? undefined : await locationService.capture()
-      const result = await checkout.mutateAsync({ shopId, location, lines, note, ...requestIds.current, ...(tableOrder ? { tableOrder } : {}) })
+      const result = await checkout.mutateAsync({ shopId, location, lines, note, ...requestIds, ...(tableOrder ? { tableOrder } : {}) })
       if (tableOrder && result.tableBillId) saveRound({billId:result.tableBillId,guestToken:tableOrder.guestToken,tableQrToken:tableOrder.tableQrToken,shopId,tableEpoch:tableOrder.tableEpoch})
       if (!tableOrder) rememberTracking(shopId, result.trackingToken)
       if (tableOrder) clearTableCheckoutAttempt(tableOrder.billId,tableOrder.guestToken)
       clear()
-      requestIds.current = null
       navigate(tableOrder ? `/table-round/${tableOrder.guestToken}` : `/track/${result.trackingToken}`)
     } catch (error) {
       setErrorMessage(tableOrder ? diningError(error) : error instanceof Error ? error.message : 'ส่งออเดอร์ไม่สำเร็จ')
     } finally {
+      finishTask()
       submitLock.current = false
       setSubmitting(false)
     }
