@@ -44,7 +44,7 @@ export function CustomerCart({ shopId, shopOpen, productImages = {}, tableOrder 
     if (!requestIds.current) requestIds.current = { idempotencyKey: crypto.randomUUID(), trackingToken: crypto.randomUUID() }
     try {
       if (tableOrder) requestIds.current = tableCheckoutAttempt(tableOrder.billId,tableOrder.guestToken,JSON.stringify({ lines,note }))
-      const location = await locationService.capture()
+      const location = tableOrder ? undefined : await locationService.capture()
       const result = await checkout.mutateAsync({ shopId, location, lines, note, ...requestIds.current, ...(tableOrder ? { tableOrder } : {}) })
       if (tableOrder && result.tableBillId) saveRound({billId:result.tableBillId,guestToken:tableOrder.guestToken,tableQrToken:tableOrder.tableQrToken,shopId,tableEpoch:tableOrder.tableEpoch})
       if (!tableOrder) rememberTracking(shopId, result.trackingToken)
@@ -76,7 +76,7 @@ export function CustomerCart({ shopId, shopOpen, productImages = {}, tableOrder 
         </ul>
         <label className="mt-3 grid gap-1 text-sm">หมายเหตุทั้งออเดอร์<input disabled={submitting} value={note} maxLength={500} onChange={(event) => setNote(event.target.value)} className="rounded-lg border border-line px-3" /></label>
         {!shopOpen && <p className="mt-4 border border-red-200 bg-red-50 p-3 text-sm font-semibold text-red-800">ร้านปิดอยู่ · ยังส่งออเดอร์ไม่ได้</p>}
-        <button type="button" onClick={() => void submit()} disabled={!shopOpen || submitting} className="cart-checkout-button">{submitting ? 'กำลังตรวจตำแหน่งและส่งออเดอร์…' : shopOpen ? `ยืนยันออเดอร์ · ${money(total)}` : 'ร้านปิดอยู่'}</button>
+        <button type="button" onClick={() => void submit()} disabled={!shopOpen || submitting} className="cart-checkout-button">{submitting ? tableOrder ? 'กำลังส่งออเดอร์…' : 'กำลังตรวจตำแหน่งและส่งออเดอร์…' : shopOpen ? `ยืนยันออเดอร์ · ${money(total)}` : 'ร้านปิดอยู่'}</button>
         {errorMessage || checkout.error ? <p role="alert" className="mt-2 text-sm text-red-700">{errorMessage ?? checkout.error?.message}</p> : null}
         </div>
         <CustomerNavigation active="cart" quantity={quantity} busy={submitting} trackingPath={trackingPath} onMenu={() => setExpanded(false)} onCart={() => {}} />

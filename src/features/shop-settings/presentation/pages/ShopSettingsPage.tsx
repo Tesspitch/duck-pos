@@ -105,7 +105,7 @@ export function ShopSettingsPage() {
           ) : null}
 
           <form onSubmit={(event) => void submitLocation(event)} className="mt-8 grid gap-4 border-t border-line pt-6">
-            <div><h2 className="text-lg font-bold"><Icon name="pin" /> ตำแหน่งร้าน</h2><p className="text-sm text-muted">ลูกค้าต้องอยู่ภายในรัศมี 100 เมตรจากพิกัดนี้</p></div>
+            <div><h2 className="text-lg font-bold"><Icon name="pin" /> ตำแหน่งร้าน</h2><p className="text-sm text-muted">QR หน้าร้านจำกัดรัศมี 100 เมตร · QR โต๊ะไม่จำกัดรัศมี</p></div>
             {location.isLoading ? <p>กำลังโหลดพิกัด…</p> : null}
             {location.isError ? <p role="alert" className="text-sm text-red-700">โหลดพิกัดไม่สำเร็จ: {location.error.message}</p> : null}
             <button type="button" disabled={isLocating} onClick={() => void captureCurrentLocation()} className="min-h-11 rounded-lg bg-brand-soft px-4 font-semibold text-brand-action disabled:opacity-50">{isLocating ? 'กำลังค้นหาตำแหน่ง…' : ' ใช้ตำแหน่งปัจจุบัน'}</button>

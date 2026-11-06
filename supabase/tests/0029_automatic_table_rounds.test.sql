@@ -24,7 +24,7 @@ insert into auto_tap select ok(not has_function_privilege('anon','public.create_
 insert into auto_tap select ok(not has_function_privilege('authenticated','public.create_auto_table_qr_order(uuid,uuid,uuid,uuid,uuid,uuid,double precision,double precision,double precision,timestamptz,jsonb,text)','EXECUTE'),'staff cannot bypass customer geofence Edge');
 insert into auto_tap select is(public.get_dining_table_context((select qr from auto_context))->>'acceptingOrders','true','empty table accepts ordering while shop open');
 insert into auto_tap select is((select count(*)::integer from public.table_bills where shop_id=(select shop from auto_context)),0,'reading menu never creates empty bill');
-insert into auto_tap select throws_ok($$select pg_temp.auto_order(17)$$,'42501','Customer is outside the ordering area.','invalid geofence rolls back automatic round');
+insert into auto_tap select throws_ok($$select public.create_auto_table_qr_order(shop,qr,epoch,guest,key,token,null,null,null,null,jsonb_build_array(jsonb_build_object('productId',product,'quantity',0))) from auto_context$$,'22023','Invalid quantity or item note.','invalid cart rolls back automatic round without requiring GPS');
 insert into auto_tap select is((select count(*)::integer from public.table_sessions where shop_id=(select shop from auto_context)),0,'failed first checkout leaves no table session');
 insert into auto_tap select lives_ok($$select pg_temp.auto_order()$$,'first checkout opens round and creates order');
 update auto_context set bill=(public.get_dining_table_context(qr)->>'billId')::uuid,order_id=(pg_temp.auto_order()->>'orderId')::uuid;

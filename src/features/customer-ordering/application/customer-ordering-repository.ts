@@ -8,7 +8,7 @@ export interface CustomerOrderingRepository {
     shopId: string
     idempotencyKey: string
     trackingToken: string
-    location: CheckoutLocation
+    location?: CheckoutLocation
     lines: CartLine[]
     note: string
     tableOrder?: TableOrderContext

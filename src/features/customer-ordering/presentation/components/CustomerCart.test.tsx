@@ -33,11 +33,14 @@ function openCart(shopOpen = true,tableOrder?:TableOrderContext) {
 }
 
 test('automatic table checkout remembers the server bill and preserves the guest epoch',async()=>{
+ capture.mockRejectedValue(new Error('Location permission denied'))
  const tableOrder={billId:'10000000-0000-4000-8000-000000000001',guestToken:'20000000-0000-4000-8000-000000000001',tableQrToken:'30000000-0000-4000-8000-000000000001',tableName:'โต๊ะ 1',tableEpoch:'10000000-0000-4000-8000-000000000001'}
  checkout.mockResolvedValue({...result,tableBillId:'40000000-0000-4000-8000-000000000001'})
  openCart(true,tableOrder)
  fireEvent.click(screen.getByRole('button',{name:/ยืนยันออเดอร์/}))
  await screen.findByText('ติดตามโต๊ะ')
+  expect(capture).not.toHaveBeenCalled()
+  expect(checkout.mock.calls[0]?.[0].location).toBeUndefined()
  expect(checkout.mock.calls[0]?.[0].tableOrder).toEqual(tableOrder)
  // The test shop ID is deliberately a fixture string; inspect raw stored data instead of UUID validation.
  expect(localStorage.getItem('duckpos.dining.table.'+tableOrder.tableQrToken)).toBe('40000000-0000-4000-8000-000000000001')
