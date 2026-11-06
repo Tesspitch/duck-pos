@@ -7,6 +7,7 @@ import { usePublicMenu } from '../../application/use-public-menu'
 import { CustomerCart } from '../components/CustomerCart'
 import { PublicProductCard } from '../components/PublicProductCard'
 import type { TableOrderContext } from '../../../dining/domain/dining'
+import { TableServiceButton } from '../../../dining/presentation/TableServiceButton'
 
 export function PublicMenuPage() {
   const { shopId } = useParams()
@@ -29,7 +30,7 @@ export function PublicMenuView({ shopId, tableOrder, canOrder=true }: { shopId: 
 
   return (
     <div className="ordering-page">
-      {tableOrder && <div className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-line bg-white p-3"><strong>ทานที่ร้าน · {tableOrder.tableName}</strong><a className="min-h-11 content-center border border-line px-3 text-sm" href={`/table-round/${tableOrder.guestToken}`}>รายการรอบนี้</a></div>}
+      {tableOrder && <div className="sticky top-0 z-30 flex flex-wrap items-center justify-between gap-2 border-b border-line bg-white p-3"><strong>ทานที่ร้าน · {tableOrder.tableName}</strong><div className="flex flex-wrap items-start gap-2"><TableServiceButton tableQrToken={tableOrder.tableQrToken}/><a className="min-h-11 content-center border border-line px-3 text-sm" href={`/table-round/${tableOrder.guestToken}`}>รายการรอบนี้</a></div></div>}
       <header className="restaurant-header"><div className="restaurant-cover">{cover ? <img src={cover} alt="" fetchPriority="high" /> : <span>สดใหม่ พร้อมเสิร์ฟ</span>}<span className="takeaway-label">{tableOrder ? `ทานที่ร้าน · ${tableOrder.tableName}` : 'สั่งกลับบ้าน · รับที่ร้าน'}</span></div><div className="restaurant-identity">{menu.data.logoUrl ? <img src={menu.data.logoUrl} alt="โลโก้ร้าน" /> : <span className="restaurant-monogram">{menu.data.shopName.slice(0,1)}</span>}<h1>{menu.data.shopName}</h1><p className={menu.data.isOpen ? 'text-green-700' : 'text-red-700'}>{menu.data.isOpen ? 'เปิดรับออเดอร์ · เลือกเมนูด้านล่างได้เลย' : 'ร้านปิดอยู่ · ดูเมนูได้ แต่ยังสั่งไม่ได้'}</p></div></header>
       <nav aria-label="หมวดหมู่เมนู" className="sticky top-0 z-20 border-b border-line bg-white"><div className="mx-auto flex max-w-4xl gap-2 overflow-x-auto p-3">{menu.data.categories.map((category) => <a key={category.id} href={`#category-${category.id}`} className="inline-flex shrink-0 items-center rounded-full bg-brand-soft px-5 font-semibold text-brand-action">{category.name}</a>)}</div></nav>
       <main className="customer-menu mx-auto grid max-w-4xl gap-7 p-4 pb-40">

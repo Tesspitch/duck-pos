@@ -1,4 +1,7 @@
 import { useRef, useState } from 'react'
+import { getPaymentQr } from '../../shop-settings/infrastructure/payment-qr-repository'
+import { useActiveShop } from '../../shop-context/application/active-shop-context'
+import { renderBill } from './print-table-bill'
 import { Link } from 'react-router-dom'
 import { FormWorkspace } from '../../../shared/presentation/FormWorkspace'
 import { LoadingState } from '../../../shared/presentation/LoadingState'
@@ -9,11 +12,25 @@ export function TableBillPanel({ billId, shopId, onBack }: { billId: string; sho
  const bill = useDiningBill(billId)
  const action = useDiningAction(shopId)
  const [confirmClose,setConfirmClose] = useState(false)
+ const {activeMembership}=useActiveShop()
+ const [printing,setPrinting]=useState(false)
+ const [printError,setPrintError]=useState('')
+ async function printBill() {
+  const popup=window.open('','_blank');if(!popup){setPrintError('กรุณาอนุญาตเปิดหน้าต่างเพื่อพิมพ์บิล');return}
+  popup.document.body.textContent='กำลังโหลดบิลล่าสุด…';setPrinting(true);setPrintError('')
+  try {
+   const [fresh,qr]=await Promise.all([bill.refetch(),getPaymentQr(shopId)])
+   if(fresh.error||!fresh.data||fresh.data.shopId!==shopId)throw new Error('Invalid bill')
+   popup.document.open();popup.document.write(renderBill(fresh.data,activeMembership?.shops?.name??'ร้าน',qr));popup.document.close()
+  }catch{popup.close();setPrintError('โหลดบิลหรือ QR ไม่สำเร็จ กรุณาลองใหม่')}finally{setPrinting(false)}
+ }
  return <FormWorkspace title={bill.data?.tableName ?? 'บิลโต๊ะ'} busy={action.isPending} onBack={onBack}>
   {bill.isPending && <LoadingState label="กำลังโหลดบิล…" />}
   {bill.error && <p role="alert">{diningError(bill.error)}</p>}
   {bill.data && bill.data.shopId !== shopId && <p role="alert">บิลนี้อยู่คนละสาขา กรุณาสลับสาขาก่อน</p>}
   {bill.data && bill.data.shopId === shopId && <section className="grid min-w-0 gap-4">
+   <button disabled={printing} className="min-h-12 border border-line bg-white px-4 font-semibold" onClick={()=>void printBill()}>{printing?'กำลังเตรียมบิล…':'พิมพ์บิล / บันทึก PDF'}</button>
+   {printError&&<p role="alert" className="text-red-700">{printError}</p>}
    <header className="flex flex-wrap justify-between gap-3 border border-line bg-white p-4"><div><h2 className="text-2xl font-bold">{bill.data.tableName}</h2><p>{billLabels[bill.data.status]}{bill.data.closed ? ' · ปิดโต๊ะแล้ว' : ''}</p></div><strong className="text-2xl text-brand-action">{diningMoney(bill.data.totalSatang)}</strong></header>
    {bill.data.orders.map(order => <article key={order.id} className={`min-w-0 border border-line bg-white p-4 ${order.status==='CANCELLED' ? 'opacity-60' : ''}`}><div className="flex flex-wrap justify-between gap-2"><strong>คิว {String(order.queueNumber).padStart(3,'0')}</strong><span>{order.status==='CANCELLED' ? 'ยกเลิก' : order.status==='COMPLETED' ? 'เสร็จแล้ว' : 'อาหารยังไม่ครบ'}</span></div><ul className="mt-3 grid gap-2">{order.items.map((item,i) => <li key={i}><strong>{item.quantity} × {item.name}</strong><p className="text-sm text-muted">{item.options.join(' · ')} {item.note}</p></li>)}</ul><p className="mt-3 text-right font-bold">{diningMoney(order.totalSatang)}</p></article>)}
    {!bill.data.closed && bill.data.status==='OPEN' && <div className="grid gap-2 sm:grid-cols-2"><Link className="flex min-h-12 items-center justify-center bg-brand-action px-4 font-bold text-white" to={`/pos?tableBill=${billId}&tableName=${encodeURIComponent(bill.data.tableName)}`}>เพิ่มอาหารให้โต๊ะ</Link><button disabled={action.isPending} className="min-h-12 border border-brand-action bg-white px-4 font-bold text-brand-action" onClick={() => action.mutate(r=>r.checkout(billId,true))}>คิดเงิน / หยุดรับรายการ</button></div>}

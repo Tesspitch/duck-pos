@@ -8,6 +8,7 @@ import { useQrCodeService } from '../../shop-qr/application/use-qr-code-service'
 import { useDiningAction, useDiningTables } from '../application/use-dining'
 import { billLabels, diningError, diningMoney, type DiningTable } from '../domain/dining'
 import { TableBillPanel } from './TableBillPanel'
+import { createTableQrPoster, tablePosterPng } from '../infrastructure/table-qr-poster'
 
 export function DiningTablesPage() {
  const { activeMembership }=useActiveShop()
@@ -45,14 +46,15 @@ function TableQr({table,onBack}:{table:DiningTable;onBack:()=>void}) {
  const url=window.location.origin+'/table/'+table.qrToken
  useEffect(()=>{
   let active=true
-  void qr.createSvg(url).then(svg=>{if(active)setPreview('data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg))}).catch(()=>{if(active)setError('สร้าง QR ไม่สำเร็จ')})
+  void qr.createSvg(url).then(svg=>createTableQrPoster(table.name,svg)).then(svg=>{if(active)setPreview('data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg))}).catch(()=>{if(active)setError('สร้าง QR ไม่สำเร็จ')})
   return ()=>{active=false}
- },[qr,url])
+ },[qr,url,table.name])
  async function download() {
   setBusy(true);setError('')
-  try { const anchor=document.createElement('a');anchor.href=await qr.createPngDataUrl(url);anchor.download='DuckPOS-'+table.name+'.png';anchor.click() }
+  try { const anchor=document.createElement('a');anchor.href=await tablePosterPng(preview);anchor.download='DuckPOS-'+table.name+'.png';anchor.click() }
   catch {setError('สร้าง QR ไม่สำเร็จ กรุณาลองใหม่')}
   finally {setBusy(false)}
  }
- return <FormWorkspace title={`QR ${table.name}`} busy={busy} onBack={onBack}><section className="grid gap-4 border border-line bg-white p-5"><h2 className="text-2xl font-bold">{table.name}</h2>{preview&&<img src={preview} alt={`QR ${table.name}`} width="256" height="256" className="mx-auto aspect-square w-full max-w-64" />}<p className="break-all text-sm text-muted">{url}</p><a className="flex min-h-12 items-center justify-center border border-line px-4" href={url} target="_blank" rel="noreferrer">เปิดหน้าลูกค้า</a><button disabled={busy} className="min-h-12 bg-brand-action px-4 font-bold text-white" onClick={()=>void download()}>{busy?'กำลังสร้าง QR…':'ดาวน์โหลด QR โต๊ะ'}</button>{error&&<p role="alert">{error}</p>}</section></FormWorkspace>
+ return <FormWorkspace title={`QR ${table.name}`} busy={busy} onBack={onBack}><section className="grid gap-4 border border-line bg-white p-5"><h2 className="text-2xl font-bold">{table.name}</h2>{preview&&<img src={preview} alt={`QR ${table.name}`} width="1122" height="1402" className="mx-auto h-auto w-full max-w-md" />}<p className="break-all text-sm text-muted">{url}</p><a className="flex min-h-12 items-center justify-center border border-line px-4" href={url} target="_blank" rel="noreferrer">เปิดหน้าลูกค้า</a><button disabled={busy||!preview} className="min-h-12 bg-brand-action px-4 font-bold text-white" onClick={()=>void download()}>{busy?'กำลังสร้าง QR…':'ดาวน์โหลด QR โต๊ะ'}</button>{error&&<p role="alert">{error}</p>}</section></FormWorkspace>
 }
+

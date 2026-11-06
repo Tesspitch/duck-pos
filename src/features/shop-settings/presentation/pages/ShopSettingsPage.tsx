@@ -1,4 +1,5 @@
 import { Icon } from '../../../../shared/presentation/Icon'
+import { PaymentQrSettings } from '../PaymentQrSettings'
 import { useState, type FormEvent } from 'react'
 
 import { useActiveShop } from '../../../shop-context/application/active-shop-context'
@@ -117,6 +118,7 @@ export function ShopSettingsPage() {
             {locationMessage ? <p role="status" className="text-sm text-muted">{locationMessage}</p> : null}
           </form>
         </section>
+        {membership?.role==='OWNER'&&<PaymentQrSettings key={membership.shop_id} shopId={membership.shop_id}/>}
       </main>
     </AppShell>
   )

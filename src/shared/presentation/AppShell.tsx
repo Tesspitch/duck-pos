@@ -7,6 +7,7 @@ import { StoreNavigation } from './StoreNavigation'
 import { Icon } from './Icon'
 import { MobileNavigation } from './MobileNavigation'
 import { SignOutConfirmation } from './SignOutConfirmation'
+import { StaffServiceRequests } from '../../features/dining/presentation/StaffServiceRequests'
 
 export function AppShell({ children }: PropsWithChildren) {
   const navigate = useNavigate()
@@ -36,7 +37,7 @@ export function AppShell({ children }: PropsWithChildren) {
         backdropPressed.current = false
       }}><button autoFocus type="button" className="drawer-dismiss" onClick={() => menu.current?.close()}><Icon name="close" /> ปิดเมนู</button>{navigation}</dialog>
     <div className="release-workspace">
-      <header className="workspace-toolbar"><button type="button" aria-label="เปิดเมนูหลัก" aria-haspopup="dialog" className="drawer-trigger" onClick={() => menu.current?.showModal()}><Icon name="bars" /></button><span className="toolbar-store-icon"><Icon name="store" /></span><div className="workspace-shop"><span>พื้นที่จัดการร้าน</span><strong>{activeMembership?.shops?.name ?? 'DuckPOS'}</strong></div><span className="role-badge">{activeMembership?.role === 'OWNER' ? 'เจ้าของร้าน' : activeMembership ? 'พนักงาน' : 'บัญชีของฉัน'}</span></header>
+      <header className="workspace-toolbar"><button type="button" aria-label="เปิดเมนูหลัก" aria-haspopup="dialog" className="drawer-trigger" onClick={() => menu.current?.showModal()}><Icon name="bars" /></button><span className="toolbar-store-icon"><Icon name="store" /></span><div className="workspace-shop"><span>พื้นที่จัดการร้าน</span><strong>{activeMembership?.shops?.name ?? 'DuckPOS'}</strong></div>{activeMembership&&<StaffServiceRequests key={activeMembership.shop_id} shopId={activeMembership.shop_id}/>}<span className="role-badge">{activeMembership?.role === 'OWNER' ? 'เจ้าของร้าน' : activeMembership ? 'พนักงาน' : 'บัญชีของฉัน'}</span></header>
       {confirmSignOut&&<SignOutConfirmation email={user?.email} onConfirm={handleSignOut} onCancel={()=>setConfirmSignOut(false)}/>}
       <div id="workspace" tabIndex={-1} className="release-content">{children}</div>
       {activeMembership && <MobileNavigation />}

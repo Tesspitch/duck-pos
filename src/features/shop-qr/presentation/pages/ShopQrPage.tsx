@@ -1,4 +1,5 @@
 import { Icon } from '../../../../shared/presentation/Icon'
+import { createQrPoster, posterPng } from '../../infrastructure/qr-poster'
 import { useEffect, useMemo, useState } from 'react'
 
 import { AppShell } from '../../../../shared/presentation/AppShell'
@@ -20,10 +21,11 @@ export function ShopQrPage() {
   useEffect(() => {
     let active = true
     void qrCodeService.createSvg(menuUrl)
+      .then(value => createQrPoster(shopName,value))
       .then((value) => { if (active) { setSvg(value); setError(null) } })
       .catch(() => { if (active) setError('สร้าง QR Code ไม่สำเร็จ กรุณาลองใหม่') })
     return () => { active = false }
-  }, [menuUrl, qrCodeService])
+  }, [menuUrl, qrCodeService, shopName])
 
   const svgDataUrl = svg ? `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}` : ''
 
@@ -51,7 +53,7 @@ export function ShopQrPage() {
     if (downloading) return
     setDownloading(true)
     setError(null)
-    try { download(await qrCodeService.createPngDataUrl(menuUrl), 'png') }
+    try { download(await posterPng(svgDataUrl), 'png') }
     catch { setError('ดาวน์โหลดไม่สำเร็จ กรุณาลองใหม่ หรือเลือก SVG') }
     finally { setDownloading(false) }
   }
@@ -60,9 +62,9 @@ export function ShopQrPage() {
     <div className="qr-hide-on-print"><p className="text-sm font-semibold text-brand-action">สั่งอาหารผ่าน QR</p><h1 className="text-2xl font-bold"><Icon name="qr" /> QR สั่งอาหาร</h1><p className="mt-1 text-sm text-muted">ดาวน์โหลดหรือพิมพ์ป้ายให้ลูกค้าสแกน</p></div>
     <section className="qr-print-card mt-5 grid gap-6 rounded-2xl border border-line bg-white p-5 sm:grid-cols-[minmax(260px,360px)_1fr] sm:p-7">
       <div className="grid place-items-center rounded-2xl bg-white p-3">
-        {svgDataUrl ? <img src={svgDataUrl} alt={`QR Code เมนูร้าน ${shopName}`} className="aspect-square w-full max-w-80" /> : <div className="aspect-square w-full max-w-80 animate-pulse rounded-xl bg-brand-soft" />}
+        {svgDataUrl ? <img src={svgDataUrl} alt={`QR Code เมนูร้าน ${shopName}`} className="h-auto w-full" /> : <div className="aspect-square w-full max-w-80 animate-pulse rounded-xl bg-brand-soft" />}
       </div>
-      <div className="flex flex-col justify-center">
+      <div className="qr-hide-on-print flex flex-col justify-center">
         <p className="text-sm font-semibold text-brand-action">สแกนเพื่อสั่งอาหาร</p>
         <h2 className="mt-1 text-3xl font-bold">{shopName}</h2>
         <p className="mt-3 break-all rounded-xl bg-brand-soft p-3 text-sm">{menuUrl}</p>
