@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 import { getPaymentQr } from '../../shop-settings/infrastructure/payment-qr-repository'
 import { useActiveShop } from '../../shop-context/application/active-shop-context'
 import { renderBill } from './print-table-bill'
+import { supabaseShopSettingsRepository } from '../../shop-settings/infrastructure/supabase-shop-settings-repository'
 import { Link } from 'react-router-dom'
 import { FormWorkspace } from '../../../shared/presentation/FormWorkspace'
 import { LoadingState } from '../../../shared/presentation/LoadingState'
@@ -19,9 +20,9 @@ export function TableBillPanel({ billId, shopId, onBack }: { billId: string; sho
   const popup=window.open('','_blank');if(!popup){setPrintError('กรุณาอนุญาตเปิดหน้าต่างเพื่อพิมพ์บิล');return}
   popup.document.body.textContent='กำลังโหลดบิลล่าสุด…';setPrinting(true);setPrintError('')
   try {
-   const [fresh,qr]=await Promise.all([bill.refetch(),getPaymentQr(shopId)])
+   const [fresh,qr,shop]=await Promise.all([bill.refetch(),getPaymentQr(shopId),supabaseShopSettingsRepository.get(shopId)])
    if(fresh.error||!fresh.data||fresh.data.shopId!==shopId)throw new Error('Invalid bill')
-   popup.document.open();popup.document.write(renderBill(fresh.data,activeMembership?.shops?.name??'ร้าน',qr));popup.document.close()
+   popup.document.open();popup.document.write(renderBill(fresh.data,shop.name??activeMembership?.shops?.name??'ร้าน',qr,shop));popup.document.close()
   }catch{popup.close();setPrintError('โหลดบิลหรือ QR ไม่สำเร็จ กรุณาลองใหม่')}finally{setPrinting(false)}
  }
  return <FormWorkspace title={bill.data?.tableName ?? 'บิลโต๊ะ'} busy={action.isPending} onBack={onBack}>

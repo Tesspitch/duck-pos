@@ -110,6 +110,19 @@
 .slide-confirm.is-disabled { opacity: .5; }
 .confirm-action-dialog { position: fixed; inset: 0; margin: auto; width: min(440px, calc(100vw - 32px)); border: 1px solid var(--color-line); padding: 24px; background: white; }
 .confirm-action-dialog::backdrop { background: rgb(20 20 20 / 50%); }
+.signout-dialog { max-width: 400px; border-radius: 8px; padding: 24px; box-shadow: 0 20px 60px rgb(0 0 0 / 18%); }
+.signout-dialog-header { display: flex; align-items: center; justify-content: space-between; }
+.signout-icon { display: grid; place-items: center; width: 52px; height: 52px; border: 1px solid #fecaca; border-radius: 8px; background: #fff1f2; color: #b91c1c; }
+.signout-close { display: grid; place-items: center; min-width: 44px; min-height: 44px; color: #6b7280; }
+.signout-account { display: flex; align-items: center; gap: 10px; margin-top: 12px; padding: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 4px; color: #475569; font-size: 14px; }
+.signout-account svg { flex-shrink: 0; }
+.signout-account span { min-width: 0; overflow-wrap: anywhere; }
+.signout-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 24px; }
+.signout-actions button { min-height: 48px; padding: 10px 16px; border-radius: 4px; font-weight: 600; white-space: nowrap; }
+.signout-cancel { border: 1px solid #cbd5e1; background: white; color: #334155; }
+.signout-confirm { border: 1px solid #b91c1c; background: #b91c1c; color: white; }
+.signout-confirm:hover { background: #991b1b; }
+.signout-actions button:disabled, .signout-close:disabled { opacity: .5; cursor: wait; }
 
 .loading-state { display: flex; align-items: center; justify-content: center; gap: 12px; min-height: 120px; padding: 24px; color: var(--color-muted); font-size: 14px; }
 .loading-spinner { width: 24px; height: 24px; border: 2px solid var(--color-line); border-top-color: var(--color-brand); border-radius: 50%; animation: loading-spin .8s linear infinite; }
