@@ -17,10 +17,10 @@ beforeEach(() => {
 test('sign out asks confirmation and cancel preserves login',()=>{
  render(<MemoryRouter><AppShell><p>หน้าเว็บ</p></AppShell></MemoryRouter>)
  fireEvent.click(screen.getAllByRole('button',{name:'ออกจากระบบ'})[0]!)
- expect(screen.getByRole('dialog',{name:'ยืนยันออกจากระบบ'})).toBeVisible()
+ expect(screen.getByRole('dialog',{name:'ออกจากระบบ?'})).toBeVisible()
  expect(signOut).not.toHaveBeenCalled()
  fireEvent.click(screen.getByRole('button',{name:'อยู่ต่อ'}))
- expect(screen.queryByRole('dialog',{name:'ยืนยันออกจากระบบ'})).not.toBeInTheDocument()
+ expect(screen.queryByRole('dialog',{name:'ออกจากระบบ?'})).not.toBeInTheDocument()
  expect(signOut).not.toHaveBeenCalled()
 })
 test('confirmed sign out only submits once while request is pending',async()=>{
@@ -28,7 +28,7 @@ test('confirmed sign out only submits once while request is pending',async()=>{
  signOut.mockReturnValue(new Promise<void>(resolve=>{finish=resolve}))
  render(<MemoryRouter><AppShell><p>หน้าเว็บ</p></AppShell></MemoryRouter>)
  fireEvent.click(screen.getAllByRole('button',{name:'ออกจากระบบ'})[0]!)
- fireEvent.click(screen.getByRole('button',{name:'ยืนยันออกจากระบบ'}))
+ fireEvent.click(screen.getByRole('button',{name:'ยืนยัน'}))
  expect(screen.getByRole('button',{name:'อยู่ต่อ'})).toBeDisabled()
  expect(screen.getByRole('button',{name:'กำลังออก…'})).toBeDisabled()
  expect(signOut).toHaveBeenCalledTimes(1)
@@ -39,9 +39,9 @@ test('failed sign out keeps confirmation open with retry feedback',async()=>{
  signOut.mockRejectedValue(new Error('network'))
  render(<MemoryRouter><AppShell><p>หน้าเว็บ</p></AppShell></MemoryRouter>)
  fireEvent.click(screen.getAllByRole('button',{name:'ออกจากระบบ'})[0]!)
- fireEvent.click(screen.getByRole('button',{name:'ยืนยันออกจากระบบ'}))
+ fireEvent.click(screen.getByRole('button',{name:'ยืนยัน'}))
  expect(await screen.findByRole('alert')).toHaveTextContent('ออกจากระบบไม่สำเร็จ')
- expect(screen.getByRole('button',{name:'ยืนยันออกจากระบบ'})).toBeEnabled()
+ expect(screen.getByRole('button',{name:'ยืนยัน'})).toBeEnabled()
 })
 afterEach(() => { cleanup(); vi.restoreAllMocks() })
 

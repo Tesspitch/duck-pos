@@ -37,6 +37,7 @@ test('automatic table checkout remembers the server bill and preserves the guest
  const tableOrder={billId:'10000000-0000-4000-8000-000000000001',guestToken:'20000000-0000-4000-8000-000000000001',tableQrToken:'30000000-0000-4000-8000-000000000001',tableName:'โต๊ะ 1',tableEpoch:'10000000-0000-4000-8000-000000000001'}
  checkout.mockResolvedValue({...result,tableBillId:'40000000-0000-4000-8000-000000000001'})
  openCart(true,tableOrder)
+ fireEvent.click(screen.getByRole('button',{name:'ดำเนินการต่อ'}))
  fireEvent.click(screen.getByRole('button',{name:/ยืนยันออเดอร์/}))
  await screen.findByText('ติดตามโต๊ะ')
   expect(capture).not.toHaveBeenCalled()
@@ -59,12 +60,12 @@ test('locks checkout during location capture, submits once, then shows tracking'
   let resolveCapture!: (value: typeof location) => void
   capture.mockReturnValue(new Promise((resolve) => { resolveCapture = resolve }))
   openCart()
+  fireEvent.click(screen.getByRole('button',{name:'ดำเนินการต่อ'}))
   const submit = screen.getByRole('button', { name: /ยืนยันออเดอร์/ })
   fireEvent.click(submit)
   fireEvent.click(submit)
   expect(capture).toHaveBeenCalledTimes(1)
-  expect(screen.getByRole('spinbutton')).toBeDisabled()
-  expect(screen.getByLabelText('หมายเหตุทั้งออเดอร์')).toBeDisabled()
+  expect(screen.queryByRole('spinbutton')).not.toBeInTheDocument()
   expect(screen.getByRole('button', { name: 'ย้อนกลับ' })).toBeDisabled()
   expect(screen.getByRole('button', { name: 'เมนู' })).toBeDisabled()
   resolveCapture(location)
@@ -98,16 +99,18 @@ test('menu offers the remembered status link for this shop only', () => {
 test('location denial retains cart and allows retry without sending an order', async () => {
   capture.mockRejectedValueOnce(new Error('กรุณาอนุญาตตำแหน่ง'))
   openCart()
+  fireEvent.click(screen.getByRole('button',{name:'ดำเนินการต่อ'}))
   fireEvent.click(screen.getByRole('button', { name: /ยืนยันออเดอร์/ }))
   expect(await screen.findByRole('alert')).toHaveTextContent('กรุณาอนุญาตตำแหน่ง')
   expect(checkout).not.toHaveBeenCalled()
   expect(useCartStore.getState().lines).toHaveLength(1)
-  expect(screen.getByRole('button', { name: /ยืนยันออเดอร์/ })).toBeEnabled()
+  expect(screen.getByRole('button', { name: 'ตรวจสอบตำแหน่งอีกครั้ง' })).toBeEnabled()
 })
 
 test('network retry reuses the checkout identity instead of creating a duplicate', async () => {
   checkout.mockRejectedValueOnce(new Error('เครือข่ายขัดข้อง'))
   openCart()
+  fireEvent.click(screen.getByRole('button',{name:'ดำเนินการต่อ'}))
   fireEvent.click(screen.getByRole('button', { name: /ยืนยันออเดอร์/ }))
   await screen.findByRole('alert')
   await waitFor(() => expect(screen.getByRole('button', { name: /ยืนยันออเดอร์/ })).toBeEnabled())

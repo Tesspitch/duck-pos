@@ -23,7 +23,7 @@ export function SalesHistoryTable({ page, isFetching, onPageChange }: Props) {
         <p className="text-sm font-semibold">หน้า {page.page}/{pageCount}</p>
       </div>
       <div className="mt-3 overflow-x-auto">
-        <table className="w-full min-w-230 text-left text-sm">
+        <table className="sales-history-table w-full text-left text-sm">
           <thead><tr className="border-b border-line"><th className="p-2">วัน/เวลา</th><th className="p-2">อ้างอิง/คิว</th><th className="p-2">สินค้า</th><th className="p-2">ช่องทาง</th><th className="p-2">สถานะ</th><th className="p-2">ชำระเงิน</th><th className="p-2 text-right">ยอด</th><th className="p-2"><span className="sr-only">จัดการ</span></th></tr></thead>
           <tbody>{page.items.map((order) => (
             <tr key={order.id} className="border-b border-line align-top">

@@ -25,7 +25,7 @@ export function AppShell({ children }: PropsWithChildren) {
   return <div className={`release-layout${activeMembership ? ' has-mobile-navigation' : ''}`}>
     <a className="skip-content" href="#workspace">ข้ามไปยังเนื้อหา</a>
     <aside className="release-sidebar">{navigation}</aside>
-    <dialog ref={menu} className="release-drawer" aria-label="เมนูหลัก"
+    <dialog ref={menu} className={`release-drawer${activeMembership?' mobile-more':''}`} aria-label="เมนูหลัก"
       onPointerDown={(event) => {
         const bounds = event.currentTarget.getBoundingClientRect()
         backdropPressed.current = event.target === event.currentTarget && (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom)
@@ -40,7 +40,7 @@ export function AppShell({ children }: PropsWithChildren) {
       <header className="workspace-toolbar"><button type="button" aria-label="เปิดเมนูหลัก" aria-haspopup="dialog" className="drawer-trigger" onClick={() => menu.current?.showModal()}><Icon name="bars" /></button><span className="toolbar-store-icon"><Icon name="store" /></span><div className="workspace-shop"><span>พื้นที่จัดการร้าน</span><strong>{activeMembership?.shops?.name ?? 'DuckPOS'}</strong></div>{activeMembership&&<StaffServiceRequests key={activeMembership.shop_id} shopId={activeMembership.shop_id}/>}<span className="role-badge">{activeMembership?.role === 'OWNER' ? 'เจ้าของร้าน' : activeMembership ? 'พนักงาน' : 'บัญชีของฉัน'}</span></header>
       {confirmSignOut&&<SignOutConfirmation email={user?.email} onConfirm={handleSignOut} onCancel={()=>setConfirmSignOut(false)}/>}
       <div id="workspace" tabIndex={-1} className="release-content">{children}</div>
-      {activeMembership && <MobileNavigation />}
+      {activeMembership && <MobileNavigation onMore={()=>menu.current?.showModal()} />}
     </div>
   </div>
 }

@@ -4,6 +4,7 @@ import { productFormSchema } from '../../application/catalog-form-schemas'
 import type { Category, Product, SaveProductInput } from '../../domain/catalog'
 import { satangToBahtText } from '../../domain/money'
 import { nextSortOrder } from '../../../../shared/domain/sort-order'
+import { Icon } from '../../../../shared/presentation/Icon'
 
 export interface SaveProductFormInput extends SaveProductInput {
   imageFile?: File | null
@@ -87,12 +88,18 @@ export function ProductForm({
   }
 
   return (
-    <form onSubmit={(event) => void handleSubmit(event)} className="grid gap-3 rounded-xl border border-line p-4">
+    <form onSubmit={(event) => void handleSubmit(event)} className="grid gap-4 rounded-2xl border border-line bg-white p-4">
     <fieldset disabled={busy} className="contents">
       <div className="flex items-center justify-between gap-3">
         <h2 className="font-bold">{product ? 'แก้ไขสินค้า' : 'เพิ่มสินค้า'}</h2>
         {product ? <button type="button" onClick={onCancel} className="text-sm text-muted">ยกเลิก</button> : null}
       </div>
+      <label className="grid min-w-0 gap-2 rounded-2xl border border-line bg-brand-soft p-4 text-sm font-medium">
+        {product?.imageUrl ? <img src={product.imageUrl} alt="รูปสินค้าปัจจุบัน" className="mx-auto h-36 w-full rounded-xl object-contain"/> : <span className="grid min-h-24 place-items-center text-brand-action"><Icon name="menu" size={32}/></span>}
+        <strong>{product?.imageUrl?'เปลี่ยนรูปสินค้า':'เลือกรูปสินค้า'}</strong>
+        <span className="text-xs text-muted">สูงสุด 5 MB ระบบจะแปลงเป็น WebP</span>
+        <input type="file" accept="image/jpeg,image/png,image/webp,image/avif" onChange={(event) => setImageFile(event.target.files?.[0] ?? null)} className="w-full min-w-0 rounded-lg border border-line p-2" />
+      </label>
       <label className="grid gap-1 text-sm font-medium">
         หมวดหมู่
         <select value={selectedCategoryId} onChange={(event) => setCategoryId(event.target.value)} className="rounded-lg border border-line px-3">
@@ -110,10 +117,6 @@ export function ProductForm({
       <label className="grid gap-1 text-sm font-medium">
         ราคาพื้นฐาน (บาท)
         <input inputMode="decimal" value={priceBaht} onChange={(event) => setPriceBaht(event.target.value)} className="rounded-lg border border-line px-3" />
-      </label>
-      <label className="grid gap-1 text-sm font-medium">
-        รูปสินค้า (สูงสุด 5 MB ระบบจะแปลงเป็น WebP)
-        <input type="file" accept="image/jpeg,image/png,image/webp,image/avif" onChange={(event) => setImageFile(event.target.files?.[0] ?? null)} className="rounded-lg border border-line p-2" />
       </label>
       <div className="flex flex-wrap gap-5 text-sm font-medium">
         <label className="flex items-center gap-2"><input type="checkbox" checked={isVisible} onChange={(event) => setIsVisible(event.target.checked)} /> แสดงในเมนู</label>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { LoadingState } from '../../../../shared/presentation/LoadingState'
+import { Icon } from '../../../../shared/presentation/Icon'
 
 import { useCartStore } from '../../application/cart-store'
 import { usePublicMenu } from '../../application/use-public-menu'
@@ -25,21 +26,29 @@ export function PublicMenuView({ shopId, tableOrder, canOrder=true }: { shopId: 
   if (menu.isError) return <Message title="โหลดเมนูไม่สำเร็จ" detail={menu.error.message} onRetry={() => void menu.refetch()} busy={menu.isFetching} />
   if (!shopId || !menu.data) return <Message title="ไม่พบร้าน" detail="กรุณาสแกน QR Code ของร้านอีกครั้ง" />
   const firstProductId = menu.data.categories.flatMap((category) => category.products)[0]?.id
-  const cover = menu.data.categories.flatMap((category) => category.products).find((product) => product.imageUrl)?.imageUrl
+  const acceptingOrders = menu.data.isOpen && canOrder
   const visibleCategories = menu.data.categories.map((category) => ({ ...category, products: category.products.filter((product) => product.name.toLocaleLowerCase().includes(search.trim().toLocaleLowerCase())) })).filter((category) => category.products.length > 0)
 
   return (
     <div className="ordering-page">
       {tableOrder && <div className="sticky top-0 z-30 flex flex-wrap items-center justify-between gap-2 border-b border-line bg-white p-3"><strong>ทานที่ร้าน · {tableOrder.tableName}</strong><div className="flex flex-wrap items-start gap-2"><TableServiceButton tableQrToken={tableOrder.tableQrToken}/><a className="min-h-11 content-center border border-line px-3 text-sm" href={`/table-round/${tableOrder.guestToken}`}>รายการรอบนี้</a></div></div>}
-      <header className="restaurant-header"><div className="restaurant-cover">{cover ? <img src={cover} alt="" fetchPriority="high" /> : <span>สดใหม่ พร้อมเสิร์ฟ</span>}<span className="takeaway-label">{tableOrder ? `ทานที่ร้าน · ${tableOrder.tableName}` : 'สั่งกลับบ้าน · รับที่ร้าน'}</span></div><div className="restaurant-identity">{menu.data.logoUrl ? <img src={menu.data.logoUrl} alt="โลโก้ร้าน" /> : <span className="restaurant-monogram">{menu.data.shopName.slice(0,1)}</span>}<h1>{menu.data.shopName}</h1><p className={menu.data.isOpen ? 'text-green-700' : 'text-red-700'}>{menu.data.isOpen ? 'เปิดรับออเดอร์ · เลือกเมนูด้านล่างได้เลย' : 'ร้านปิดอยู่ · ดูเมนูได้ แต่ยังสั่งไม่ได้'}</p></div></header>
-      <nav aria-label="หมวดหมู่เมนู" className="sticky top-0 z-20 border-b border-line bg-white"><div className="mx-auto flex max-w-4xl gap-2 overflow-x-auto p-3">{menu.data.categories.map((category) => <a key={category.id} href={`#category-${category.id}`} className="inline-flex shrink-0 items-center rounded-full bg-brand-soft px-5 font-semibold text-brand-action">{category.name}</a>)}</div></nav>
+      <header className="customer-shop-header">
+        {!tableOrder&&<div className="customer-order-type"><Icon name="bag" size={18}/> สั่งกลับบ้าน · รับที่ร้าน</div>}
+        <div className="customer-shop-identity">
+          <p className="font-bold text-brand-action">สดใหม่ พร้อมเสิร์ฟ</p>
+          {menu.data.logoUrl?<img src={menu.data.logoUrl} alt="โลโก้ร้าน" width="88" height="88"/>:<span className="customer-shop-initial" aria-hidden="true">{menu.data.shopName.slice(0,1)}</span>}
+          <h1 className="text-3xl font-black">{menu.data.shopName}</h1>
+          <p className={`flex items-center justify-center gap-2 text-sm font-semibold ${acceptingOrders?'text-green-800':'text-red-800'}`}><span className="size-2.5 shrink-0 rounded-full bg-current" aria-hidden="true"/>{acceptingOrders?'เปิดรับออเดอร์ · เลือกเมนูด้านล่างได้เลย':'หยุดรับออเดอร์ · ยังดูเมนูได้'}</p>
+        </div>
+      </header>
       <main className="customer-menu mx-auto grid max-w-4xl gap-7 p-4 pb-40">
-        <label className="grid gap-2 text-sm font-semibold">ค้นหาเมนู<input type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="วันนี้อยากทานอะไร?" className="border border-line bg-white px-4" /></label>
+        <label className="customer-menu-search"><Icon name="search"/><span className="sr-only">ค้นหาเมนู</span><input type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="วันนี้อยากทานอะไร?" /></label>
+        <nav aria-label="หมวดหมู่เมนู" className="customer-menu-categories">{visibleCategories.map(category=><a key={category.id} href={`#category-${category.id}`}><Icon name="menu" size={17}/>{category.name}</a>)}</nav>
         {visibleCategories.map((category) => <section id={`category-${category.id}`} className="scroll-mt-24" key={category.id}><h2 className="mb-3 text-xl font-bold">{category.name}</h2><div className="food-menu-grid">{category.products.map((product) => <PublicProductCard key={product.id} product={product} priority={product.id === firstProductId} />)}</div></section>)}
         {search && visibleCategories.length === 0 && <p className="p-6 text-center text-muted">ไม่พบเมนู ลองค้นหาด้วยชื่ออื่น</p>}
         {menu.data.categories.length === 0 ? <p className="rounded-xl bg-white p-6 text-center text-muted">ร้านยังไม่มีเมนูที่แสดง</p> : null}
       </main>
-      <CustomerCart shopId={shopId} shopOpen={menu.data.isOpen&&canOrder} tableOrder={tableOrder} productImages={Object.fromEntries(menu.data.categories.flatMap((category) => category.products.map((product) => [product.id, product.imageUrl])))} />
+      <CustomerCart shopId={shopId} shopName={menu.data.shopName} shopOpen={acceptingOrders} tableOrder={tableOrder} productImages={Object.fromEntries(menu.data.categories.flatMap((category) => category.products.map((product) => [product.id, product.imageUrl])))} />
     </div>
   )
 }

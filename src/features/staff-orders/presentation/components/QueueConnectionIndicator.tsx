@@ -9,5 +9,6 @@ export function QueueConnectionIndicator({ state }: { state: RealtimeConnectionS
   const tone = state === 'CONNECTED' ? 'connected' : state === 'DISCONNECTED' ? 'disconnected' : 'connecting'
   return <span role="status" aria-label={labels[state]} title={labels[state]} className="queue-connection-indicator">
     <span aria-hidden="true" className={`queue-connection-dot ${tone}`} />
+    <span>{state==='CONNECTED'?'เชื่อมต่อแล้ว':state==='DISCONNECTED'?'ขาดการเชื่อมต่อ':'กำลังเชื่อมต่อ'}</span>
   </span>
 }

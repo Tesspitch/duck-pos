@@ -1,6 +1,8 @@
 import type { SVGProps } from 'react'
 
 const paths = {
+  trash: 'M3 6h18M8 6V3h8v3M5 6l1 15h12l1-15M10 10v7m4-7v7',
+  cooking: 'M3 10h18M5 10v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8M2 12h3m14 0h3M7 10a5 5 0 0 1 10 0m-5-6V2M8 5c-2-2 1-2 0-4m8 4c-2-2 1-2 0-4',
   cutlery: 'M4 3v6m3-6v6M4 6h3M5.5 9v12M18 3c-3 3-4 7-4 10h4m0-10v18',
   receipt: 'M5 3h14v18l-3-2-4 2-4-2-3 2V3Zm4 5h6m-6 4h6m-6 4h3',
   refresh: 'M20 7v5h-5M4 17v-5h5m-4-3a7 7 0 0 1 12-4l3 7M4 12l3 7a7 7 0 0 0 12-4',

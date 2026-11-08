@@ -33,12 +33,12 @@ export function SalesFilterPanel({ value, sessions, error, onChange, onSubmit }:
 
   return (
     <form onSubmit={submit} className="mt-5 rounded-2xl border border-line bg-brand-soft p-4">
-      <div className="flex flex-wrap gap-2">
+      <div className="pos-chips">
         <button type="button" onClick={() => quickRange(1)} className="rounded-lg border border-line bg-white px-3 text-sm font-semibold">วันนี้</button>
         <button type="button" onClick={() => quickRange(7)} className="rounded-lg border border-line bg-white px-3 text-sm font-semibold">7 วัน</button>
         <button type="button" onClick={() => quickRange(30)} className="rounded-lg border border-line bg-white px-3 text-sm font-semibold">30 วัน</button>
       </div>
-      <details className="mt-3" open><summary className="flex min-h-12 cursor-pointer items-center gap-2 font-semibold"><Icon name="search" /> ตัวกรองและช่วงเวลา</summary><div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <details className="mt-3"><summary className="flex min-h-12 cursor-pointer items-center gap-2 font-semibold"><Icon name="search" /> ตัวกรองและช่วงเวลา</summary><div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <label className="grid gap-1 text-sm font-semibold">จากวันที่<input type="date" value={value.dateFrom} onChange={(event) => set('dateFrom', event.target.value)} className={selectClass} /></label>
         <label className="grid gap-1 text-sm font-semibold">ถึงวันที่<input type="date" value={value.dateTo} onChange={(event) => set('dateTo', event.target.value)} className={selectClass} /></label>
         <label className="grid gap-1 text-sm font-semibold">รอบร้าน<select value={value.storeSessionId ?? ''} onChange={(event) => set('storeSessionId', event.target.value || null)} className={selectClass}><option value="">ทุกรอบ</option>{sessions.map((session) => <option key={session.id} value={session.id}>{session.businessDate} · {session.status}</option>)}</select></label>

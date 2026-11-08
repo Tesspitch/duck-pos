@@ -1,4 +1,5 @@
 import { Icon } from '../../../../shared/presentation/Icon'
+import { useState } from 'react'
 import { ItemActions } from '../../../../shared/presentation/ItemActions'
 import type { Category, Product } from '../../domain/catalog'
 import { formatThaiBaht } from '../../domain/money'
@@ -26,8 +27,11 @@ export function CatalogList({
   onDeleteProduct,
   onToggleProduct,
 }: CatalogListProps) {
+  const [categoryId,setCategoryId]=useState<string|null>(null)
+  const selected=categories.some(category=>category.id===categoryId)?categoryId:null
   const query = search.trim().toLocaleLowerCase('th')
   const visibleCategories = categories
+    .filter(category=>!selected||category.id===selected)
     .map((category) => ({
       ...category,
       products: category.products.filter((product) =>
@@ -38,12 +42,10 @@ export function CatalogList({
   if (categories.length === 0) {
     return <p className="rounded-xl border border-dashed border-line p-8 text-center text-muted">ยังไม่มีหมวดหมู่ เริ่มจากเพิ่มหมวดหมู่ด้านบน</p>
   }
-  if (visibleCategories.length === 0) {
-    return <p className="rounded-xl border border-dashed border-line p-8 text-center text-muted">ไม่พบสินค้าที่ค้นหา</p>
-  }
-
   return (
     <div className="grid gap-5">
+      <nav className="pos-chips" aria-label="กรองหมวดหมู่สินค้า"><button type="button" aria-pressed={!selected} onClick={()=>setCategoryId(null)}>ทั้งหมด</button>{categories.map(category=><button key={category.id} type="button" aria-pressed={selected===category.id} onClick={()=>setCategoryId(category.id)}>{category.name}</button>)}</nav>
+      {visibleCategories.length===0&&<p className="pos-summary-card text-muted">ไม่พบสินค้าที่ค้นหา</p>}
       {visibleCategories.map((category) => (
         <section key={category.id} className="rounded-2xl border border-line bg-white">
           <header className="flex flex-wrap items-center justify-between gap-3 bg-brand-soft px-4 py-3">

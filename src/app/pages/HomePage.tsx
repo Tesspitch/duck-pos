@@ -4,24 +4,25 @@ import { Link } from 'react-router-dom'
 import { AppShell } from '../../shared/presentation/AppShell'
 import { useActiveShop } from '../../features/shop-context/application/active-shop-context'
 import { HomeStoreControl } from '../../features/store-management/presentation/components/HomeStoreControl'
+import { HomeActivity } from './HomeActivity'
 
 export function HomePage() {
   const { activeMembership: membership } = useActiveShop()
 
   return (
     <AppShell>
-      <main className="mx-auto max-w-5xl p-4 sm:p-6">
-        <section className="home-overview">
-          <p className="page-eyebrow">ภาพรวมร้าน</p>
-          <h1 className="mt-1 text-2xl font-bold">เริ่มรอบขายของคุณ</h1>
-          <p className="mt-2 text-sm text-muted">{membership?.shops?.name}</p>
+      <main className="mx-auto max-w-3xl p-4 sm:p-6">
+        <section className="grid gap-5">
+          <header><h1 className="text-2xl font-bold">ภาพรวมร้าน</h1><p className="mt-1 text-sm text-muted">สถานะร้านและงานที่ต้องจัดการวันนี้</p></header>
           {membership && <HomeStoreControl key={membership.shop_id} shopId={membership.shop_id} />}
-          <h2 className="mt-7 text-lg font-bold">งานหน้าร้าน</h2>
-          <div className="mt-6 grid gap-3 sm:grid-cols-2">
-            <Link to="/pos" className="home-primary-action home-action-card"><span className="home-action-icon" aria-hidden="true"><Icon name="bag" /></span><span><small>01</small><strong>รับออเดอร์</strong></span><span aria-hidden="true">→</span></Link>
-            <Link to="/queue" className="home-action-card"><span className="home-action-icon" aria-hidden="true"><Icon name="queue" /></span><span><small>02</small><strong>คิวและรับเงิน</strong></span><span aria-hidden="true">→</span></Link>
-            <Link to="/catalog" className="home-action-card"><span className="home-action-icon" aria-hidden="true"><Icon name="menu" /></span><span><small>จัดการร้าน</small><strong>เมนูสินค้า</strong></span><span aria-hidden="true">→</span></Link>
-          </div>
+          {membership && <HomeActivity key={membership.shop_id} shopId={membership.shop_id} owner={membership.role==='OWNER'}/>}
+          <section aria-labelledby="home-shortcuts"><h2 id="home-shortcuts" className="mb-3 text-lg font-bold">เมนูด่วน</h2>
+            <div className="grid grid-cols-3 gap-2 sm:gap-3">
+              {([{to:'/catalog',label:'เมนูสินค้า',icon:'menu'},{to:'/tables',label:'โต๊ะและบิล',icon:'store'},{to:'/queue?view=history',label:'ประวัติออเดอร์',icon:'clock'}] as const).map(({to,label,icon})=>(
+                <Link key={to} to={to} className="grid min-h-22 min-w-0 content-center justify-items-center gap-2 rounded-xl border border-line bg-white px-2 py-3 text-center text-sm font-semibold hover:border-brand"><Icon name={icon} size={23}/><span>{label}</span></Link>
+              ))}
+            </div>
+          </section>
         </section>
       </main>
     </AppShell>

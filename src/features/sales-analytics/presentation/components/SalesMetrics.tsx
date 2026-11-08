@@ -15,5 +15,5 @@ export function SalesMetrics({ dashboard }: Props) {
     ['สินค้าที่ขาย', dashboard.productsSold.toLocaleString('th-TH'), 'text-ink'],
     ['เฉลี่ยต่อออเดอร์', formatThaiBaht(dashboard.averageOrderValueSatang), 'text-ink'],
   ]
-  return <section className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">{cards.map(([label, value, color]) => <article key={label} className="rounded-2xl border border-line bg-white p-4"><p className="text-sm font-semibold text-muted">{label}</p><p className={`mt-1 text-2xl font-black ${color}`}>{value}</p></article>)}</section>
+  return <section className="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4">{cards.map(([label, value, color],index) => <article key={label} className={`pos-metric ${index===0?'col-span-full p-5':''}`}><p className="text-sm font-semibold text-muted">{label}</p><p className={`mt-1 break-words font-black ${index===0?'text-4xl':'text-lg sm:text-2xl'} ${color}`}>{value}</p></article>)}</section>
 }
