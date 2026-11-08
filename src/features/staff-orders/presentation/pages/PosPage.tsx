@@ -37,6 +37,8 @@ export function PosPage() {
   const categories = useMemo(() => (catalog.data ?? []).filter((category) => category.isVisible), [catalog.data])
   const activeCategory = categories.find((category) => category.id === categoryId)
   const products = (search.trim() || !activeCategory ? categories.flatMap((category) => category.products) : activeCategory.products).filter((product) => product.isVisible && product.name.toLocaleLowerCase().includes(search.trim().toLocaleLowerCase()))
+  const accepting = queue.data?.isOpen === true
+  const statusLabel = queue.isLoading ? 'กำลังตรวจสอบสถานะร้าน…' : queue.error ? 'ตรวจสอบสถานะร้านไม่สำเร็จ' : accepting ? 'ร้านเปิดรับออเดอร์' : 'ร้านยังไม่รับออเดอร์'
 
   async function submit() {
     if (!shopId || submitLock.current || !lines.length || !queue.data?.isOpen) return
@@ -53,22 +55,23 @@ export function PosPage() {
 
   return (
     <AppShell>
-      <main className="pos-page mx-auto max-w-7xl p-4 sm:p-6">
+      <main className={`pos-page pos-order-screen mx-auto max-w-7xl p-4 sm:p-6${lines.length?' pos-has-cart':''}`}>
         {tableBillId && <div className="mb-4 flex flex-wrap items-center justify-between gap-3 border border-brand-action bg-brand-soft p-3"><strong>เพิ่มอาหารให้ {tableName} · รวมบิลโต๊ะ</strong><Link className="min-h-11 content-center border border-line bg-white px-3" to={`/tables?bill=${tableBillId}`}>กลับไปที่บิล</Link></div>}
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div><p className="text-sm font-semibold text-brand-action">ขายหน้าร้าน</p><h1 className="text-2xl font-bold"><Icon name="bag" /> รับออเดอร์</h1><p className="text-sm text-muted">{activeMembership?.shops?.name}</p></div>
-          <p className={`rounded-full px-3 py-2 text-sm font-bold ${queue.data?.isOpen ? 'bg-green-100 text-green-800' : 'bg-red-50 text-red-700'}`}>{queue.isLoading ? 'กำลังตรวจสอบสถานะร้าน…' : queue.error ? 'ตรวจสอบสถานะร้านไม่สำเร็จ' : queue.data?.isOpen ? 'ร้านเปิด · รับออเดอร์ได้' : 'ร้านปิด · เปิดรอบก่อนรับออเดอร์'}</p>
+        <header className="flex items-start gap-3"><span className="grid size-12 shrink-0 place-items-center rounded-xl bg-brand-soft text-brand-action"><Icon name="bag" size={28}/></span><div><h1 className="text-2xl font-bold">รับออเดอร์</h1><p className="text-sm text-muted">{tableBillId ? 'เพิ่มรายการในบิลโต๊ะ' : 'รับออเดอร์ลูกค้าที่มาสั่งหน้าร้าน'}</p></div></header>
+        <div className={`pos-intake-banner ${accepting&&!queue.error?'is-accepting':''}`}>
+          <span className="pos-intake-icon"><Icon name={accepting&&!queue.error?'check':'store'} size={20}/></span>
+          <div className="min-w-0 flex-1"><p className="font-bold">{statusLabel}</p>{accepting&&!queue.error&&<p className="text-xs text-muted">เพิ่มรายการและออกเลขคิวได้ตามปกติ</p>}</div>
+          {queue.error?<button type="button" className="pos-intake-link" onClick={()=>void queue.refetch()}>ลองใหม่</button>:queue.data&&<Link to="/" className="pos-intake-link">{accepting?'จัดการร้าน':'ดูสถานะร้าน'}</Link>}
         </div>
-        <FlowGuide steps={['เลือกเมนู', 'ตรวจออเดอร์', 'รับเลขคิว']} current={success ? 2 : lines.length ? 1 : 0} />
-        {queue.data && !queue.data.isOpen && <Link to="/" className="inline-flex min-h-12 items-center border border-brand-action bg-brand-soft px-4 font-semibold text-brand-action">ไปเปิดร้าน →</Link>}
+        <FlowGuide steps={['เลือกเมนู', 'ตรวจสอบออเดอร์', 'รับเลขคิว']} current={cartOpen ? 1 : success && lines.length===0 ? 2 : 0} />
         {success ? <div className="mt-4 border border-green-200 bg-green-50 p-4"><p role="status" className="font-semibold text-green-800">{success}</p><Link to="/queue" className="mt-3 inline-flex min-h-12 items-center bg-brand px-4 font-bold text-ink">ไปจัดการคิวและรับเงิน →</Link></div> : null}
-        <label className="mt-4 grid gap-2 text-sm font-semibold">ค้นหาสินค้าทุกหมวด<input type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="พิมพ์ชื่อเมนูที่ต้องการ" className="w-full rounded border border-line bg-white px-4" /></label>
-        {lines.length > 0 && <div className="pos-floating-cart"><button type="button" className="cart-open-button" aria-haspopup="dialog" aria-expanded={cartOpen} onClick={() => setCartOpen(true)}><span className="flex items-center gap-2"><Icon name="bag" /><span className="cart-count">{lines.reduce((count, line) => count + line.quantity, 0)}</span> ตรวจออเดอร์</span><span>฿{(posCartTotal(lines) / 100).toFixed(2)} →</span></button></div>}
+        <label className="customer-menu-search"><Icon name="search"/><span className="sr-only">ค้นหาสินค้าทุกหมวด</span><input type="search" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="ค้นหาเมนูที่ต้องการ" /></label>
+        {lines.length > 0 && <div className="pos-floating-cart pos-review-bar"><div className="flex min-w-0 items-center gap-2"><Icon name="bag" className="shrink-0 text-brand-action"/><div><p className="text-xs font-semibold">เลือกแล้ว {lines.reduce((count,line)=>count+line.quantity,0)} ชิ้น</p><strong className="text-sm">฿{(posCartTotal(lines) / 100).toFixed(2)}</strong></div></div><button type="button" className="pos-review-button" aria-haspopup="dialog" aria-expanded={cartOpen} onClick={() => setCartOpen(true)}>ตรวจสอบออเดอร์ <Icon name="arrow" size={16}/></button></div>}
         <div className="mt-5">
           <section>
-            <nav aria-label="หมวดหมู่สินค้า" className="flex gap-2 overflow-x-auto pb-3">
-              <button type="button" aria-pressed={!activeCategory} onClick={() => setCategoryId(null)} className={`whitespace-nowrap rounded-xl border px-4 font-semibold ${!activeCategory ? 'border-brand bg-brand-soft text-brand-action' : 'border-line bg-white'}`}>ทุกหมวดหมู่</button>
-              {categories.map((category) => <button type="button" key={category.id} onClick={() => setCategoryId(category.id)} className={`whitespace-nowrap rounded-xl border px-4 font-semibold ${activeCategory?.id === category.id ? 'border-brand bg-brand-soft text-brand-action' : 'border-line bg-white'}`}>{category.name}</button>)}
+            <nav aria-label="หมวดหมู่สินค้า" className="pos-chips pos-category-chips pb-3">
+              <button type="button" aria-pressed={!activeCategory||!!search.trim()} onClick={() => setCategoryId(null)}>ทั้งหมด</button>
+              {categories.map((category) => <button type="button" key={category.id} aria-pressed={!search.trim()&&activeCategory?.id===category.id} onClick={() => {setCategoryId(category.id);setSearch('')}}>{category.name}</button>)}
             </nav>
             {catalog.isLoading ? <LoadingState label="กำลังโหลดเมนู…" /> : null}
             {catalog.error ? <p className="rounded-xl bg-red-50 p-3 text-red-700">โหลดเมนูไม่สำเร็จ</p> : null}

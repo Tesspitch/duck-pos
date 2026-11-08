@@ -23,14 +23,14 @@ export function GrantShopForm({ errorMessage, pending, onGrant }: GrantShopFormP
     }
 
     onGrant(result.data.userId)
-    setUserId('')
   }
 
   return (
     <div>
-      <form onSubmit={handleSubmit} className="flex flex-col gap-3 rounded-2xl border border-line p-4 sm:flex-row sm:items-end">
+      <form onSubmit={handleSubmit} className="grid gap-3 rounded-2xl border border-line bg-white p-4">
         <label className="grid flex-1 gap-1 text-sm font-medium">
-          Supabase User ID
+          รหัสผู้ใช้ (User ID)
+          <span className="text-xs font-normal text-muted">ใช้รหัสจากบัญชี DuckPOS ที่เคยเข้าสู่ระบบแล้ว</span>
           <input
             value={userId}
             onChange={(event) => setUserId(event.target.value)}
@@ -44,7 +44,7 @@ export function GrantShopForm({ errorMessage, pending, onGrant }: GrantShopFormP
           disabled={pending}
           className="rounded-xl bg-brand-action px-5 font-semibold text-white hover:bg-orange-800 disabled:opacity-60"
         >
-          {pending ? 'กำลังอนุมัติ…' : 'อนุมัติสร้างร้าน'}
+          {pending ? 'กำลังอนุมัติ…' : 'อนุมัติสิทธิ์สร้างร้าน'}
         </button>
       </form>
       {validationError ? <p role="alert" className="mt-2 text-sm text-red-700">{validationError}</p> : null}

@@ -48,7 +48,7 @@ test('paused intake keeps the existing queue visible and lets staff resume accep
 test('accepting store offers a distinct stop-intake action while unresolved orders block closing', async () => {
   const { setAcceptingOrders } = setup(true, 1)
   fireEvent.click(await screen.findByRole('button', { name: 'พักรับออเดอร์' }))
-  expect(screen.queryByRole('button', { name: 'ปิดรอบขาย' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'ปิดร้าน' })).not.toBeInTheDocument()
   expect(screen.getByRole('link', { name: 'ไปจัดการคิว →' })).toHaveAttribute('href', '/queue')
   expect(setAcceptingOrders).not.toHaveBeenCalled()
   fireEvent.click(screen.getByRole('button', { name: 'ยืนยัน' }))

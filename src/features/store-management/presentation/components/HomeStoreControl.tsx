@@ -10,7 +10,7 @@ const actions = {
   open: { label: 'เปิดร้าน', description: 'เริ่มรอบขายและเปิดรับออเดอร์ใหม่' },
   pause: { label: 'พักรับออเดอร์', description: 'พักรับออเดอร์ใหม่ชั่วคราว คิวเดิมยังจัดการต่อได้' },
   resume: { label: 'เปิดรับอีกครั้ง', description: 'กลับมาเปิดรับออเดอร์ใหม่ในรอบขายปัจจุบัน' },
-  close: { label: 'ปิดรอบขาย', description: 'จบรอบขายปัจจุบันและหยุดรับออเดอร์ใหม่' },
+  close: { label: 'ปิดร้าน', description: 'จบรอบขายปัจจุบันและหยุดรับออเดอร์ใหม่' },
 } as const
 
 export function HomeStoreControl({ shopId }: { shopId: string }) {
@@ -55,7 +55,7 @@ export function HomeStoreControl({ shopId }: { shopId: string }) {
       return
     }
     if (!canCloseStore(latest.data.activeSession)) {
-      setMessage('ยังมีออเดอร์หรือโต๊ะค้าง กรุณาเคลียร์ก่อนปิดรอบขาย')
+      setMessage('ยังมีออเดอร์หรือโต๊ะค้าง กรุณาจัดการให้เสร็จก่อนปิดร้าน')
       return
     }
     await close.mutateAsync(latest.data.activeSession.id)
@@ -95,13 +95,10 @@ export function HomeStoreControl({ shopId }: { shopId: string }) {
     {management.isLoading && <LoadingState label="กำลังตรวจสอบสถานะร้าน…" />}
     {data && <div className="mt-4 grid gap-3">
       {!data.isOpen ? <button type="button" disabled={blocked} onClick={()=>requestAction('open')} className="flex items-center justify-center gap-2 rounded-xl bg-green-800 px-3 font-bold text-white disabled:opacity-50"><Icon name="play" size={18}/>เปิดร้าน</button> : <>
+        <button type="button" disabled={blocked||!data.activeSession} onClick={() => requestAction(data.acceptingOrders?'pause':'resume')} className={`flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border px-3 text-sm font-bold disabled:opacity-50 ${data.acceptingOrders?'border-orange-300 bg-brand-soft text-brand-action':'border-green-700 bg-green-800 text-white'}`}><Icon name={data.acceptingOrders?'pause':'play'} size={18}/>{data.acceptingOrders?actions.pause.label:actions.resume.label}</button>
         {data.activeSession&&<div className="grid grid-cols-2 divide-x divide-line rounded-xl bg-[#f1f3f0] text-center"><div className="p-3"><p className="text-xs text-muted">ออเดอร์ค้าง</p><strong className="text-xl">{data.activeSession.pendingOrderCount}</strong></div><div className="p-3"><p className="text-xs text-muted">โต๊ะที่เปิดอยู่</p><strong className="text-xl">{data.activeSession.pendingTableCount??0}</strong></div></div>}
         <div className="flex items-center gap-2 text-xs text-muted"><Icon name="clock" size={15}/>ตรวจสถานะล่าสุด {new Date(management.dataUpdatedAt).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'})}</div>
-        <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,130px),1fr))] gap-2">
-          <button type="button" disabled={blocked||!data.activeSession} onClick={()=>requestAction(data.acceptingOrders?'pause':'resume')} className={`flex items-center justify-center gap-2 rounded-xl border px-3 text-sm font-bold disabled:opacity-50 ${data.acceptingOrders?'border-orange-300 bg-brand-soft text-brand-action':'border-green-700 bg-green-800 text-white'}`}><Icon name={data.acceptingOrders?'pause':'play'} size={18}/>{data.acceptingOrders?actions.pause.label:actions.resume.label}</button>
-          {canCloseStore(data.activeSession)&&<button type="button" disabled={blocked} onClick={()=>requestAction('close')} className="rounded-xl border border-red-200 px-3 text-sm font-bold text-red-800 disabled:opacity-50">ปิดรอบขาย</button>}
-        </div>
-        {!canCloseStore(data.activeSession)&&<div className="rounded-xl border border-amber-200 bg-amber-50 px-3 pt-2 text-sm"><p>ก่อนปิดรอบขาย ให้เคลียร์รายการเดิมต่อจนเสร็จ</p><div className="flex flex-wrap gap-x-4">{(data.activeSession?.pendingOrderCount??0)>0&&<Link to="/queue" className="inline-flex min-h-11 items-center font-bold text-brand-action">ไปจัดการคิว →</Link>}{(data.activeSession?.pendingTableCount??0)>0&&<Link to="/tables" className="inline-flex min-h-11 items-center font-bold text-brand-action">ไปจัดการโต๊ะและบิล →</Link>}</div></div>}
+        {canCloseStore(data.activeSession) ? <div className="flex justify-end border-t border-line pt-2"><button type="button" disabled={blocked} onClick={()=>requestAction('close')} className="inline-flex items-center gap-2 rounded-lg border border-red-200 px-4 text-sm font-bold text-red-800 hover:bg-red-50 disabled:opacity-50"><Icon name="store" size={17}/>{actions.close.label}</button></div> : <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 pt-2 text-sm"><p>ก่อนปิดร้าน ให้เคลียร์รายการเดิมต่อจนเสร็จ</p><div className="flex flex-wrap gap-x-4">{(data.activeSession?.pendingOrderCount??0)>0&&<Link to="/queue" className="inline-flex min-h-11 items-center font-bold text-brand-action">ไปจัดการคิว →</Link>}{(data.activeSession?.pendingTableCount??0)>0&&<Link to="/tables" className="inline-flex min-h-11 items-center font-bold text-brand-action">ไปจัดการโต๊ะและบิล →</Link>}</div></div>}
       </>}
     </div>}
     {message && <p role="status" className="mt-3 text-sm font-semibold">{message}</p>}

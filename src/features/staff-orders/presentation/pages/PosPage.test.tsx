@@ -17,11 +17,11 @@ afterEach(() => { cleanup(); usePosCartStore.getState().clear() })
 
 test('POS defaults to all categories and can return to all after selecting one category', () => {
   render(<MemoryRouter><PosPage /></MemoryRouter>)
-  expect(screen.getByRole('button', { name: 'ทุกหมวดหมู่' })).toHaveAttribute('aria-pressed', 'true')
+  expect(screen.getByRole('button', { name: 'ทั้งหมด' })).toHaveAttribute('aria-pressed', 'true')
   expect(screen.getByRole('button', { name: 'ไก่' })).toBeVisible()
   expect(screen.getByRole('button', { name: 'ข้าวไก่' })).toBeVisible()
   fireEvent.click(screen.getByRole('button', { name: 'เคบับ' }))
   expect(screen.queryByRole('button', { name: 'ข้าวไก่' })).not.toBeInTheDocument()
-  fireEvent.click(screen.getByRole('button', { name: 'ทุกหมวดหมู่' }))
+  fireEvent.click(screen.getByRole('button', { name: 'ทั้งหมด' }))
   expect(screen.getByRole('button', { name: 'ข้าวไก่' })).toBeVisible()
 })

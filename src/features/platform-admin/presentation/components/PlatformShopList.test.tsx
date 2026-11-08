@@ -14,12 +14,28 @@ afterEach(() => { cleanup(); clients.forEach((client) => client.clear()); client
 function setup(remove = vi.fn().mockResolvedValue(undefined),open=false) {
   const close=vi.fn().mockResolvedValue(undefined)
   const pause=vi.fn().mockResolvedValue(undefined)
+  const listShopStaff=vi.fn().mockResolvedValue([])
+  const setShopStaff=vi.fn().mockResolvedValue(undefined)
   const list = vi.fn().mockResolvedValue({ shops: [{ id: 'shop-1', name: 'ร้านทดสอบ',isOpen:open,acceptingOrders:open,activeSessionId:open?'session-1':null }], hasMore: false })
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } })
   clients.push(client)
-  render(<QueryClientProvider client={client}><PlatformAdminRepositoryContext value={{ closeShop:close,pauseShop:pause,isPlatformAdmin: vi.fn(), listShopCreationGrants: vi.fn(), grantShopCreation: vi.fn(), revokeShopCreation: vi.fn(), listShops: list, deleteShop: remove }}><PlatformShopList /></PlatformAdminRepositoryContext></QueryClientProvider>)
-  return { list, remove, close, pause }
+  render(<QueryClientProvider client={client}><PlatformAdminRepositoryContext value={{ closeShop:close,pauseShop:pause,isPlatformAdmin: vi.fn(), listShopCreationGrants: vi.fn(), grantShopCreation: vi.fn(), revokeShopCreation: vi.fn(), listShops: list, deleteShop: remove, listShopStaff, setShopStaff }}><PlatformShopList /></PlatformAdminRepositoryContext></QueryClientProvider>)
+  return { list, remove, close, pause, listShopStaff, setShopStaff }
 }
+
+test('admin adds and confirms removal of staff for the selected shop', async () => {
+  const { listShopStaff, setShopStaff }=setup()
+  const userId='f617e508-1f7a-4b79-92ca-391e19f1c3cd'
+  listShopStaff.mockResolvedValueOnce([]).mockResolvedValueOnce([{userId,name:'พนักงาน QA',email:null}])
+  fireEvent.click(await screen.findByRole('button',{name:'จัดการพนักงาน ร้านทดสอบ'}))
+  fireEvent.change(screen.getByLabelText('รหัสผู้ใช้ (User ID)'),{target:{value:userId}})
+  fireEvent.click(screen.getByRole('button',{name:'เพิ่มพนักงาน'}))
+  await waitFor(()=>expect(setShopStaff).toHaveBeenCalledWith('shop-1',userId,true))
+  fireEvent.click(await screen.findByRole('button',{name:'ถอนสิทธิ์'}))
+  expect(setShopStaff).toHaveBeenCalledTimes(1)
+  fireEvent.click(screen.getByRole('button',{name:'ยืนยันถอนสิทธิ์'}))
+  await waitFor(()=>expect(setShopStaff).toHaveBeenCalledWith('shop-1',userId,false))
+})
 test('admin must confirm the exact shop name before deleting and the list refreshes', async () => {
   const { list, remove } = setup()
   fireEvent.click(await screen.findByRole('button', { name: 'ลบร้าน ร้านทดสอบ' }))

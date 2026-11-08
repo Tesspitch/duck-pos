@@ -603,3 +603,71 @@ button:disabled { cursor: not-allowed; }
 }
 .catalog-compact-card h3, .navigation-item span { overflow-wrap: anywhere; }
 .pos-chips button { overflow-wrap: anywhere; max-width: 100%; }
+
+.login-page { display: grid; min-height: 100dvh; place-items: center; padding: 20px; background: #f7f8f6; }
+.login-panel { position: relative; isolation: isolate; width: min(100%, 520px); overflow: hidden; border: 1px solid var(--color-border); border-radius: 24px; background: #fffbf7; }
+.login-panel::before { position: absolute; z-index: -1; top: -85px; right: -100px; width: 240px; height: 240px; border-radius: 50%; background: #fff1e2; content: ""; }
+.login-content { padding: 28px clamp(16px, 5vw, 30px) 20px; text-align: center; }
+.login-logo { display: block; width: clamp(150px, 42vw, 216px); height: auto; margin: 0 auto 8px; mix-blend-mode: multiply; }
+.login-divider { display: block; width: 44px; height: 4px; margin: 18px auto; border-radius: 4px; background: var(--color-brand); }
+.login-google-button { display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; min-height: 60px; margin-top: 24px; padding: 8px 12px; border-radius: 14px; background: var(--color-primary); color: white; font-size: clamp(1rem, 4vw, 1.25rem); font-weight: 700; }
+.login-google-button:not(:disabled):hover { background: #96390b; }
+.login-google-button:disabled { opacity: .6; cursor: wait; }
+.login-google-mark { display: grid; place-items: center; width: 42px; height: 42px; flex: 0 0 42px; border-radius: 10px; background: white; }
+.login-features { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); margin-top: 24px; }
+.login-features li { display: grid; align-content: start; justify-items: center; gap: 7px; padding: 0 5px; font-size: 13px; font-weight: 650; }
+.login-features li + li { border-inline-start: 1px solid var(--color-border); }
+.login-features li span { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 14px; background: var(--color-primary-soft); color: var(--color-primary); }
+.login-storefront { display: block; width: 100%; height: auto; }
+.login-help { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 0 10px; padding: 0 12px max(12px,env(safe-area-inset-bottom)); background: #fcebd9; color: var(--color-muted); font-size: 13px; }
+.login-help a { display: inline-flex; align-items: center; min-height: 44px; color: var(--color-primary); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+@media (max-width: 480px) {
+  .login-page { padding: 0; }
+  .login-panel { display: flex; flex-direction: column; min-height: 100dvh; border: 0; border-radius: 0; }
+  .login-content { flex: 1; padding-top: max(26px,env(safe-area-inset-top)); }
+}
+
+/* Platform administration */
+.platform-admin-metric { display: flex; align-items: center; gap: 10px; min-width: 0; min-height: 106px; padding: 12px; border: 1px solid var(--color-border); border-radius: 16px; background: white; }
+.platform-admin-metric > span { display: grid; place-items: center; flex: 0 0 38px; height: 38px; border-radius: 50%; background: var(--color-primary-soft); color: var(--color-primary); }
+.platform-admin-metric > span.platform-admin-metric-active { color: var(--color-success); background: var(--color-success-bg); }
+.platform-admin-metric p { color: var(--color-muted); font-size: 13px; line-height: 1.4; }
+.platform-admin-metric strong { display: block; font-size: 26px; font-variant-numeric: tabular-nums; }
+.platform-grant-row { display: grid; gap: 10px; padding: 14px 16px; }
+.platform-grant-row.platform-grant-columns { display: none; background: var(--color-primary-soft); color: var(--color-text); font-size: 13px; font-weight: 700; }
+@media (max-width: 1279px) {
+  .platform-grant-row > div:empty { display: none; }
+}
+@media (min-width: 1280px) {
+  .platform-grant-row { grid-template-columns: minmax(0,2.5fr) minmax(0,1fr) minmax(0,1fr) minmax(0,.8fr); align-items: center; gap: 14px; }
+  .platform-grant-row.platform-grant-columns { display: grid; }
+  .platform-grant-row > :last-child { justify-self: end; }
+}
+/* Walk-in ordering */
+.pos-order-screen .pos-intake-banner { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 16px; padding: 12px; border: 1px solid #fed7aa; border-radius: 14px; background: #fff6eb; color: #8c590a; }
+.pos-order-screen .pos-intake-banner.is-accepting { border-color: #a7dbb8; background: #edf8ee; color: var(--color-success); }
+.pos-intake-icon { display: grid; place-items: center; width: 32px; height: 32px; flex-shrink: 0; border-radius: 50%; background: white; }
+.pos-intake-banner.is-accepting .pos-intake-icon { background: var(--color-success); color: white; }
+.pos-intake-link { display: inline-flex; align-items: center; min-height: 44px; padding: 0 10px; border: 1px solid #f2ba93; border-radius: 10px; background: white; color: var(--color-primary); font-size: 13px; font-weight: 700; }
+.pos-order-screen .flow-guide { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 2px; padding: 3px; margin: 16px 0; border: 1px solid var(--color-border); border-radius: 14px; background: white; }
+.pos-order-screen .flow-guide li { justify-content: center; gap: 5px; min-height: 44px; padding: 5px; font-size: clamp(.68rem, 3vw, .88rem); border-radius: 10px; }
+.pos-order-screen .flow-guide li span { flex: 0 0 22px; height: 22px; border-radius: 50%; }
+.pos-order-screen .flow-guide li[aria-current=step] { background: var(--color-primary); color: white; }
+.pos-order-screen .flow-guide li[aria-current=step] span { background: white; color: var(--color-primary); }
+.pos-order-screen .pos-category-chips button { border-radius: 999px; }
+.pos-order-screen .staff-product-card { align-items: center; min-height: 98px; gap: 10px; padding: 10px; }
+.pos-order-screen .staff-product-card > :is(.food-card-image,.food-card-placeholder) { width: clamp(58px, 18vw, 82px); min-height: 0; height: clamp(58px, 18vw, 82px); align-self: center; border-radius: 10px; }
+.pos-order-screen .staff-product-card .food-card-info { padding: 0; }
+.staff-product-add { display: grid; place-items: center; width: 44px; height: 44px; flex-shrink: 0; border-radius: 10px; background: var(--color-primary); color: white; }
+.pos-review-bar { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 10px; border: 1px solid #f6cda8; border-radius: 16px; background: #fff3e5; }
+.pos-review-button { display: flex; align-items: center; justify-content: center; gap: 5px; min-height: 44px; padding: 6px 10px; border-radius: 10px; background: var(--color-primary); color: white; font-weight: 700; font-size: 13px; }
+.pos-review-button svg { flex-shrink: 0; }
+.staff-product-sheet .product-sheet-content { padding: 14px 16px; }
+.staff-product-sheet .quantity-and-action { align-items: center; gap: 8px; }
+.staff-product-sheet .quantity-and-action > button { flex-basis: 118px; }
+.staff-product-sheet .staff-option-row { border-radius: 9px; background: white; }
+.staff-product-sheet .staff-option-row.selected { background: var(--color-primary-soft); }
+@media (max-width: 767px) {
+  .product-sheet.staff-product-sheet { inset: auto 0 0; height: auto; max-height: 92dvh; border-radius: 20px 20px 0 0; }
+  .has-mobile-navigation .release-content > main.pos-page.pos-has-cart { padding-bottom: 122px; }
+}
