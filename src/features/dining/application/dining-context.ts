@@ -3,6 +3,7 @@ import type { DiningBill, DiningContext, DiningTable, TrackedRound } from '../do
 export interface DiningRepository {
  list(shopId: string): Promise<DiningTable[]>
  create(shopId: string, name: string): Promise<string>
+ archive(shopId: string, tableId: string): Promise<void>
  open(tableId: string): Promise<string>
  bill(billId: string): Promise<DiningBill>
  checkout(billId: string, freeze: boolean): Promise<void>

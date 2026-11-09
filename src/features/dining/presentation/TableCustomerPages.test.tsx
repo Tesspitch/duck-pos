@@ -18,7 +18,7 @@ beforeEach(()=>{entry.fresh=false})
 afterEach(()=>{cleanup();localStorage.clear();clients.forEach(c=>c.clear());clients.length=0})
 function setup(path:string,empty=false){
  const track=vi.fn(async(t:string)=>t===token?{billId:oldBill,shopId:shop,shopName:'QA',tableName:'โต๊ะ 5',tableQrToken:qr,status:'PAID' as const,closed:true,acceptingOrders:false,ownTotalSatang:3900,orders:[]}:null)
- const repository:DiningRepository={cancel:vi.fn(),list:vi.fn(),create:vi.fn(),open:vi.fn(),bill:vi.fn(),checkout:vi.fn(),close:vi.fn(),pay:vi.fn(),track,context:vi.fn(async()=>({shopId:shop,shopName:'QA',tableId:qr,tableName:'โต๊ะ 5',billId:empty?null:newBill,billStatus:empty?null:'OPEN' as const,tableEpoch:newBill,acceptingOrders:true}))}
+ const repository:DiningRepository={cancel:vi.fn(),list:vi.fn(),create:vi.fn(),archive:vi.fn(),open:vi.fn(),bill:vi.fn(),checkout:vi.fn(),close:vi.fn(),pay:vi.fn(),track,context:vi.fn(async()=>({shopId:shop,shopName:'QA',tableId:qr,tableName:'โต๊ะ 5',billId:empty?null:newBill,billStatus:empty?null:'OPEN' as const,tableEpoch:newBill,acceptingOrders:true}))}
  const client=new QueryClient({defaultOptions:{queries:{retry:false}}});clients.push(client)
  render(<QueryClientProvider client={client}><DiningContextProvider value={repository}><MemoryRouter initialEntries={[path]}><Routes><Route path="/table/:qrToken" element={<TableMenuPage/>}/><Route path="/table-round/:guestToken" element={<TableRoundPage/>}/></Routes></MemoryRouter></DiningContextProvider></QueryClientProvider>)
  return {track,repository}
@@ -48,7 +48,7 @@ test('returning to the menu waits for fresh bill status instead of showing a cac
  const roundPromise=new Promise<Awaited<ReturnType<DiningRepository['track']>>>(resolve=>{resolveRound=resolve})
  const openContext={shopId:shop,shopName:'QA',tableId:qr,tableName:'โต๊ะ 5',billId:oldBill,billStatus:'OPEN' as const,tableEpoch:oldBill,acceptingOrders:true}
  const openRound={billId:oldBill,shopId:shop,shopName:'QA',tableName:'โต๊ะ 5',tableQrToken:qr,status:'OPEN' as const,closed:false,acceptingOrders:true,ownTotalSatang:3900,orders:[]}
- const repository:DiningRepository={cancel:vi.fn(),list:vi.fn(),create:vi.fn(),open:vi.fn(),bill:vi.fn(),checkout:vi.fn(),close:vi.fn(),pay:vi.fn(),track:vi.fn(()=>roundPromise),context:vi.fn(()=>contextPromise)}
+ const repository:DiningRepository={cancel:vi.fn(),list:vi.fn(),create:vi.fn(),archive:vi.fn(),open:vi.fn(),bill:vi.fn(),checkout:vi.fn(),close:vi.fn(),pay:vi.fn(),track:vi.fn(()=>roundPromise),context:vi.fn(()=>contextPromise)}
  const client=new QueryClient({defaultOptions:{queries:{retry:false}}});clients.push(client)
  client.setQueryData(['dining-context',qr],openContext)
  client.setQueryData(['dining-round',token],openRound)
@@ -79,7 +79,7 @@ test('a tab opened before payment cannot start a new round when it later becomes
  let paid=false
  saveRound({billId:oldBill,guestToken:token,tableQrToken:qr,shopId:shop,tableEpoch:oldBill})
  const track=vi.fn(async()=>({billId:oldBill,shopId:shop,shopName:'QA',tableName:'โต๊ะ 5',tableQrToken:qr,status:paid?'PAID' as const:'OPEN' as const,closed:paid,acceptingOrders:!paid,ownTotalSatang:3900,orders:[]}))
- const repository:DiningRepository={cancel:vi.fn(),list:vi.fn(),create:vi.fn(),open:vi.fn(),bill:vi.fn(),checkout:vi.fn(),close:vi.fn(),pay:vi.fn(),track,context:vi.fn(async()=>({shopId:shop,shopName:'QA',tableId:qr,tableName:'โต๊ะ 5',billId:paid?null:oldBill,billStatus:paid?null:'OPEN' as const,tableEpoch:paid?newBill:oldBill,acceptingOrders:true}))}
+ const repository:DiningRepository={cancel:vi.fn(),list:vi.fn(),create:vi.fn(),archive:vi.fn(),open:vi.fn(),bill:vi.fn(),checkout:vi.fn(),close:vi.fn(),pay:vi.fn(),track,context:vi.fn(async()=>({shopId:shop,shopName:'QA',tableId:qr,tableName:'โต๊ะ 5',billId:paid?null:oldBill,billStatus:paid?null:'OPEN' as const,tableEpoch:paid?newBill:oldBill,acceptingOrders:true}))}
  const client=new QueryClient({defaultOptions:{queries:{retry:false}}});clients.push(client)
  render(<QueryClientProvider client={client}><DiningContextProvider value={repository}><MemoryRouter initialEntries={['/table/'+qr]}><Routes><Route path="/table/:qrToken" element={<TableMenuPage/>}/></Routes></MemoryRouter></DiningContextProvider></QueryClientProvider>)
  expect(await screen.findByText('เมนูรอบ '+oldBill)).toBeInTheDocument()

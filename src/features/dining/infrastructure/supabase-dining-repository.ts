@@ -8,6 +8,7 @@ async function rpc(name: string, args: Record<string, unknown>) {
 export const supabaseDiningRepository: DiningRepository = {
  list: (shopId) => rpc('list_dining_tables', { target_shop_id: shopId }),
  create: (shopId,name) => rpc('save_dining_table', { target_shop_id: shopId, table_name: name }),
+ archive: (shopId, tableId) => rpc('archive_dining_table', { target_shop_id: shopId, target_table_id: tableId }),
  open: (id) => rpc('open_dining_table', { target_table_id: id }),
  bill: (id) => rpc('get_table_bill', { target_bill_id: id }),
  checkout: (id,freeze) => rpc('set_table_bill_checkout', { target_bill_id: id, checking_out: freeze }),

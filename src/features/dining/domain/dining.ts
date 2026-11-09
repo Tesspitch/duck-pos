@@ -10,6 +10,8 @@ export const billLabels: Record<BillStatus | 'AVAILABLE', string> = { AVAILABLE:
 export function diningError(error: unknown) {
  const message = error && typeof error === 'object' && 'message' in error ? String(error.message) : ''
  const messages: Record<string,string> = {
+  'Close the active table round before deleting this table.': 'กรุณาปิดรอบโต๊ะก่อนลบโต๊ะ',
+  'Table not found.': 'ไม่พบโต๊ะนี้ กรุณารีเฟรชรายการ',
   'Table round changed. Scan again before ordering.': 'รอบโต๊ะเปลี่ยนแล้ว กรุณากลับไปสแกน QR และเริ่มรอบใหม่ก่อนสั่ง',
   'Preparation has started. Please contact the shop.': 'เริ่มเตรียมอาหารแล้ว กรุณาติดต่อพนักงานหากต้องการเปลี่ยนแปลง',
   'Order not found.': 'ไม่พบรายการของคุณ กรุณาโหลดข้อมูลล่าสุด',

@@ -24,6 +24,7 @@ insert into dining_tap select ok(not has_table_privilege('anon','public.table_bi
 insert into dining_tap select ok(not has_function_privilege('anon','public.pay_table_bill(uuid,public.payment_method,integer,uuid,text)','EXECUTE'),'public cannot record table payments');
 insert into dining_tap select ok(not has_function_privilege('authenticated','public.create_table_qr_order(uuid,uuid,uuid,uuid,uuid,uuid,double precision,double precision,double precision,timestamptz,jsonb,text)','EXECUTE'),'QR checkout restricted to Edge service role');
 insert into dining_tap select is(public.get_dining_table_context((select qr from dining_context))->>'tableName','Table 5','QR resolves public table identity');
+insert into dining_tap select throws_ok($$select public.archive_dining_table(shop,tid) from dining_context$$,'P0001','Close the active table round before deleting this table.','owner cannot archive a table with an active round');
 insert into dining_tap select throws_ok($$select public.list_dining_tables((select other_shop from dining_context))$$,'42501','Active shop membership is required.','cross shop isolated');
 insert into dining_tap select throws_ok($$select public.open_dining_table((select tid from dining_context))$$,'23505',null,'cannot open a table twice');
 insert into dining_tap select is(public.track_table_round(gen_random_uuid()),null::jsonb,'unknown token reveals no round');
@@ -81,6 +82,14 @@ insert into dining_tap select lives_ok($$select public.pay_table_bill(bill,'CASH
 insert into dining_tap select is((select change_satang from public.table_bill_payments where bill_id=(select bill from dining_context)),6100,'cash change recorded once');
 insert into dining_tap select is(public.get_table_bill((select bill from dining_context))->>'closed','true','completed food and settled bill automatically close table');
 insert into dining_tap select throws_ok($$select public.pay_table_bill(bill,'CASH',10000,gen_random_uuid(),fp) from dining_context$$,'P0001','Bill is already paid.','different payment request cannot charge again');
+select set_config('request.jwt.claims',jsonb_build_object('sub',(select staff_id from dining_context),'role','authenticated')::text,true);
+insert into dining_tap select throws_ok($$select public.archive_dining_table(shop,tid) from dining_context$$,'42501','Owner access required.','staff cannot archive tables');
+select set_config('request.jwt.claims',jsonb_build_object('sub',(select owner_id from dining_context),'role','authenticated')::text,true);
+insert into dining_tap select lives_ok($$select public.archive_dining_table(shop,tid) from dining_context$$,'owner archives a closed table');
+insert into dining_tap select is(public.list_dining_tables((select shop from dining_context)),'[]'::jsonb,'archived table is hidden');
+insert into dining_tap select is(public.get_dining_table_context((select qr from dining_context)),null::jsonb,'archived QR no longer resolves');
+insert into dining_tap select is(public.get_table_bill((select bill from dining_context))->>'status','PAID','archived table retains its paid bill');
+insert into dining_tap select lives_ok($$select public.save_dining_table(shop,'Table 5') from dining_context$$,'archived table name can be reused');
 insert into dining_tap select * from finish();
 select result from dining_tap;
 rollback;
