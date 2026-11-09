@@ -10,7 +10,7 @@ export default defineConfig({
     VitePWA({
       registerType: 'prompt',
       injectRegister: false,
-      includeAssets: ['duckpos-icon.svg'],
+      includeAssets: ['duckpos-home-*.png'],
       manifest: {
         name: 'DuckPOS',
         short_name: 'DuckPOS',
@@ -21,8 +21,9 @@ export default defineConfig({
         start_url: '/',
         scope: '/',
         icons: [
-          { src: '/duckpos-icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
-          { src: '/duckpos-icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'maskable' },
+          { src: '/duckpos-home-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+          { src: '/duckpos-home-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+          { src: '/duckpos-home-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
       },
       workbox: {
