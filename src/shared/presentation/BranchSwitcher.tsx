@@ -1,15 +1,28 @@
-import { Icon } from './Icon'
-import { useRef, useState } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useActiveShop } from '../../features/shop-context/application/active-shop-context'
+import { Icon } from './Icon'
 
 export function BranchSwitcher({ onSwitch }: { onSwitch?: () => void }) {
   const navigate = useNavigate()
   const { activeMembership, memberships, selectShop } = useActiveShop()
+  const titleId = useId()
   const dialog = useRef<HTMLDialogElement>(null)
+  const cancelButton = useRef<HTMLButtonElement>(null)
   const [requested, setRequested] = useState('')
   const target = memberships.find((membership) => membership.shop_id === requested)
+
+  useEffect(() => {
+    if (target) cancelButton.current?.focus()
+  }, [target])
+
   if (!memberships.length) return null
+  const currentName = activeMembership?.shops?.name ?? activeMembership?.shop_id ?? 'เลือกสาขา'
+  const branchIdentity = <>
+    <span className="branch-icon"><Icon name="store" /></span>
+    <span className="branch-label"><small>สาขาปัจจุบัน</small><strong>{currentName}</strong></span>
+  </>
+
   function cancel() { dialog.current?.close(); setRequested('') }
   function confirm() {
     if (!target) return
@@ -19,16 +32,38 @@ export function BranchSwitcher({ onSwitch }: { onSwitch?: () => void }) {
     navigate('/', { replace: true })
   }
   return <>
-    <label className="branch-switcher"><span><Icon name="store" /> สาขาของคุณ</span><select aria-label="เลือกร้านหรือสาขา" value={activeMembership?.shop_id ?? ''} onChange={(event) => {
-      if (event.target.value === activeMembership?.shop_id) return
-      setRequested(event.target.value)
-      dialog.current?.showModal()
-    }}>{memberships.map((membership) => <option key={membership.shop_id} value={membership.shop_id}>{membership.shops?.name ?? membership.shop_id}</option>)}</select></label>
-    <dialog ref={dialog} aria-label="ยืนยันเปลี่ยนสาขา" className="confirm-action-dialog" onCancel={() => setRequested('')}>
-      <span aria-hidden="true" className="branch-dialog-icon"><Icon name="store" /></span>
-      <h2 className="mt-3 text-xl font-bold">เปลี่ยนสาขา?</h2>
-      <p className="mt-3 text-sm text-muted">{activeMembership?.shops?.name ?? 'สาขาปัจจุบัน'} → <strong className="text-ink">{target?.shops?.name ?? requested}</strong></p>
-      <div className="mt-5 grid grid-cols-2 gap-3"><button type="button" autoFocus onClick={cancel} className="border border-line px-4">อยู่สาขาเดิม</button><button type="button" disabled={!target} onClick={confirm} className="bg-brand-action px-4 font-bold text-white disabled:opacity-50">ยืนยันเปลี่ยน</button></div>
+    {memberships.length > 1
+      ? <button type="button" className="branch-switcher" aria-haspopup="dialog" onClick={() => dialog.current?.showModal()}>
+        {branchIdentity}
+        <Icon name="switch" size={18} />
+        <span className="sr-only">เปลี่ยนสาขา</span>
+      </button>
+      : <div className="branch-switcher">{branchIdentity}</div>}
+    <dialog ref={dialog} aria-labelledby={titleId} className="confirm-action-dialog branch-picker" onClose={() => setRequested('')}>
+      <header className="branch-picker-header">
+        <h2 id={titleId}>{target ? 'ยืนยันเปลี่ยนสาขา' : 'เลือกสาขา'}</h2>
+        <button type="button" autoFocus className="branch-picker-close" aria-label="ปิดหน้าต่างเลือกสาขา" onClick={cancel}><Icon name="close" /></button>
+      </header>
+      {target ? <>
+        <div className="branch-change-summary">
+          <span>{currentName}</span>
+          <Icon name="arrow" size={18} />
+          <strong>{target.shops?.name ?? target.shop_id}</strong>
+        </div>
+        <div className="branch-picker-actions">
+          <button type="button" ref={cancelButton} onClick={cancel}>อยู่สาขาเดิม</button>
+          <button type="button" onClick={confirm}>ยืนยันเปลี่ยน</button>
+        </div>
+      </> : <ul className="branch-options">
+        {memberships.map((membership) => {
+          const name = membership.shops?.name ?? membership.shop_id
+          return <li key={membership.shop_id}>
+            {membership.shop_id === activeMembership?.shop_id
+              ? <div className="branch-option is-current" aria-current="true"><span className="branch-icon"><Icon name="store" /></span><strong>{name}<small>กำลังใช้งาน</small></strong><Icon name="check" size={18} /></div>
+              : <button type="button" className="branch-option" onClick={() => setRequested(membership.shop_id)}><span className="branch-icon"><Icon name="store" /></span><strong>{name}</strong><Icon name="arrow" size={18} /></button>}
+          </li>
+        })}
+      </ul>}
     </dialog>
   </>
 }

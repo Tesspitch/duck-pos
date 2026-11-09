@@ -2,6 +2,15 @@ export type HoursBucket = 'DAY' | 'WEEK' | 'MONTH'
 export interface AttendancePosition { latitude: number; longitude: number; accuracyM: number; capturedAt: string }
 export interface ActiveTimeEntry { id: string; shopId: string; shopName: string; clockedInAt: string }
 export interface AttendanceState { activeEntry: ActiveTimeEntry | null; serverTime: string }
+export interface PersonalTimeEntry { id: string; clockedInAt: string; clockedOutAt: string | null }
+export interface PersonalAttendance { todaySeconds: number; recent: PersonalTimeEntry[] }
+export const attendanceTimeZone = 'Asia/Bangkok'
+export const attendanceDate = new Intl.DateTimeFormat('sv-SE', { timeZone: attendanceTimeZone })
+
+export function timeEntrySeconds(entry: PersonalTimeEntry, end: number, start = -Infinity) {
+  const clockedOut = entry.clockedOutAt ? Date.parse(entry.clockedOutAt) : end
+  return Math.max(0, Math.min(end, clockedOut) - Math.max(start, Date.parse(entry.clockedInAt))) / 1000
+}
 export interface HoursFilter { dateFrom: string; dateTo: string; bucket: HoursBucket; page: number }
 export interface HoursReport {
   timezone: string; serverTime: string; totalSeconds: number; totalShifts: number; activeShifts: number

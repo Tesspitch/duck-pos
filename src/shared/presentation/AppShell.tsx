@@ -9,13 +9,18 @@ import { MobileNavigation } from './MobileNavigation'
 import { SignOutConfirmation } from './SignOutConfirmation'
 import { StaffServiceRequests } from '../../features/dining/presentation/StaffServiceRequests'
 
+const systemLogo = '/duckpos-icon.svg'
+
 export function AppShell({ children }: PropsWithChildren) {
   const navigate = useNavigate()
   const menu = useRef<HTMLDialogElement>(null)
   const backdropPressed = useRef(false)
   const [confirmSignOut,setConfirmSignOut] = useState(false)
+  const [failedLogoUrl, setFailedLogoUrl] = useState<string | null>(null)
   const { signOut, user } = useAuth()
   const { activeMembership, memberships } = useActiveShop()
+  const shop = activeMembership?.shops
+  const shopLogo = shop?.logoUrl
   const { data: isPlatformAdmin = false } = usePlatformAdmin()
   async function handleSignOut() {
     await signOut()
@@ -37,7 +42,21 @@ export function AppShell({ children }: PropsWithChildren) {
         backdropPressed.current = false
       }}><button autoFocus type="button" className="drawer-dismiss" onClick={() => menu.current?.close()}><Icon name="close" /> ปิดเมนู</button>{navigation}</dialog>
     <div className="release-workspace">
-      <header className="workspace-toolbar"><button type="button" aria-label="เปิดเมนูหลัก" aria-haspopup="dialog" className="drawer-trigger" onClick={() => menu.current?.showModal()}><Icon name="bars" /></button><span className="toolbar-store-icon"><Icon name="store" /></span><div className="workspace-shop"><span>พื้นที่จัดการร้าน</span><strong>{activeMembership?.shops?.name ?? 'DuckPOS'}</strong></div>{activeMembership&&<StaffServiceRequests key={activeMembership.shop_id} shopId={activeMembership.shop_id}/>}<span className="role-badge">{activeMembership?.role === 'OWNER' ? 'เจ้าของร้าน' : activeMembership ? 'พนักงาน' : 'บัญชีของฉัน'}</span></header>
+      <header className="workspace-toolbar">
+        <button type="button" aria-label="เปิดเมนูหลัก" aria-haspopup="dialog" className="drawer-trigger" onClick={() => menu.current?.showModal()}><Icon name="bars" /></button>
+        <img
+          key={shopLogo ?? systemLogo}
+          className="toolbar-shop-logo"
+          src={shopLogo && shopLogo !== failedLogoUrl ? shopLogo : systemLogo}
+          onError={() => { if (shopLogo) setFailedLogoUrl(shopLogo) }}
+          width={36}
+          height={36}
+          alt=""
+        />
+        <div className="workspace-shop"><span>พื้นที่จัดการร้าน</span><strong>{shop?.name ?? 'DuckPOS'}</strong></div>
+        {activeMembership && <StaffServiceRequests key={activeMembership.shop_id} shopId={activeMembership.shop_id} />}
+        <span className="role-badge">{activeMembership?.role === 'OWNER' ? 'เจ้าของร้าน' : activeMembership ? 'พนักงาน' : 'บัญชีของฉัน'}</span>
+      </header>
       {confirmSignOut&&<SignOutConfirmation email={user?.email} onConfirm={handleSignOut} onCancel={()=>setConfirmSignOut(false)}/>}
       <div id="workspace" tabIndex={-1} className="release-content">{children}</div>
       {activeMembership && <MobileNavigation onMore={()=>menu.current?.showModal()} />}

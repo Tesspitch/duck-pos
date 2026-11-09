@@ -2,13 +2,14 @@ import { Icon } from '../../../../shared/presentation/Icon'
 import type { FormEvent } from 'react'
 
 import type { SalesHistoryQuery, SalesSessionOption } from '../../domain/sales-report'
+import { dateInputValue } from '../../domain/sales-report'
 
 interface Props {
   value: SalesHistoryQuery
   sessions: SalesSessionOption[]
   error: string | null
   onChange: (value: SalesHistoryQuery) => void
-  onSubmit: () => void
+  onSubmit: (value: SalesHistoryQuery) => void
 }
 
 const selectClass = 'rounded-lg border border-line bg-white px-3'
@@ -16,34 +17,45 @@ const selectClass = 'rounded-lg border border-line bg-white px-3'
 export function SalesFilterPanel({ value, sessions, error, onChange, onSubmit }: Props) {
   function submit(event: FormEvent) {
     event.preventDefault()
-    onSubmit()
+    onSubmit(value)
   }
 
   function set<K extends keyof SalesHistoryQuery>(key: K, next: SalesHistoryQuery[K]) {
     onChange({ ...value, [key]: next, page: 1 })
   }
 
-  function quickRange(days: number) {
+  function rangeFor(days: number) {
     const end = new Date()
     const start = new Date()
     start.setDate(end.getDate() - (days - 1))
-    const local = (date: Date) => `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
-    onChange({ ...value, dateFrom: local(start), dateTo: local(end), page: 1 })
+    return { dateFrom:dateInputValue(start), dateTo:dateInputValue(end) }
+  }
+
+  function quickRange(days: number) {
+    const next = { ...value, ...rangeFor(days), page: 1 }
+    onChange(next)
+    onSubmit(next)
   }
 
   return (
-    <form onSubmit={submit} className="mt-5 rounded-2xl border border-line bg-brand-soft p-4">
-      <div className="pos-chips">
-        <button type="button" onClick={() => quickRange(1)} className="rounded-lg border border-line bg-white px-3 text-sm font-semibold">วันนี้</button>
-        <button type="button" onClick={() => quickRange(7)} className="rounded-lg border border-line bg-white px-3 text-sm font-semibold">7 วัน</button>
-        <button type="button" onClick={() => quickRange(30)} className="rounded-lg border border-line bg-white px-3 text-sm font-semibold">30 วัน</button>
+    <form onSubmit={submit} className="sales-toolbar rounded-2xl border border-line bg-white p-3 sm:p-4">
+      <div className="sales-range-row">
+        <label className="grid min-w-0 gap-1 text-xs font-semibold">จากวันที่<input type="date" value={value.dateFrom} onChange={(event) => set('dateFrom', event.target.value)} className={selectClass} /></label>
+        <label className="grid min-w-0 gap-1 text-xs font-semibold">ถึงวันที่<input type="date" value={value.dateTo} onChange={(event) => set('dateTo', event.target.value)} className={selectClass} /></label>
       </div>
-      <details className="mt-3"><summary className="flex min-h-12 cursor-pointer items-center gap-2 font-semibold"><Icon name="search" /> ตัวกรองและช่วงเวลา</summary><div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <label className="grid gap-1 text-sm font-semibold">จากวันที่<input type="date" value={value.dateFrom} onChange={(event) => set('dateFrom', event.target.value)} className={selectClass} /></label>
-        <label className="grid gap-1 text-sm font-semibold">ถึงวันที่<input type="date" value={value.dateTo} onChange={(event) => set('dateTo', event.target.value)} className={selectClass} /></label>
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        <label className="sales-search"><Icon name="search" size={18}/><span className="sr-only">ค้นหาประวัติการขาย</span><input value={value.search} onChange={(event) => set('search', event.target.value)} placeholder="ค้นหาเลขคิว เลขอ้างอิง หรือสินค้า" /></label>
+        <div className="pos-chips">
+          {([1,7,30] as const).map(days=>{
+            const range=rangeFor(days)
+            return <button key={days} type="button" aria-pressed={value.dateFrom===range.dateFrom&&value.dateTo===range.dateTo} onClick={()=>quickRange(days)}>{days===1?'วันนี้':`${days} วัน`}</button>
+          })}
+        </div>
+        <button type="submit" className="rounded-xl bg-brand-action px-4 font-bold text-white">แสดงรายงาน</button>
+      </div>
+      <details className="mt-2"><summary className="flex min-h-11 cursor-pointer items-center gap-2 text-sm font-semibold"><Icon name="settings" size={17}/> ตัวกรองเพิ่มเติม</summary><div className="mt-2 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <label className="grid gap-1 text-sm font-semibold">รอบร้าน<select value={value.storeSessionId ?? ''} onChange={(event) => set('storeSessionId', event.target.value || null)} className={selectClass}><option value="">ทุกรอบ</option>{sessions.map((session) => <option key={session.id} value={session.id}>{session.businessDate} · {session.status}</option>)}</select></label>
         <label className="grid gap-1 text-sm font-semibold">สรุปตาม<select value={value.bucket} onChange={(event) => set('bucket', event.target.value as SalesHistoryQuery['bucket'])} className={selectClass}><option value="DAY">รายวัน</option><option value="MONTH">รายเดือน</option></select></label>
-        <label className="grid gap-1 text-sm font-semibold sm:col-span-2">ค้นหา<input value={value.search} onChange={(event) => set('search', event.target.value)} placeholder="เลขอ้างอิง เลขคิว หรือชื่อสินค้า" className={selectClass} /></label>
         <label className="grid gap-1 text-sm font-semibold">ช่องทาง<select value={value.source ?? ''} onChange={(event) => set('source', (event.target.value || null) as SalesHistoryQuery['source'])} className={selectClass}><option value="">ทั้งหมด</option><option value="QR">QR</option><option value="POS">POS</option></select></label>
         <label className="grid gap-1 text-sm font-semibold">สถานะออเดอร์<select value={value.orderStatus ?? ''} onChange={(event) => set('orderStatus', (event.target.value || null) as SalesHistoryQuery['orderStatus'])} className={selectClass}><option value="">ทั้งหมด</option><option value="QUEUED">QUEUED</option><option value="PREPARING">PREPARING</option><option value="READY">READY</option><option value="COMPLETED">COMPLETED</option><option value="CANCELLED">CANCELLED</option></select></label>
         <label className="grid gap-1 text-sm font-semibold">สถานะชำระ<select value={value.paymentStatus ?? ''} onChange={(event) => set('paymentStatus', (event.target.value || null) as SalesHistoryQuery['paymentStatus'])} className={selectClass}><option value="">ทั้งหมด</option><option value="UNPAID">UNPAID</option><option value="PAID">PAID</option><option value="REFUNDED">REFUNDED</option></select></label>
@@ -52,7 +64,6 @@ export function SalesFilterPanel({ value, sessions, error, onChange, onSubmit }:
         <label className="grid gap-1 text-sm font-semibold">ต่อหน้า<select value={value.pageSize} onChange={(event) => set('pageSize', Number(event.target.value))} className={selectClass}><option value="25">25</option><option value="50">50</option><option value="100">100</option></select></label>
       </div></details>
       {error ? <p role="alert" className="mt-3 text-sm font-semibold text-red-700">{error}</p> : null}
-      <button type="submit" className="mt-4 w-full rounded-xl bg-brand-action px-4 font-bold text-white sm:w-auto">แสดงรายงาน</button>
     </form>
   )
 }

@@ -1,7 +1,8 @@
 import { createContext, useContext } from 'react'
-import type { AttendanceState, HoursFilter, HoursReport, AttendancePosition } from '../domain/attendance'
+import type { AttendanceState, HoursFilter, HoursReport, AttendancePosition, PersonalAttendance } from '../domain/attendance'
 export interface AttendanceRepository {
   getMine(): Promise<AttendanceState>
+  getPersonal(shopId: string, userId: string, now: Date): Promise<PersonalAttendance>
   clockIn(shopId: string, position: AttendancePosition): Promise<void>
   clockOut(entryId: string): Promise<void>
   getReport(shopId: string, filter: HoursFilter): Promise<HoursReport>

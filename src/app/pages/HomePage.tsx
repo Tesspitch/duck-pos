@@ -5,6 +5,7 @@ import { AppShell } from '../../shared/presentation/AppShell'
 import { useActiveShop } from '../../features/shop-context/application/active-shop-context'
 import { HomeStoreControl } from '../../features/store-management/presentation/components/HomeStoreControl'
 import { HomeActivity } from './HomeActivity'
+import { AttendanceClockCard } from '../../features/attendance/presentation/AttendanceClockCard'
 
 const shortcuts = [
   { to: '/catalog', label: 'เมนูสินค้า', icon: 'menu' },
@@ -22,8 +23,9 @@ export function HomePage() {
       <main className="mx-auto max-w-3xl p-4 sm:p-6">
         <section className="grid gap-5">
           <header><h1 className="text-2xl font-bold">ภาพรวมร้าน</h1><p className="mt-1 text-sm text-muted">สถานะร้านและงานที่ต้องจัดการวันนี้</p></header>
-          {membership && <HomeStoreControl key={membership.shop_id} shopId={membership.shop_id} />}
-          {membership && <HomeActivity key={membership.shop_id} shopId={membership.shop_id} owner={membership.role==='OWNER'}/>}
+          {membership && <HomeStoreControl key={`store-${membership.shop_id}`} shopId={membership.shop_id} />}
+          {membership && <AttendanceClockCard key={`attendance-${membership.shop_id}`} shopId={membership.shop_id} shopName={membership.shops?.name} compact />}
+          {membership && <HomeActivity key={`activity-${membership.shop_id}`} shopId={membership.shop_id} owner={membership.role==='OWNER'}/>}
           <section aria-labelledby="home-shortcuts"><h2 id="home-shortcuts" className="mb-3 text-lg font-bold">เมนูด่วน</h2>
             <div className="grid grid-cols-3 gap-2 sm:gap-3">
               {shortcuts.filter((shortcut) => !('ownerOnly' in shortcut) || membership?.role === 'OWNER').map(({to,label,icon})=>(

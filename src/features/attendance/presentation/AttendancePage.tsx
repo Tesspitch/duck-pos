@@ -3,27 +3,29 @@ import { AppShell } from '../../../shared/presentation/AppShell'
 import { Icon } from '../../../shared/presentation/Icon'
 import { LoadingState } from '../../../shared/presentation/LoadingState'
 import { useActiveShop } from '../../shop-context/application/active-shop-context'
-import { todaySalesFilter, validateDateRange } from '../../sales-analytics/domain/sales-report'
-import { useAttendance } from '../application/use-attendance'
-import { attendanceError, hoursText, type HoursBucket, type HoursFilter } from '../domain/attendance'
+import { validateDateRange } from '../../sales-analytics/domain/sales-report'
+import { useAttendanceReport } from '../application/use-attendance'
+import { attendanceDate, attendanceError, attendanceTimeZone, hoursText, type HoursBucket, type HoursFilter } from '../domain/attendance'
+
+import { AttendanceClockCard } from './AttendanceClockCard'
+import { PersonalAttendanceSummary } from './PersonalAttendanceSummary'
 
 const field = 'min-h-12 w-full min-w-0 max-w-full border border-line bg-white px-3'
 export function AttendancePage() {
   const { activeMembership } = useActiveShop()
   const shopId = activeMembership?.shop_id ?? ''
-  return <AppShell><AttendanceWorkspace key={shopId} shopId={shopId} owner={activeMembership?.role === 'OWNER'} /></AppShell>
+  return <AppShell><AttendanceWorkspace key={shopId} shopId={shopId} shopName={activeMembership?.shops?.name} owner={activeMembership?.role === 'OWNER'} /></AppShell>
 }
 
-export function AttendanceWorkspace({ shopId, owner }: { shopId: string; owner: boolean }) {
-  const [filter, setFilter] = useState<HoursFilter>(() => ({ ...todaySalesFilter(), bucket: 'DAY', page: 1 }))
+export function AttendanceWorkspace({ shopId, shopName, owner }: { shopId: string; shopName?: string; owner: boolean }) {
+  const [filter, setFilter] = useState<HoursFilter>(() => {
+    const today = attendanceDate.format(new Date())
+    return { dateFrom: today, dateTo: today, bucket: 'DAY', page: 1 }
+  })
   const summary = useRef<HTMLElement>(null)
   const focusReport = useRef(false)
   const [rangeError, setRangeError] = useState<string | null>(null)
-  const [confirmation, setConfirmation] = useState<'IN' | 'OUT' | null>(null)
-  const [message, setMessage] = useState('')
-  const { state, report, action } = useAttendance(shopId, filter)
-  const active = state.data?.activeEntry
-  const busy = action.isPending
+  const report = useAttendanceReport(shopId, filter)
   useEffect(() => {
     if (focusReport.current && !report.isFetching && report.data) {
       focusReport.current = false
@@ -31,31 +33,16 @@ export function AttendanceWorkspace({ shopId, owner }: { shopId: string; owner: 
     }
   }, [report.data, report.isFetching])
   const formatTime = (value: string) => new Intl.DateTimeFormat('th-TH', {
-    timeZone: report.data?.timezone ?? 'Asia/Bangkok', dateStyle: 'short', timeStyle: 'short',
+    timeZone: report.data?.timezone ?? attendanceTimeZone, dateStyle: 'short', timeStyle: 'short',
   }).format(new Date(value))
-  async function confirm() {
-    try {
-      if (confirmation === 'OUT' && active) await action.mutateAsync({ type: 'OUT', entryId: active.id })
-      else if (confirmation === 'IN') await action.mutateAsync({ type: 'IN', shopId })
-      setMessage(confirmation === 'IN' ? 'ลงเวลาเข้างานแล้ว' : 'ลงเวลาออกงานแล้ว')
-      setConfirmation(null)
-    } catch { /* Mutation error is displayed below. */ }
-  }
-  return <main className="attendance-workspace mx-auto grid w-full min-w-0 max-w-5xl gap-5 p-4 sm:p-6">
-    <header className="flex flex-wrap items-center justify-between gap-3"><div><p className="page-eyebrow">พนักงาน</p><h1 className="text-2xl font-bold"><Icon name="clock" /> เวลาทำงาน</h1><p className="mt-1 text-sm text-muted">{owner ? 'ลงเวลาของคุณ · รายงานพนักงานทุกคน' : 'ลงเวลาและรายงานของคุณ'}</p></div><button type="button" disabled={busy} className="min-h-11 border border-line bg-white px-3" onClick={() => { void state.refetch(); void report.refetch() }}>รีเฟรช</button></header>
-    <section className="grid min-w-0 gap-3 border border-line bg-white p-4">
-      <h2 className="font-bold">ลงเวลาของฉัน</h2>
-      {state.isPending ? <LoadingState label="กำลังตรวจสอบเวลาเข้างาน…" /> : state.isError ? <p role="alert" className="text-red-700">{attendanceError(state.error)}</p> : <>
-        <p className={active ? 'font-bold text-green-800' : 'text-muted'}>{active ? 'กำลังทำงาน' : 'ยังไม่ได้เข้างาน'}</p>
-        {active && <p className="break-words text-sm">{active.shopName} · เข้า {formatTime(active.clockedInAt)}{active.shopId !== shopId ? ' · อยู่คนละสาขากับที่เลือก' : ''}</p>}
-        <button type="button" disabled={busy || state.isFetching} onClick={() => { action.reset(); setConfirmation(active ? 'OUT' : 'IN') }} className={`min-h-12 px-4 font-bold text-white disabled:opacity-50 ${active ? 'bg-red-700' : 'bg-green-700'}`}>{active ? 'ลงเวลาออกงาน' : 'ลงเวลาเข้างาน'}</button>
-        {confirmation && <div className="grid gap-3 border border-line p-3"><p className="font-semibold">ยืนยัน{confirmation === 'IN' ? 'เข้างานที่สาขานี้' : 'ออกงาน'}?</p><div className="grid grid-cols-2 gap-2"><button type="button" disabled={busy} onClick={() => setConfirmation(null)} className="border border-line px-3">ยกเลิก</button><button type="button" disabled={busy} onClick={() => void confirm()} className="bg-brand-action px-3 font-bold text-white">{busy ? 'กำลังบันทึก…' : 'ยืนยัน'}</button></div></div>}
-      </>}
-      {action.error && <p role="alert" className="text-sm text-red-700">{attendanceError(action.error)}</p>}
-      {busy && confirmation === 'IN' && <p role="status" className="text-sm text-muted">กำลังค้นหาตำแหน่งและตรวจระยะจากร้าน…</p>}
-      {message && <p role="status" className="text-sm text-green-800">{message}</p>}
-      <p className="text-xs text-muted">เข้างานภายในรัศมี 100 เมตรจากร้าน · อนุญาตเข้าถึงตำแหน่งเมื่อกดยืนยัน</p>
-    </section>
+  return <main className="attendance-workspace mx-auto grid w-full min-w-0 max-w-3xl gap-5 p-4 sm:p-6">
+    <header className="flex items-start gap-3">
+      <span className="attendance-icon attendance-title-icon"><Icon name="clock" size={24} /></span>
+      <div className="min-w-0"><h1 className="text-2xl font-bold">ลงเวลาเข้า–ออกงาน</h1><p className="mt-1 text-sm text-muted">บันทึกเวลาทำงานของคุณ</p></div>
+    </header>
+    <AttendanceClockCard shopId={shopId} shopName={shopName} />
+    <PersonalAttendanceSummary shopId={shopId} />
+    <h2 className="text-lg font-bold">{owner ? 'รายงานเวลาทำงานของพนักงาน' : 'รายงานเวลาทำงานของฉัน'}</h2>
     <form className="grid min-w-0 grid-cols-1 gap-3 border border-line bg-white p-4 sm:grid-cols-3" onSubmit={(event) => {
       event.preventDefault()
       const values = new FormData(event.currentTarget)

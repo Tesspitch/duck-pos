@@ -12,6 +12,7 @@ export interface Membership {
   shops?: {
     id: string
     name: string
+    logoUrl?: string | null
   } | null
   user_profiles?: {
     display_name: string | null

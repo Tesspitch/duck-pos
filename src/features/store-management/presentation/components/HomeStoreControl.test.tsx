@@ -32,6 +32,20 @@ test('opening the store requires confirmation and can be cancelled', async () =>
   fireEvent.click(trigger)
   fireEvent.click(screen.getByRole('button', { name: 'ยืนยัน' }))
   await waitFor(() => expect(open).toHaveBeenCalledWith('shop'))
+  expect(await screen.findByText('เปิดร้านแล้ว พร้อมรับออเดอร์')).toBeVisible()
+})
+
+test('opening success feedback waits for the request and is absent on failure', async () => {
+  const { open } = setup(false, 0, false)
+  let rejectOpen!: (error: Error) => void
+  open.mockReturnValue(new Promise<void>((_, reject) => { rejectOpen = reject }))
+  fireEvent.click(await screen.findByRole('button', { name: 'เปิดร้าน' }))
+  fireEvent.click(screen.getByRole('button', { name: 'ยืนยัน' }))
+  await waitFor(() => expect(open).toHaveBeenCalled())
+  expect(screen.queryByText('เปิดร้านแล้ว พร้อมรับออเดอร์')).not.toBeInTheDocument()
+  rejectOpen(new Error('เปิดร้านไม่สำเร็จ'))
+  expect(await screen.findByRole('alert')).toHaveTextContent('เปิดร้านไม่สำเร็จ')
+  expect(screen.queryByText('เปิดร้านแล้ว พร้อมรับออเดอร์')).not.toBeInTheDocument()
 })
 
 test('paused intake keeps the existing queue visible and lets staff resume accepting orders', async () => {

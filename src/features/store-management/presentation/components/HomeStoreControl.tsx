@@ -5,6 +5,7 @@ import { useCloseStore, useOpenStore, useSetOrderAcceptance, useStoreManagement 
 import { canCloseStore } from '../../domain/store-session'
 import { LoadingState } from '../../../../shared/presentation/LoadingState'
 import { Icon } from '../../../../shared/presentation/Icon'
+import { StoreDoorIcon } from '../../../../shared/presentation/StoreDoorIcon'
 
 const actions = {
   open: { label: 'เปิดร้าน', description: 'เริ่มรอบขายและเปิดรับออเดอร์ใหม่' },
@@ -20,6 +21,7 @@ export function HomeStoreControl({ shopId }: { shopId: string }) {
   const acceptance = useSetOrderAcceptance(shopId)
   const client = useQueryClient()
   const [message, setMessage] = useState('')
+  const [opened, setOpened] = useState(false)
   const [action, setAction] = useState<keyof typeof actions | null>(null)
   const [confirming, setConfirming] = useState(false)
   const dialog = useRef<HTMLDialogElement>(null)
@@ -34,7 +36,8 @@ export function HomeStoreControl({ shopId }: { shopId: string }) {
   async function openStore() {
     setMessage('')
     await open.mutateAsync()
-    setMessage('เปิดรอบขายแล้ว พร้อมรับออเดอร์')
+    setOpened(true)
+    setMessage('เปิดร้านแล้ว พร้อมรับออเดอร์')
     await refreshOperationalData()
   }
   async function setAccepting(accepting: boolean) {
@@ -67,6 +70,7 @@ export function HomeStoreControl({ shopId }: { shopId: string }) {
   const blocked = busy || confirming || management.isError
   const status = !data?.isOpen ? 'ร้านปิด' : data.acceptingOrders ? 'ร้านเปิด · กำลังรับออเดอร์' : 'พักรับออเดอร์อยู่'
   function requestAction(next: keyof typeof actions) {
+    setOpened(false)
     setAction(next)
     dialog.current?.showModal()
   }
@@ -94,14 +98,14 @@ export function HomeStoreControl({ shopId }: { shopId: string }) {
     {data&&<div className={`flex items-center gap-3 rounded-xl p-3 ${!data.isOpen?'bg-red-50 text-red-800':data.acceptingOrders?'bg-green-50 text-green-800':'bg-amber-50 text-amber-900'}`}><Icon name="store" className="shrink-0"/><div><p className="font-bold">{status}</p><p className="text-xs">{!data.isOpen?'เปิดรอบขายเพื่อเริ่มรับออเดอร์':data.acceptingOrders?'รับออเดอร์ใหม่ได้':'คิวเดิมยังจัดการต่อได้'}</p></div></div>}
     {management.isLoading && <LoadingState label="กำลังตรวจสอบสถานะร้าน…" />}
     {data && <div className="mt-4 grid gap-3">
-      {!data.isOpen ? <button type="button" disabled={blocked} onClick={()=>requestAction('open')} className="flex items-center justify-center gap-2 rounded-xl bg-green-800 px-3 font-bold text-white disabled:opacity-50"><Icon name="play" size={18}/>เปิดร้าน</button> : <>
+      {!data.isOpen ? <button type="button" disabled={blocked} onClick={()=>requestAction('open')} className="flex items-center justify-center gap-2 rounded-xl bg-green-800 px-3 font-bold text-white disabled:opacity-50"><StoreDoorIcon />เปิดร้าน</button> : <>
         <button type="button" disabled={blocked||!data.activeSession} onClick={() => requestAction(data.acceptingOrders?'pause':'resume')} className={`flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border px-3 text-sm font-bold disabled:opacity-50 ${data.acceptingOrders?'border-orange-300 bg-brand-soft text-brand-action':'border-green-700 bg-green-800 text-white'}`}><Icon name={data.acceptingOrders?'pause':'play'} size={18}/>{data.acceptingOrders?actions.pause.label:actions.resume.label}</button>
         {data.activeSession&&<div className="grid grid-cols-2 divide-x divide-line rounded-xl bg-[#f1f3f0] text-center"><div className="p-3"><p className="text-xs text-muted">ออเดอร์ค้าง</p><strong className="text-xl">{data.activeSession.pendingOrderCount}</strong></div><div className="p-3"><p className="text-xs text-muted">โต๊ะที่เปิดอยู่</p><strong className="text-xl">{data.activeSession.pendingTableCount??0}</strong></div></div>}
         <div className="flex items-center gap-2 text-xs text-muted"><Icon name="clock" size={15}/>ตรวจสถานะล่าสุด {new Date(management.dataUpdatedAt).toLocaleTimeString('th-TH',{hour:'2-digit',minute:'2-digit'})}</div>
         {canCloseStore(data.activeSession) ? <div className="flex justify-end border-t border-line pt-2"><button type="button" disabled={blocked} onClick={()=>requestAction('close')} className="inline-flex items-center gap-2 rounded-lg border border-red-200 px-4 text-sm font-bold text-red-800 hover:bg-red-50 disabled:opacity-50"><Icon name="store" size={17}/>{actions.close.label}</button></div> : <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 pt-2 text-sm"><p>ก่อนปิดร้าน ให้เคลียร์รายการเดิมต่อจนเสร็จ</p><div className="flex flex-wrap gap-x-4">{(data.activeSession?.pendingOrderCount??0)>0&&<Link to="/queue" className="inline-flex min-h-11 items-center font-bold text-brand-action">ไปจัดการคิว →</Link>}{(data.activeSession?.pendingTableCount??0)>0&&<Link to="/tables" className="inline-flex min-h-11 items-center font-bold text-brand-action">ไปจัดการโต๊ะและบิล →</Link>}</div></div>}
       </>}
     </div>}
-    {message && <p role="status" className="mt-3 text-sm font-semibold">{message}</p>}
+    {message && <p role="status" className={opened ? 'store-open-success' : 'mt-3 text-sm font-semibold'}>{opened && <StoreDoorIcon opened />}{message}</p>}
     {error && <div role="alert" className="mt-3 bg-red-50 p-3 text-sm text-red-700"><p>{error instanceof Error ? error.message : 'ดำเนินการไม่สำเร็จ'}</p><button type="button" onClick={() => void management.refetch()} className="mt-2 underline">ตรวจสอบสถานะอีกครั้ง</button></div>}
     {confirming&&<p role="status" className="mt-3 text-sm text-muted">กำลังเปลี่ยนสถานะร้าน…</p>}
     <dialog ref={dialog} className="confirm-action-dialog store-status-sheet" aria-labelledby={titleId}>

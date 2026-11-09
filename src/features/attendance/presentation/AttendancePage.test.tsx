@@ -1,24 +1,32 @@
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { afterEach, expect, test, vi } from 'vitest'
+import { MemoryRouter } from 'react-router-dom'
 import { AuthContext } from '../../auth/application/auth-context'
 import { AttendanceContext, AttendanceLocationContext, type AttendanceRepository } from '../application/attendance-context'
 import { AttendanceWorkspace } from './AttendancePage'
+import { AttendanceClockCard } from './AttendanceClockCard'
 import type { User } from '@supabase/supabase-js'
 
 const clients: QueryClient[] = []
 afterEach(() => { cleanup(); clients.forEach((c) => c.clear()); clients.length = 0 })
 const position = { latitude: 16, longitude: 103, accuracyM: 10, capturedAt: '2026-11-05T03:00:00Z' }
-function setup(active = false, capture = vi.fn().mockResolvedValue(position)) {
+function setup(active = false, capture = vi.fn().mockResolvedValue(position), compact = false) {
   let entered = active
   const repository: AttendanceRepository = {
     getMine: vi.fn(async () => ({ activeEntry: entered ? { id: 'shift', shopId: 'other', shopName: 'สาขาเดิม', clockedInAt: '2026-11-05T02:00:00Z' } : null, serverTime: '2026-11-05T03:00:00Z' })),
+    getPersonal: vi.fn(async () => ({
+      todaySeconds: 1800,
+      recent: [{ id: 'recent', clockedInAt: '2026-11-04T02:00:00Z', clockedOutAt: '2026-11-04T10:15:00Z' }],
+    })),
     clockIn: vi.fn(async () => { entered = true }),
     clockOut: vi.fn(async () => { entered = false }),
     getReport: vi.fn(async () => ({ timezone: 'Asia/Bangkok', serverTime: '2026-11-05T03:00:00Z', totalSeconds: 14400, totalShifts: 1, activeShifts: 0, totalCount: 1, page: 1, pageSize: 50, rows: [{ period: '2026-11-01', userId: 'employee', employeeName: 'พนักงานทดสอบ', seconds: 14400, shifts: 1, isLive: false, firstIn: '2026-11-01T01:00:00Z', lastOut: '2026-11-01T05:00:00Z' }] })),
   }
   const client = new QueryClient({ defaultOptions: { queries: { retry: false }, mutations: { retry: false } } }); clients.push(client)
-  render(<QueryClientProvider client={client}><AuthContext value={{ loading: false, session: null, user: { id: 'me' } as User, signInWithGoogle: vi.fn(), signOut: vi.fn() }}><AttendanceContext value={repository}><AttendanceLocationContext value={{ capture }}><AttendanceWorkspace shopId="shop" owner /></AttendanceLocationContext></AttendanceContext></AuthContext></QueryClientProvider>)
+  render(<MemoryRouter><QueryClientProvider client={client}><AuthContext value={{ loading: false, session: null, user: { id: 'me' } as User, signInWithGoogle: vi.fn(), signOut: vi.fn() }}><AttendanceContext value={repository}><AttendanceLocationContext value={{ capture }}>{compact
+    ? <AttendanceClockCard shopId="shop" shopName="สาขาทดสอบ" compact />
+    : <AttendanceWorkspace shopId="shop" owner />}</AttendanceLocationContext></AttendanceContext></AuthContext></QueryClientProvider></MemoryRouter>)
   return { ...repository, capture }
 }
 test('clock-in captures a fresh location only after confirmation and refreshes attendance', async () => {
@@ -30,6 +38,23 @@ test('clock-in captures a fresh location only after confirmation and refreshes a
   await screen.findByText('ลงเวลาเข้างานแล้ว')
   expect(repository.clockIn).toHaveBeenCalledWith('shop', position)
   expect(await screen.findByRole('button', { name: 'ลงเวลาออกงาน' })).toBeInTheDocument()
+})
+test('overview clocks in at the selected branch without fetching reports or history', async () => {
+  const repository = setup(false, vi.fn().mockResolvedValue(position), true)
+  fireEvent.click(await screen.findByRole('button', { name: 'ลงเวลาเข้างาน' }))
+  expect(screen.getByText('ยืนยันเข้างาน · สาขาทดสอบ')).toBeVisible()
+  expect(repository.capture).not.toHaveBeenCalled()
+  fireEvent.click(screen.getByRole('button', { name: 'ยืนยัน' }))
+  await screen.findByText('ลงเวลาเข้างานแล้ว')
+  expect(repository.clockIn).toHaveBeenCalledWith('shop', position)
+  expect(repository.getReport).not.toHaveBeenCalled()
+  expect(repository.getPersonal).not.toHaveBeenCalled()
+})
+test('today shows personal hours separately from the owner report and recent shift duration', async () => {
+  setup()
+  expect(await screen.findByText('0 ชม. 30 นาที')).toBeVisible()
+  expect(screen.getByText('8 ชม. 15 นาที')).toBeVisible()
+  expect(await screen.findByRole('region', { name: 'สรุปชั่วโมงงาน' })).toHaveTextContent('4 ชม. 0 นาที')
 })
 test('clock-out uses the active entry even if it belongs to another branch', async () => {
   const repository = setup(true)

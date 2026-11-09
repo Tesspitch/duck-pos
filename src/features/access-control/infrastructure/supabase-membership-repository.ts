@@ -2,16 +2,29 @@ import type { MembershipRepository } from '../application/membership-repository'
 import type { Membership } from '../domain/membership'
 import { supabase } from '../../../lib/supabase'
 
+type ActiveMembershipRow = Omit<Membership, 'shops'> & {
+  shops: { id: string; name: string; logo_path: string | null }
+}
+
 export const supabaseMembershipRepository: MembershipRepository = {
   async listActiveForUser(userId) {
     const { data, error } = await supabase
       .from('shop_members')
-      .select('id, shop_id, user_id, role, status, granted_at, revoked_at, shops!inner(id, name)')
+      .select('id, shop_id, user_id, role, status, granted_at, revoked_at, shops!inner(id, name, logo_path)')
       .eq('user_id', userId)
       .eq('status', 'ACTIVE')
 
     if (error) throw error
-    return data as unknown as Membership[]
+    return (data as unknown as ActiveMembershipRow[]).map(({ shops, ...membership }) => ({
+      ...membership,
+      shops: {
+        id: shops.id,
+        name: shops.name,
+        logoUrl: shops.logo_path
+          ? supabase.storage.from('shop-assets').getPublicUrl(shops.logo_path).data.publicUrl
+          : null,
+      },
+    }))
   },
 
   async listForShop(shopId) {
