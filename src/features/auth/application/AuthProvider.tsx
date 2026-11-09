@@ -6,34 +6,44 @@ import { AuthContext, type AuthContextValue } from './auth-context'
 
 interface AuthProviderProps extends PropsWithChildren {
   gateway: AuthGateway
+  onAccountChange?: () => void
 }
 
-export function AuthProvider({ children, gateway }: AuthProviderProps) {
+export function AuthProvider({ children, gateway, onAccountChange }: AuthProviderProps) {
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     let mounted = true
+    let receivedAuthEvent = false
+    let currentUserId: string | null | undefined
+
+    function applySession(nextSession: Session | null) {
+      const nextUserId = nextSession?.user.id ?? null
+      if (currentUserId !== undefined && currentUserId !== nextUserId) onAccountChange?.()
+      currentUserId = nextUserId
+      setSession(nextSession)
+      setLoading(false)
+    }
+
 
     void gateway.getSession().then((currentSession) => {
-      if (mounted) {
-        setSession(currentSession)
-        setLoading(false)
-      }
+      if (mounted && !receivedAuthEvent) applySession(currentSession)
     }).catch(() => {
-      if (mounted) { setSession(null); setLoading(false) }
+      if (mounted && !receivedAuthEvent) applySession(null)
     })
 
     const unsubscribe = gateway.onSessionChange((nextSession) => {
-      setSession(nextSession)
-      setLoading(false)
+      if (!mounted) return
+      receivedAuthEvent = true
+      applySession(nextSession)
     })
 
     return () => {
       mounted = false
       unsubscribe()
     }
-  }, [gateway])
+  }, [gateway, onAccountChange])
 
   const value = useMemo<AuthContextValue>(
     () => ({

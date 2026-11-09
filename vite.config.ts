@@ -29,7 +29,7 @@ export default defineConfig({
         skipWaiting: false,
         clientsClaim: false,
         navigateFallback: '/index.html',
-        globPatterns: ['**/*.{js,css,html,svg,ico}'],
+        globPatterns: ['**/*.{js,css,html,svg,ico}', 'assets/duckpos-logo-480-*.jpg'],
         cleanupOutdatedCaches: true,
         runtimeCaching: [
           {

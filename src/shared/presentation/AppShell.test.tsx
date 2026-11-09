@@ -2,6 +2,7 @@ import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/re
 import { MemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { AppShell } from './AppShell'
+import systemLogo from '../../assets/duckpos-logo-480.jpg'
 import type { Membership } from '../../features/access-control/domain/membership'
 
 const signOut=vi.hoisted(()=>vi.fn().mockResolvedValue(undefined))
@@ -32,12 +33,12 @@ test('toolbar uses the current shop logo and falls back when absent or broken', 
   const logo = () => toolbar.querySelector('img')!
   expect(logo()).toHaveAttribute('src', shopLogo)
   fireEvent.error(logo())
-  expect(logo()).toHaveAttribute('src', '/duckpos-icon.svg')
+  expect(logo()).toHaveAttribute('src', systemLogo)
 
   activeShop.activeMembership = { ...membership, shop_id: 'second', shops: { id: 'second', name: 'สาขาสอง' } }
   rerender(<MemoryRouter><AppShell><p>หน้าเว็บ</p></AppShell></MemoryRouter>)
   expect(toolbar).toHaveTextContent('สาขาสอง')
-  expect(logo()).toHaveAttribute('src', '/duckpos-icon.svg')
+  expect(logo()).toHaveAttribute('src', systemLogo)
 })
 
 test('sign out asks confirmation and cancel preserves login',()=>{

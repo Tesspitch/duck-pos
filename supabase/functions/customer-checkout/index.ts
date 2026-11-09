@@ -1,4 +1,5 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { CheckoutRequestError, readCheckoutRequest } from './request.ts'
 
 const allowedOrigins = new Set(
   (Deno.env.get('ALLOWED_ORIGINS') ?? 'http://localhost:5173')
@@ -25,14 +26,14 @@ async function sha256(value: string) {
 
 Deno.serve(async (request) => {
   const origin = request.headers.get('origin')
-  const headers = { ...corsHeaders(origin), 'Content-Type': 'application/json' }
+  const headers = { ...corsHeaders(origin), 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }
   if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers })
   if (request.method !== 'POST' || !origin || !allowedOrigins.has(origin)) {
     return new Response(JSON.stringify({ error: 'Request origin is not allowed.' }), { status: 403, headers })
   }
 
   try {
-    const body = await request.json()
+    const body = await readCheckoutRequest(request)
     const ip = request.headers.get('cf-connecting-ip')
       ?? request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
       ?? 'unknown'
@@ -54,9 +55,6 @@ Deno.serve(async (request) => {
     if (!allowed) return new Response(JSON.stringify({ error: 'ส่งออเดอร์ถี่เกินไป กรุณารอสักครู่' }), { status: 429, headers })
 
     const tableOrder = body.tableOrder
-    if (tableOrder && (!tableOrder.tableQrToken || !tableOrder.billId || !tableOrder.guestToken)) {
-      return new Response(JSON.stringify({ error: 'Invalid table checkout.' }), { status: 400, headers })
-    }
     const { data, error } = await supabase.rpc(tableOrder?.tableEpoch ? 'create_auto_table_qr_order' : tableOrder ? 'create_table_qr_order' : 'create_qr_order', {
       target_shop_id: body.shopId,
       request_idempotency_key: body.idempotencyKey,
@@ -69,10 +67,18 @@ Deno.serve(async (request) => {
       order_note: body.orderNote ?? '',
       ...(tableOrder ? { table_qr_token: tableOrder.tableQrToken, ...(tableOrder.tableEpoch ? {expected_table_epoch:tableOrder.tableEpoch} : {expected_bill_id:tableOrder.billId}), guest_token: tableOrder.guestToken } : {}),
     })
-    if (error) return new Response(JSON.stringify({ error: error.message }), { status: 400, headers })
+    if (error) {
+      if (['22023', '42501', 'P0001', 'P0002'].includes(error.code)) {
+        return new Response(JSON.stringify({ error: error.message }), { status: 400, headers })
+      }
+      throw error
+    }
     return new Response(JSON.stringify(data), { status: 200, headers })
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Checkout failed.'
-    return new Response(JSON.stringify({ error: message }), { status: 500, headers })
+    if (error instanceof CheckoutRequestError) {
+      return new Response(JSON.stringify({ error: error.message }), { status: error.status, headers })
+    }
+    console.error('Customer checkout failed', error instanceof Error ? error.name : 'Database error')
+    return new Response(JSON.stringify({ error: 'ส่งออเดอร์ไม่สำเร็จ กรุณาลองอีกครั้ง' }), { status: 500, headers })
   }
 })

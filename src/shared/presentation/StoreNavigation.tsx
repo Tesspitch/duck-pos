@@ -1,5 +1,5 @@
 import { Link, NavLink, useLocation } from 'react-router-dom'
-import logo from '../../../duckpos-logo.jpg'
+import logo from '../../assets/duckpos-logo-480.jpg'
 import { BranchSwitcher } from './BranchSwitcher'
 import { Icon, type IconName } from './Icon'
 

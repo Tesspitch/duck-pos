@@ -64,6 +64,10 @@ const queryClient = new QueryClient({
   },
 })
 
+function clearAccountCache() {
+  queryClient.clear()
+}
+
 export function AppProviders({ children }: PropsWithChildren) {
   useCustomerTrackingSync()
   return (
@@ -74,7 +78,7 @@ export function AppProviders({ children }: PropsWithChildren) {
       <AttendanceContext value={supabaseAttendanceRepository}>
       <AttendanceLocationContext value={browserAttendanceLocation}>
       <MutationFeedback />
-      <AuthProvider gateway={supabaseAuthGateway}>
+      <AuthProvider gateway={supabaseAuthGateway} onAccountChange={clearAccountCache}>
         <PlatformAdminRepositoryProvider repository={supabasePlatformAdminRepository}>
           <ShopOnboardingRepositoryProvider repository={supabaseShopOnboardingRepository}>
             <MembershipRepositoryProvider repository={supabaseMembershipRepository}>

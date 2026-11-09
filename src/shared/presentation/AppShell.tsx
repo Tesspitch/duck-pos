@@ -9,7 +9,7 @@ import { MobileNavigation } from './MobileNavigation'
 import { SignOutConfirmation } from './SignOutConfirmation'
 import { StaffServiceRequests } from '../../features/dining/presentation/StaffServiceRequests'
 
-const systemLogo = '/duckpos-icon.svg'
+import systemLogo from '../../assets/duckpos-logo-480.jpg'
 
 export function AppShell({ children }: PropsWithChildren) {
   const navigate = useNavigate()

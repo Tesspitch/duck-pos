@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import logo from '../../../../../duckpos-logo.jpg'
+import logo from '../../../../assets/duckpos-logo-480.jpg'
 import { Navigate } from 'react-router-dom'
 
 import { useAuth } from '../../application/auth-context'
@@ -32,7 +32,7 @@ export function LoginPage() {
     <main className="login-page">
       <section className="login-panel" aria-labelledby="login-title">
         <div className="login-content">
-          <img src={logo} alt="DuckPOS" width="216" height="216" className="login-logo" />
+          <img src={logo} alt="DuckPOS" width="216" height="216" className="login-logo" fetchPriority="high" />
           <p className="font-semibold text-brand-action">ระบบจัดการร้านอาหารแบบรับกลับ</p>
           <span className="login-divider" aria-hidden="true"/>
           <h1 id="login-title" className="text-2xl font-bold sm:text-3xl">เข้าสู่ระบบสำหรับพนักงาน</h1>
